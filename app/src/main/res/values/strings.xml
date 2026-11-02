@@ -110,9 +110,14 @@
     <string name="refills_log_missed">Log missed dose</string>
     <string name="refills_log_delayed">Log delayed dose</string>
     <string name="refills_partial_suffix">%1$s, partial</string>
-    <string name="refills_box">Box %1$s</string>
+    <string name="refills_partial">Partial</string>
+    <string name="refills_box">Box %1$s (%2$d left)</string>
     <string name="refills_missed">Missed dose</string>
     <string name="refills_delayed">Delayed dose</string>
+    <plurals name="refills_pills">
+        <item quantity="one">%1$d pill</item>
+        <item quantity="other">%1$d pills</item>
+    </plurals>
     <plurals name="refills_amount">
         <item quantity="one">%1$d pill, %2$d left</item>
         <item quantity="other">%1$d pills, %2$d left</item>

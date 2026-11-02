@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -144,21 +145,22 @@ private fun RefillCard(
     val refill = entry.refill
     RecordCard(modifier = modifier, onEdit = onEdit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = refill.date.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            if (refill.isPartial) PartialBadge(modifier = Modifier.padding(start = 8.dp))
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text = refill.date.toString(), style = MaterialTheme.typography.titleMedium)
-                val amounts = pluralStringResource(
-                    R.plurals.refills_amount,
-                    refill.amount,
-                    refill.amount,
-                    refill.amountRemaining,
-                )
                 Text(
-                    text = if (refill.isPartial) stringResource(R.string.refills_partial_suffix, amounts) else amounts,
+                    text = pluralStringResource(R.plurals.refills_pills, refill.amount, refill.amount),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (onOpenBox != null) {
                     Text(
-                        text = stringResource(R.string.refills_box, entry.boxName),
+                        text = stringResource(R.string.refills_box, entry.boxName, refill.amountRemaining),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -180,6 +182,22 @@ private fun RefillCard(
                 label = entry.boxNumber?.let { stringResource(R.string.link_box_number, it) },
             )
         }
+    }
+}
+
+@Composable
+private fun PartialBadge(modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shape = CircleShape,
+        modifier = modifier,
+    ) {
+        Text(
+            text = stringResource(R.string.refills_partial),
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
     }
 }
 

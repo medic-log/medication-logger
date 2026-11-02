@@ -100,7 +100,7 @@ class MainActivityTest {
         composeRule.onNodeWithText(text).assertDoesNotExist()
     }
 
-    private fun refillAmount(amount: Int, left: Int) = plural(R.plurals.refills_amount, amount, amount, left)
+    private fun refillBox(left: Int) = string(R.string.refills_box, "$today #1", left)
 
     @Test
     fun `app opens on the boxes tab`() {
@@ -264,12 +264,8 @@ class MainActivityTest {
         assertShown(string(R.string.boxes_pills_left, 20, 30))
 
         openTab(R.string.main_tab_refills)
-        assertShown(refillAmount(7, 18))
-        assertShown(refillAmount(7, 11))
-        assertShown(refillAmount(7, 4))
-        assertShown(string(R.string.refills_partial_suffix, refillAmount(4, 0)))
-        assertShown(string(R.string.refills_partial_suffix, refillAmount(3, 27)))
-        assertShown(refillAmount(7, 20))
+        listOf(18, 11, 4, 0, 27, 20).forEach { assertShown(refillBox(it)) }
+        composeRule.onAllNodesWithText(string(R.string.refills_partial)).assertCountEquals(2)
     }
 
     private fun fillSecondPrescriptionPillsPerBox(pills: Int) {
@@ -464,8 +460,8 @@ class MainActivityTest {
         assertTrue(data.boxes.isEmpty())
         assertEquals(null, data.refills.single().boxId)
         openTab(R.string.main_tab_refills)
-        assertShown(refillAmount(7, 23))
-        assertNotShown(string(R.string.refills_box, "$today #1"))
+        assertShown(plural(R.plurals.refills_pills, 7, 7))
+        assertNotShown(refillBox(23))
         composeRule.onNodeWithContentDescription(string(R.string.link_box_deleted)).assertIsNotEnabled()
         composeRule.onNodeWithContentDescription(string(R.string.link_open_prescription)).assertIsEnabled()
     }
@@ -519,7 +515,7 @@ class MainActivityTest {
         tap(string(R.string.boxes_refill_weekly))
         openTab(R.string.main_tab_refills)
 
-        hold(refillAmount(7, 23))
+        hold(refillBox(23))
         tap(string(R.string.edit_delete))
         tap(string(R.string.edit_delete))
 
