@@ -1,5 +1,6 @@
 package com.mediclog.medicationlogger
 
+import android.Manifest
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
@@ -22,12 +23,15 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import com.mediclog.medicationlogger.data.MedicationData
+import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -286,20 +290,48 @@ class MainActivityTest {
     }
 
     @Test
+    fun `every reminder starts on and can be turned off`() {
+        openTab(R.string.main_tab_reminders)
+        assertEquals(ReminderSettings(), data.reminderSettings)
+
+        repeat(4) { composeRule.onAllNodes(isToggleable())[it].performClick() }
+
+        assertFalse(data.reminderSettings.hasAnyEnabled)
+    }
+
+    @Test
+    fun `notifications are asked for on launch, as reminders start on`() {
+        assertEquals(
+            Manifest.permission.POST_NOTIFICATIONS,
+            shadowOf(composeRule.activity).lastRequestedPermission?.requestedPermissions?.single(),
+        )
+    }
+
+    @Test
     fun `refill reminder is configured with a weekday and time`() {
         openTab(R.string.main_tab_reminders)
-        composeRule.onAllNodes(isToggleable())[0].performClick()
-        assertTrue(data.reminderSettings.isRefillEnabled)
-
         tap(DayOfWeek.SUNDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
         tap(DayOfWeek.MONDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
         assertEquals(DayOfWeek.MONDAY, data.reminderSettings.refillDay)
 
-        tap(string(R.string.reminders_refill_choose_time, "09:00"))
+        tap(string(R.string.reminders_choose_time, "20:00"))
+        // Stays in the evening, as the input is 12-hour here
         composeRule.onAllNodes(hasSetTextAction())[0].performTextReplacement("07")
         tap(string(R.string.reminders_time_confirm))
-        assertEquals(LocalTime.of(7, 0), data.reminderSettings.refillTime)
-        assertShown(string(R.string.reminders_refill_choose_time, "07:00"))
+        assertEquals(LocalTime.of(19, 0), data.reminderSettings.refillTime)
+        assertShown(string(R.string.reminders_choose_time, "19:00"))
+    }
+
+    @Test
+    fun `daily pill reminder is configured with a time`() {
+        openTab(R.string.main_tab_reminders)
+        tap(string(R.string.reminders_choose_time, "08:00"))
+        assertShown(string(R.string.reminders_pill_time_dialog_title))
+        composeRule.onAllNodes(hasSetTextAction())[0].performTextReplacement("07")
+        tap(string(R.string.reminders_time_confirm))
+
+        assertEquals(LocalTime.of(7, 0), data.reminderSettings.pillTime)
+        assertShown(string(R.string.reminders_choose_time, "07:00"))
     }
 
     @Test
@@ -307,17 +339,14 @@ class MainActivityTest {
         openTab(R.string.main_tab_reminders)
         val pickup = string(R.string.reminders_pickup_title)
         val runOut = string(R.string.reminders_run_out_title)
-        composeRule.onAllNodes(isToggleable())[1].performClick()
-        composeRule.onAllNodes(isToggleable())[2].performClick()
-
         composeRule.onNodeWithContentDescription(string(R.string.reminders_more_days, pickup)).performClick()
         composeRule.onNodeWithContentDescription(string(R.string.reminders_fewer_days, runOut)).performClick()
 
-        assertShown(plural(R.plurals.reminders_days, 4, 4))
+        assertShown(plural(R.plurals.reminders_days, 5, 5))
         assertShown(plural(R.plurals.reminders_days, 13, 13))
         val settings = data.reminderSettings
         assertTrue(settings.isPickupEnabled && settings.isRunOutEnabled)
-        assertEquals(4, settings.pickupDaysAfterOrder)
+        assertEquals(5, settings.pickupDaysAfterOrder)
         assertEquals(13, settings.runOutDaysBefore)
     }
 

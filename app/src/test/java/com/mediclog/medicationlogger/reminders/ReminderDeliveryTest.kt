@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import com.mediclog.medicationlogger.MedicationLoggerApplication
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.AllRemindersOff
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.data.ReminderKind
@@ -43,7 +44,7 @@ class ReminderDeliveryTest {
 
     @Test
     fun `scheduler sets an alarm for the next refill`() {
-        val settings = ReminderSettings(
+        val settings = AllRemindersOff.copy(
             isRefillEnabled = true,
             refillDay = DayOfWeek.WEDNESDAY,
             refillTime = LocalTime.of(8, 30),
@@ -58,9 +59,9 @@ class ReminderDeliveryTest {
     @Test
     fun `scheduler cancels the alarm when a reminder is turned off`() {
         val scheduler = ReminderScheduler(app, clock)
-        scheduler.reschedule(MedicationData(reminderSettings = ReminderSettings(isRefillEnabled = true)))
+        scheduler.reschedule(MedicationData(reminderSettings = AllRemindersOff.copy(isRefillEnabled = true)))
 
-        scheduler.reschedule(MedicationData())
+        scheduler.reschedule(MedicationData(reminderSettings = AllRemindersOff))
 
         assertNull(alarms.peekNextScheduledAlarm())
     }
@@ -114,9 +115,24 @@ class ReminderDeliveryTest {
     }
 
     @Test
+    fun `a firing pill alarm shows the notification and sets the next one`() {
+        app.repository.updateReminderSettings(ReminderSettings(isPillEnabled = true))
+
+        fire(ReminderKind.PILL)
+
+        val notification = shadowOf(notifications.allNotifications.single())
+        assertEquals(app.getString(R.string.reminders_notification_pill_title), notification.contentTitle)
+        assertEquals(app.getString(R.string.reminders_notification_pill_text), notification.contentText)
+        assertTrue(alarms.peekNextScheduledAlarm() != null)
+    }
+
+    @Test
     fun `an alarm that's no longer due shows nothing`() {
+        app.repository.updateReminderSettings(AllRemindersOff)
+
         fire(ReminderKind.PICKUP)
         fire(ReminderKind.REFILL)
+        fire(ReminderKind.PILL)
 
         assertTrue(notifications.allNotifications.isEmpty())
     }

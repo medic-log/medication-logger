@@ -38,8 +38,23 @@ class ReminderCalculatorTest {
     }
 
     @Test
+    fun `pill reminder is next today until its time has passed, then tomorrow`() {
+        val settings = ReminderSettings(isPillEnabled = true, pillTime = LocalTime.of(21, 30))
+        val data = MedicationData(reminderSettings = settings)
+
+        assertEquals(today.atTime(21, 30), ReminderCalculator.nextTrigger(ReminderKind.PILL, data, today.atTime(12, 0)))
+        assertEquals(
+            today.plusDays(1).atTime(21, 30),
+            ReminderCalculator.nextTrigger(ReminderKind.PILL, data, today.atTime(21, 30)),
+        )
+        assertTrue(ReminderCalculator.isDue(ReminderKind.PILL, data, today.atTime(21, 30)))
+    }
+
+    @Test
     fun `disabled reminders aren't scheduled`() {
-        val data = MedicationData().addPrescription(draft, today).orderRepetition(1, today)
+        val data = MedicationData(reminderSettings = AllRemindersOff)
+            .addPrescription(draft, today)
+            .orderRepetition(1, today)
 
         ReminderKind.entries.forEach { kind ->
             assertNull(ReminderCalculator.nextTrigger(kind, data, today.atTime(12, 0)))

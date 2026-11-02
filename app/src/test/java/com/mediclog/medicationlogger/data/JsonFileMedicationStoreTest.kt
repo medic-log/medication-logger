@@ -1,5 +1,6 @@
 package com.mediclog.medicationlogger.data
 
+import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -36,6 +37,8 @@ class JsonFileMedicationStoreTest {
                 pickupDaysAfterOrder = 5,
                 isRunOutEnabled = true,
                 runOutDaysBefore = 20,
+                isPillEnabled = true,
+                pillTime = LocalTime.of(21, 15),
             ),
         )
             .addPrescription(PrescriptionDraft("Dr \"Quote\"", "Pharmacy, ünï", 7, 1, 2), day)
@@ -48,6 +51,20 @@ class JsonFileMedicationStoreTest {
             .logMiss(MedicationMiss.Kind.MISSED, day)
 
         JsonFileMedicationStore(file).save(data)
+
+        assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `a file saved before the pill reminder existed still loads`() {
+        val data = MedicationData().addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1), day)
+        JsonFileMedicationStore(file).save(data)
+        val json = JSONObject(file.readText())
+        json.getJSONObject("reminderSettings").apply {
+            remove("isPillEnabled")
+            remove("pillTime")
+        }
+        file.writeText(json.toString())
 
         assertEquals(data, JsonFileMedicationStore(file).load())
     }

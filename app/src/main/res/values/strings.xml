@@ -77,10 +77,14 @@
         <item quantity="other">%1$d pills, %2$d left</item>
     </plurals>
 
+    <string name="reminders_pill_title">Daily pill</string>
+    <string name="reminders_pill_summary">Every day at the time you choose, to take your pill.</string>
+    <string name="reminders_pill_next">Next reminder: %1$s at %2$s</string>
+    <string name="reminders_pill_time_dialog_title">Daily pill reminder time</string>
     <string name="reminders_refill_title">Refill</string>
     <string name="reminders_refill_summary">Weekly, on the day and time you choose.</string>
     <string name="reminders_refill_next">Next reminder: %1$s, %2$s at %3$s</string>
-    <string name="reminders_refill_choose_time">Time: %1$s</string>
+    <string name="reminders_choose_time">Time: %1$s</string>
     <string name="reminders_time_dialog_title">Refill reminder time</string>
     <string name="reminders_time_confirm">OK</string>
     <string name="reminders_time_cancel">Cancel</string>
@@ -97,6 +101,8 @@
     <string name="reminders_notifications_off">Notifications are off, so reminders can\'t reach you. Allow them in system settings.</string>
     <string name="reminders_open_settings">Open settings</string>
     <string name="reminders_channel_name">Reminders</string>
+    <string name="reminders_notification_pill_title">Time to take your pill</string>
+    <string name="reminders_notification_pill_text">Take today\'s pill.</string>
     <string name="reminders_notification_refill_title">Time for your weekly refill</string>
     <string name="reminders_notification_refill_text">Refill your pills for the week.</string>
     <string name="reminders_notification_pickup_title">Pick up your medication</string>

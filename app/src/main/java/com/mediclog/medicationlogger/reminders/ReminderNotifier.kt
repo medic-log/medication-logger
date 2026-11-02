@@ -50,11 +50,13 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
         ReminderKind.REFILL -> R.string.reminders_notification_refill_title
         ReminderKind.PICKUP -> R.string.reminders_notification_pickup_title
         ReminderKind.RUN_OUT -> R.string.reminders_notification_run_out_title
+        ReminderKind.PILL -> R.string.reminders_notification_pill_title
     }
 
     private fun textOf(kind: ReminderKind, data: MedicationData) = when (kind) {
         ReminderKind.REFILL -> context.getString(R.string.reminders_notification_refill_text)
         ReminderKind.PICKUP -> context.getString(R.string.reminders_notification_pickup_text)
+        ReminderKind.PILL -> context.getString(R.string.reminders_notification_pill_text)
         ReminderKind.RUN_OUT -> context.getString(
             if (data.prescriptions.any { it.canBuy }) {
                 R.string.reminders_notification_run_out_repetition_text

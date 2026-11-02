@@ -151,6 +151,8 @@ private fun ReminderSettings.toJson() = JSONObject()
     .put("pickupDaysAfterOrder", pickupDaysAfterOrder)
     .put("isRunOutEnabled", isRunOutEnabled)
     .put("runOutDaysBefore", runOutDaysBefore)
+    .put("isPillEnabled", isPillEnabled)
+    .put("pillTime", pillTime.toString())
 
 private fun JSONObject.toReminderSettings() = ReminderSettings(
     isRefillEnabled = getBoolean("isRefillEnabled"),
@@ -160,6 +162,9 @@ private fun JSONObject.toReminderSettings() = ReminderSettings(
     pickupDaysAfterOrder = getInt("pickupDaysAfterOrder"),
     isRunOutEnabled = getBoolean("isRunOutEnabled"),
     runOutDaysBefore = getInt("runOutDaysBefore"),
+    // Files saved before the pill reminder existed don't have these
+    isPillEnabled = optBoolean("isPillEnabled", ReminderSettings().isPillEnabled),
+    pillTime = if (has("pillTime")) LocalTime.parse(getString("pillTime")) else ReminderSettings().pillTime,
 )
 
 private fun <T> List<T>.toJsonArray(toJson: (T) -> JSONObject) = JSONArray().also { array ->

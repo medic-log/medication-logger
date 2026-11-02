@@ -106,7 +106,7 @@ fun RemindersRoute(
     )
 }
 
-/** The configuration of the three reminders. */
+/** The configuration of the four reminders. */
 @Composable
 fun RemindersScreen(
     state: RemindersUiState,
@@ -127,6 +127,28 @@ fun RemindersScreen(
             NotificationsOffNotice(onOpenNotificationSettings)
         }
         ReminderCard(
+            title = stringResource(R.string.reminders_pill_title),
+            summary = stringResource(R.string.reminders_pill_summary),
+            isEnabled = settings.isPillEnabled,
+            onEnabledChange = { onSettingsChange(settings.copy(isPillEnabled = it)) },
+        ) {
+            TimeSelector(
+                time = settings.pillTime,
+                dialogTitle = stringResource(R.string.reminders_pill_time_dialog_title),
+                onTimeChange = { onSettingsChange(settings.copy(pillTime = it)) },
+            )
+            if (settings.isPillEnabled) {
+                Text(
+                    text = stringResource(
+                        R.string.reminders_pill_next,
+                        state.nextPill.toLocalDate().toString(),
+                        state.nextPill.toLocalTime().toString(),
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+        ReminderCard(
             title = stringResource(R.string.reminders_refill_title),
             summary = stringResource(R.string.reminders_refill_summary),
             isEnabled = settings.isRefillEnabled,
@@ -134,7 +156,11 @@ fun RemindersScreen(
         ) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 WeekdaySelector(settings.refillDay, onDayChange = { onSettingsChange(settings.copy(refillDay = it)) })
-                TimeSelector(settings.refillTime, onTimeChange = { onSettingsChange(settings.copy(refillTime = it)) })
+                TimeSelector(
+                    time = settings.refillTime,
+                    dialogTitle = stringResource(R.string.reminders_time_dialog_title),
+                    onTimeChange = { onSettingsChange(settings.copy(refillTime = it)) },
+                )
             }
             if (settings.isRefillEnabled) {
                 Text(
@@ -147,24 +173,6 @@ fun RemindersScreen(
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
-        }
-        ReminderCard(
-            title = stringResource(R.string.reminders_pickup_title),
-            summary = stringResource(R.string.reminders_pickup_summary),
-            isEnabled = settings.isPickupEnabled,
-            onEnabledChange = { onSettingsChange(settings.copy(isPickupEnabled = it)) },
-        ) {
-            val title = stringResource(R.string.reminders_pickup_title)
-            DaysStepper(
-                reminderName = title,
-                days = settings.pickupDaysAfterOrder,
-                onDaysChange = { onSettingsChange(settings.copy(pickupDaysAfterOrder = it)) },
-            )
-            Text(
-                text = state.pickupDate?.let { stringResource(R.string.reminders_pickup_next, it.toString()) }
-                    ?: stringResource(R.string.reminders_pickup_none),
-                style = MaterialTheme.typography.bodyMedium,
-            )
         }
         ReminderCard(
             title = stringResource(R.string.reminders_run_out_title),
@@ -193,6 +201,24 @@ fun RemindersScreen(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
+        }
+        ReminderCard(
+            title = stringResource(R.string.reminders_pickup_title),
+            summary = stringResource(R.string.reminders_pickup_summary),
+            isEnabled = settings.isPickupEnabled,
+            onEnabledChange = { onSettingsChange(settings.copy(isPickupEnabled = it)) },
+        ) {
+            val title = stringResource(R.string.reminders_pickup_title)
+            DaysStepper(
+                reminderName = title,
+                days = settings.pickupDaysAfterOrder,
+                onDaysChange = { onSettingsChange(settings.copy(pickupDaysAfterOrder = it)) },
+            )
+            Text(
+                text = state.pickupDate?.let { stringResource(R.string.reminders_pickup_next, it.toString()) }
+                    ?: stringResource(R.string.reminders_pickup_none),
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }
@@ -261,10 +287,15 @@ private fun WeekdaySelector(day: DayOfWeek, onDayChange: (DayOfWeek) -> Unit, mo
 
 @OptIn(ExperimentalMaterial3Api::class) // TimeInput has no stable alternative in Material 3
 @Composable
-private fun TimeSelector(time: LocalTime, onTimeChange: (LocalTime) -> Unit, modifier: Modifier = Modifier) {
+private fun TimeSelector(
+    time: LocalTime,
+    dialogTitle: String,
+    onTimeChange: (LocalTime) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
     OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier) {
-        Text(stringResource(R.string.reminders_refill_choose_time, time.toString()))
+        Text(stringResource(R.string.reminders_choose_time, time.toString()))
     }
     if (isDialogOpen) {
         val pickerState = rememberTimePickerState(
@@ -274,7 +305,7 @@ private fun TimeSelector(time: LocalTime, onTimeChange: (LocalTime) -> Unit, mod
         )
         AlertDialog(
             onDismissRequest = { isDialogOpen = false },
-            title = { Text(stringResource(R.string.reminders_time_dialog_title)) },
+            title = { Text(dialogTitle) },
             text = { TimeInput(state = pickerState) },
             confirmButton = {
                 TextButton(
@@ -336,8 +367,6 @@ private fun StepperButton(
     }
 }
 
-private val ReminderSettings.hasAnyEnabled get() = isRefillEnabled || isPickupEnabled || isRunOutEnabled
-
 private fun DayOfWeek.displayName() = getDisplayName(TextStyle.FULL, Locale.getDefault())
 
 @Composable
@@ -355,8 +384,9 @@ private fun RemindersPreviewContent(state: RemindersUiState, areNotificationsAll
 }
 
 private val previewState = RemindersUiState(
-    settings = ReminderSettings(isRefillEnabled = true, isRunOutEnabled = true),
+    settings = ReminderSettings(isRefillEnabled = true, isRunOutEnabled = true, isPillEnabled = true),
     nextRefill = LocalDateTime.of(2026, 11, 8, 9, 0),
+    nextPill = LocalDateTime.of(2026, 11, 3, 8, 0),
     runOutDate = LocalDate.of(2027, 2, 1),
     pillsRemaining = 90,
 )

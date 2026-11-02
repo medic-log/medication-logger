@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.AllRemindersOff
 import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -45,7 +46,7 @@ class RemindersScreenTest {
 
     @Test
     fun `no notice while every reminder is off`() {
-        showScreen(ReminderSettings(), areNotificationsAllowed = false)
+        showScreen(AllRemindersOff, areNotificationsAllowed = false)
 
         composeRule.onNodeWithText(string(R.string.reminders_notifications_off)).assertDoesNotExist()
     }

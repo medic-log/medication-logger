@@ -18,6 +18,7 @@ import java.time.LocalDateTime
 data class RemindersUiState(
     val settings: ReminderSettings = ReminderSettings(),
     val nextRefill: LocalDateTime = LocalDateTime.MIN,
+    val nextPill: LocalDateTime = LocalDateTime.MIN,
     val pickupDate: LocalDate? = null,
     val runOutDate: LocalDate? = null,
     val pillsRemaining: Int = 0,
@@ -34,6 +35,7 @@ class RemindersViewModel(private val repository: MedicationRepository, private v
     private fun toUiState(data: MedicationData) = RemindersUiState(
         settings = data.reminderSettings,
         nextRefill = ReminderCalculator.nextRefill(data.reminderSettings, LocalDateTime.now(clock)),
+        nextPill = ReminderCalculator.nextPill(data.reminderSettings, LocalDateTime.now(clock)),
         pickupDate = ReminderCalculator.pickupDate(data),
         runOutDate = ReminderCalculator.runOutDate(data, LocalDate.now(clock)),
         pillsRemaining = ReminderCalculator.pillsRemaining(data),

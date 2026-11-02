@@ -41,6 +41,12 @@ object ReminderCalculator {
         return if (candidate.isAfter(now)) candidate else candidate.plusWeeks(1)
     }
 
+    /** The next daily reminder to take a pill after [now]. */
+    fun nextPill(settings: ReminderSettings, now: LocalDateTime): LocalDateTime {
+        val candidate = now.toLocalDate().atTime(settings.pillTime)
+        return if (candidate.isAfter(now)) candidate else candidate.plusDays(1)
+    }
+
     /** The first day a pickup reminder is due, or null when nothing is ordered. */
     fun pickupDate(data: MedicationData): LocalDate? = data.prescriptions
         .mapNotNull { it.orderedDate }
@@ -52,6 +58,7 @@ object ReminderCalculator {
         val settings = data.reminderSettings
         return when (kind) {
             ReminderKind.REFILL -> if (settings.isRefillEnabled) nextRefill(settings, now) else null
+            ReminderKind.PILL -> if (settings.isPillEnabled) nextPill(settings, now) else null
             ReminderKind.PICKUP, ReminderKind.RUN_OUT -> dailyReminderDate(kind, data, now.toLocalDate())
                 ?.let { nextDailyTrigger(it, now) }
         }
@@ -60,6 +67,7 @@ object ReminderCalculator {
     /** Whether a reminder of [kind] should be shown at [now], as data may have changed since its alarm was set. */
     fun isDue(kind: ReminderKind, data: MedicationData, now: LocalDateTime): Boolean = when (kind) {
         ReminderKind.REFILL -> data.reminderSettings.isRefillEnabled
+        ReminderKind.PILL -> data.reminderSettings.isPillEnabled
         ReminderKind.PICKUP, ReminderKind.RUN_OUT -> dailyReminderDate(kind, data, now.toLocalDate())
             ?.atTime(DAILY_REMINDER_TIME)
             ?.isAfter(now) == false
