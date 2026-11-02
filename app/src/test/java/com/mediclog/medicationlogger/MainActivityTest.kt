@@ -124,8 +124,8 @@ class MainActivityTest {
         assertShown(string(R.string.prescriptions_repetitions, 1, 2))
         assertShown(string(R.string.prescriptions_bought_first, today))
         assertShown(string(R.string.prescriptions_bought_last, today))
-        assertShown(string(R.string.prescriptions_box_link, 1))
-        assertShown(string(R.string.prescriptions_box_link, 3))
+        assertShown(string(R.string.link_box_number, 1))
+        assertShown(string(R.string.link_box_number, 3))
 
         openTab(R.string.main_tab_boxes)
         assertShown("$today #1")
@@ -137,8 +137,8 @@ class MainActivityTest {
         tap(string(R.string.prescriptions_buy))
         // Now finished, so only under "All"
         tap(string(R.string.filter_all))
-        assertShown(string(R.string.prescriptions_box_link, 4))
-        assertShown(string(R.string.prescriptions_box_link, 6))
+        assertShown(string(R.string.link_box_number, 4))
+        assertShown(string(R.string.link_box_number, 6))
         composeRule.onNodeWithText(string(R.string.prescriptions_buy)).assertIsNotEnabled()
     }
 
@@ -226,7 +226,7 @@ class MainActivityTest {
             isSelected() and hasAnyDescendant(hasText(string(R.string.prescriptions_prescribed_date, today))),
         ).assertIsDisplayed()
 
-        composeRule.onNodeWithText(string(R.string.prescriptions_box_link, 1)).performClick()
+        composeRule.onNodeWithText(string(R.string.link_box_number, 1)).performClick()
         composeRule.onNodeWithText(string(R.string.main_tab_boxes)).assertIsSelected()
 
         composeRule.onNodeWithContentDescription(string(R.string.link_open_prescription)).performClick()

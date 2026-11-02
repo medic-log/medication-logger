@@ -17,8 +17,8 @@ sealed interface RefillLogEntry {
     val key: String
     val date: LocalDate
 
-    /** A refill and the name of the box it came from. */
-    data class RefillEntry(val refill: Refill, val boxName: String) : RefillLogEntry {
+    /** A refill and the name and number of the box it came from. */
+    data class RefillEntry(val refill: Refill, val boxName: String, val boxNumber: Int?) : RefillLogEntry {
         override val key get() = "refill-${refill.id}"
         override val date get() = refill.date
     }
@@ -42,8 +42,11 @@ class RefillsViewModel(private val repository: MedicationRepository) : ViewModel
     fun logMiss(kind: MedicationMiss.Kind) = repository.logMiss(kind)
 
     private fun toUiState(data: MedicationData): RefillsUiState {
-        val boxNames = data.boxes.associate { it.id to it.name }
-        val refills = data.refills.asReversed().map { RefillLogEntry.RefillEntry(it, boxNames[it.boxId].orEmpty()) }
+        val boxes = data.boxes.associateBy { it.id }
+        val refills = data.refills.asReversed().map { refill ->
+            val box = boxes[refill.boxId]
+            RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber)
+        }
         val misses = data.misses.asReversed().map { RefillLogEntry.MissEntry(it) }
         return RefillsUiState((misses + refills).sortedByDescending { it.date })
     }

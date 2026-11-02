@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -127,6 +128,8 @@ private fun RefillCard(
                 iconRes = R.drawable.ic_box,
                 descriptionRes = R.string.link_open_box,
                 onClick = onOpenBox,
+                modifier = Modifier.padding(start = 4.dp),
+                label = entry.boxNumber?.let { stringResource(R.string.link_box_number, it) },
             )
         }
     }
@@ -165,7 +168,7 @@ private fun RefillsScreenPreview() {
         RefillsUiState(
             listOf(
                 RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
-                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1"),
+                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1", 1),
             ),
         ),
     )

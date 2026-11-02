@@ -5,18 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +35,9 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Prescription
 import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
+import com.mediclog.medicationlogger.ui.components.CardButton
 import com.mediclog.medicationlogger.ui.components.FilterSelector
+import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
@@ -199,29 +197,22 @@ private fun PrescriptionCard(
                 text = stringResource(R.string.prescriptions_linked_boxes),
                 style = MaterialTheme.typography.labelLarge,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 item.boxes.forEach { box ->
-                    OutlinedButton(
+                    LinkIconButton(
+                        iconRes = R.drawable.ic_box,
+                        descriptionRes = R.string.link_open_box,
                         onClick = { onOpenBox(box.id) },
-                        contentPadding = PaddingValues(horizontal = 8.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_box),
-                                contentDescription = null,
-                                modifier = Modifier.padding(end = 4.dp).size(16.dp),
-                            )
-                            Text(stringResource(R.string.prescriptions_box_link, box.boxNumber))
-                        }
-                    }
+                        label = stringResource(R.string.link_box_number, box.boxNumber),
+                    )
                 }
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = onOrderRepetition, enabled = prescription.canOrder) {
+            CardButton(onClick = onOrderRepetition, enabled = prescription.canOrder) {
                 Text(stringResource(R.string.prescriptions_order))
             }
-            Button(onClick = onBuyRepetition, enabled = prescription.canBuy) {
+            CardButton(onClick = onBuyRepetition, enabled = prescription.canBuy, isFilled = true) {
                 Text(stringResource(R.string.prescriptions_buy))
             }
         }

@@ -12,12 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +30,7 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.Refill
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
+import com.mediclog.medicationlogger.ui.components.CardButton
 import com.mediclog.medicationlogger.ui.components.FilterSelector
 import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
@@ -191,7 +189,7 @@ private fun BoxCard(
             // The action the user most likely needs next gets the filled button
             val isPartialHighlighted = pendingRefillAmount > 0 && box.canRefill
             if (isPartialHighlighted) {
-                Button(onClick = onRefillPartial) {
+                CardButton(onClick = onRefillPartial, isFilled = true) {
                     Text(
                         pluralStringResource(
                             R.plurals.boxes_refill_partial_pending,
@@ -200,23 +198,23 @@ private fun BoxCard(
                         ),
                     )
                 }
-                OutlinedButton(onClick = onRefillWeekly) {
+                CardButton(onClick = onRefillWeekly) {
                     Text(stringResource(R.string.boxes_refill_weekly))
                 }
             } else {
-                Button(onClick = onRefillWeekly, enabled = box.canRefill) {
+                CardButton(onClick = onRefillWeekly, enabled = box.canRefill, isFilled = true) {
                     Text(stringResource(R.string.boxes_refill_weekly))
                 }
-                OutlinedButton(onClick = onRefillPartial, enabled = false) {
+                CardButton(onClick = onRefillPartial, enabled = false) {
                     Text(stringResource(R.string.boxes_refill_partial))
                 }
             }
             if (box.isExtra) {
-                TextButton(onClick = onBackToInventory) {
+                CardButton(onClick = onBackToInventory) {
                     Text(stringResource(R.string.boxes_back_to_inventory))
                 }
             } else {
-                TextButton(onClick = onSaveAsExtra, enabled = box.canSaveAsExtra) {
+                CardButton(onClick = onSaveAsExtra, enabled = box.canSaveAsExtra) {
                     Text(stringResource(R.string.boxes_save_as_extra))
                 }
             }
