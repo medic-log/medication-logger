@@ -355,15 +355,37 @@ class MedicationDataTest {
     }
 
     @Test
-    fun `changing a refill's amount moves pills, and later refills follow`() {
+    fun `changing a refill's pills left moves pills, and later refills follow`() {
         val pillsBefore = refilled.boxes.first().pillsLeft
         val first = refilled.refills.first()
 
-        val edited = refilled.editRefill(first.copy(amount = first.amount + 2))
+        val edited = refilled.editRefill(first.copy(amountRemaining = first.amountRemaining - 2))
 
         assertEquals(pillsBefore - 2, edited.boxes.first().pillsLeft)
         assertEquals(first.amountRemaining - 2, edited.refills.first().amountRemaining)
         assertEquals(refilled.refills.last().amountRemaining - 2, edited.refills.last().amountRemaining)
+    }
+
+    @Test
+    fun `changing only a refill's amount leaves its box alone`() {
+        val first = refilled.refills.first()
+
+        val edited = refilled.editRefill(first.copy(amount = first.amount - 1))
+
+        assertEquals(first.amount - 1, edited.refills.first().amount)
+        assertEquals(refilled.boxes, edited.boxes)
+    }
+
+    @Test
+    fun `a refill's pills left can't leave its box outside its limits`() {
+        val first = refilled.refills.first()
+        val box = refilled.boxes.first()
+        val tooFew = first.amountRemaining - box.pillsLeft - 1
+        val tooMany = first.amountRemaining + box.pillsTotal - box.pillsLeft + 1
+
+        assertEquals(refilled, refilled.editRefill(first.copy(amountRemaining = tooFew)))
+        assertEquals(refilled, refilled.editRefill(first.copy(amountRemaining = tooMany)))
+        assertEquals(refilled, refilled.editRefill(first.copy(amountRemaining = -1)))
     }
 
     @Test

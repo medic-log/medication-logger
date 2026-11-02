@@ -512,6 +512,37 @@ class MainActivityTest {
     }
 
     @Test
+    fun `a refill's pills left can be edited, and its box follows`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+        openTab(R.string.main_tab_refills)
+
+        hold(refillBox(23))
+        composeRule.onNodeWithText(string(R.string.edit_field_refill_left_range, 0, 30))
+            .performTextReplacement("20")
+        tap(string(R.string.edit_save))
+
+        assertEquals(20, data.refills.single().amountRemaining)
+        assertEquals(7, data.refills.single().amount)
+        assertEquals(20, data.boxes.single().pillsLeft)
+    }
+
+    @Test
+    fun `changing a refill's amount updates its pills left in the dialog`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+        openTab(R.string.main_tab_refills)
+
+        hold(refillBox(23))
+        composeRule.onNodeWithText(string(R.string.edit_field_refill_amount, 30)).performTextReplacement("5")
+        composeRule.onNodeWithText("25").assertExists()
+        tap(string(R.string.edit_save))
+
+        assertEquals(5, data.refills.single().amount)
+        assertEquals(25, data.boxes.single().pillsLeft)
+    }
+
+    @Test
     fun `holding a refill card deletes it, returning its pills`() {
         addBox()
         tap(string(R.string.boxes_refill_weekly))

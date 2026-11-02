@@ -165,20 +165,26 @@ data class MedicationData(
         },
     )
 
-    /** Replaces a refill's date, amount and partial flag. A changed amount moves pills to or from its box. */
+    /**
+     * Replaces a refill's date, amount, pills left and partial flag.
+     * A change in pills left moves pills to or from its box, and later refills follow.
+     */
     fun editRefill(updated: Refill): MedicationData {
         val refill = refills.find { it.id == updated.id } ?: return this
         val extraPills = updated.amount - refill.amount
         val box = boxes.find { it.id == refill.boxId }
-        if (updated.amount < 1 || (box != null && extraPills > box.pillsLeft)) return this
+        val leftChange = updated.amountRemaining - refill.amountRemaining
+        val isValid = updated.amount >= 1 && updated.amountRemaining >= 0 &&
+            (box == null || (extraPills <= box.pillsLeft && box.pillsLeft + leftChange in 0..box.pillsTotal))
+        if (!isValid) return this
         val edited = refill.copy(
             date = updated.date,
             amount = updated.amount,
-            amountRemaining = refill.amountRemaining - extraPills,
+            amountRemaining = updated.amountRemaining,
             isPartial = updated.isPartial,
         )
         return copy(refills = refills.map { if (it.id == refill.id) edited else it })
-            .takingPills(refill, extraPills)
+            .takingPills(refill, -leftChange)
     }
 
     /** Deletes a refill, and its pills go back to its box. */

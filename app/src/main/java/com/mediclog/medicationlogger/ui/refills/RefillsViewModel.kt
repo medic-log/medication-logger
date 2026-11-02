@@ -18,12 +18,16 @@ sealed interface RefillLogEntry {
     val key: String
     val date: LocalDate
 
-    /** A refill, the name and number of the box it came from, and the most it could be edited up to. */
+    /**
+     * A refill, the name and number of the box it came from, and the most it could be edited up to.
+     * [leftRange] is what its pills left can be edited to while its box stays valid; null without a box.
+     */
     data class RefillEntry(
         val refill: Refill,
         val boxName: String,
         val boxNumber: Int?,
         val maxAmount: Int,
+        val leftRange: IntRange?,
     ) : RefillLogEntry {
         override val key get() = "refill-${refill.id}"
         override val date get() = refill.date
@@ -66,7 +70,11 @@ class RefillsViewModel(private val repository: MedicationRepository) : ViewModel
         val refills = data.refills.map { refill ->
             val box = boxes[refill.boxId]
             val maxAmount = refill.amount + (box?.pillsLeft ?: 0)
-            RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount)
+            val leftRange = box?.let {
+                (refill.amountRemaining - it.pillsLeft).coerceAtLeast(0)..
+                    refill.amountRemaining + it.pillsTotal - it.pillsLeft
+            }
+            RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount, leftRange)
         }
         val misses = data.misses.asReversed().map { RefillLogEntry.MissEntry(it) }
         return RefillsUiState((misses + groupingFullWeeks(refills).asReversed()).sortedByDescending { it.date })

@@ -17,16 +17,21 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Refill
 import com.mediclog.medicationlogger.ui.components.DialogField
 import com.mediclog.medicationlogger.ui.components.RecordEditDialog
+import com.mediclog.medicationlogger.ui.components.countOrNull
 import com.mediclog.medicationlogger.ui.components.dateOrNull
 import com.mediclog.medicationlogger.ui.components.positiveCountOrNull
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
 
-/** Edits a [refill] by hand, up to [maxAmount] pills, or deletes it. Pills left follow from the amount. */
+/**
+ * Edits a [refill] by hand, up to [maxAmount] pills and with pills left in [leftRange], or deletes it.
+ * Changing the amount also changes the pills left, which can then be corrected.
+ */
 @Composable
 fun EditRefillDialog(
     refill: Refill,
     maxAmount: Int,
+    leftRange: IntRange?,
     onSave: (Refill) -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -34,12 +39,14 @@ fun EditRefillDialog(
 ) {
     var date by rememberSaveable { mutableStateOf(refill.date.toString()) }
     var amount by rememberSaveable { mutableStateOf(refill.amount.toString()) }
+    var left by rememberSaveable { mutableStateOf(refill.amountRemaining.toString()) }
     var isPartial by rememberSaveable { mutableStateOf(refill.isPartial) }
 
     val parsedDate = date.dateOrNull()
     val parsedAmount = amount.positiveCountOrNull()?.takeIf { it <= maxAmount }
-    val updated = if (parsedDate != null && parsedAmount != null) {
-        refill.copy(date = parsedDate, amount = parsedAmount, isPartial = isPartial)
+    val parsedLeft = left.countOrNull()?.takeIf { leftRange == null || it in leftRange }
+    val updated = if (parsedDate != null && parsedAmount != null && parsedLeft != null) {
+        refill.copy(date = parsedDate, amount = parsedAmount, amountRemaining = parsedLeft, isPartial = isPartial)
     } else {
         null
     }
@@ -58,10 +65,26 @@ fun EditRefillDialog(
         DialogField(date, { date = it }, R.string.edit_field_date, isError = parsedDate == null)
         DialogField(
             amount,
-            { amount = it },
+            { newAmount ->
+                amount = newAmount
+                newAmount.positiveCountOrNull()?.let { pills ->
+                    left = (refill.amountRemaining + refill.amount - pills).coerceAtLeast(0).toString()
+                }
+            },
             stringResource(R.string.edit_field_refill_amount, maxAmount),
             isNumber = true,
             isError = parsedAmount == null,
+        )
+        DialogField(
+            left,
+            { left = it },
+            if (leftRange != null) {
+                stringResource(R.string.edit_field_refill_left_range, leftRange.first, leftRange.last)
+            } else {
+                stringResource(R.string.edit_field_refill_left)
+            },
+            isNumber = true,
+            isError = parsedLeft == null,
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -81,6 +104,7 @@ private fun EditRefillDialogPreview() {
         EditRefillDialog(
             refill = Refill(1, 1, 1, LocalDate.of(2026, 11, 2), 7, 23),
             maxAmount = 30,
+            leftRange = 0..30,
             onSave = {},
             onDelete = {},
             onDismiss = {},

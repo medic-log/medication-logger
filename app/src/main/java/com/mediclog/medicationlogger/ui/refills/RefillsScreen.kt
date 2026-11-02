@@ -120,6 +120,7 @@ fun RefillsScreen(
         is RefillLogEntry.RefillEntry -> EditRefillDialog(
             refill = entry.refill,
             maxAmount = entry.maxAmount,
+            leftRange = entry.leftRange,
             onSave = { updated ->
                 onEditRefill(updated)
                 editingKey = null
@@ -289,8 +290,8 @@ private fun RefillsScreenPreview() {
                 RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
                 RefillLogEntry.RefillGroupEntry(
                     listOf(
-                        RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3),
-                        RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), "2026-10-01 #1", 1, 4),
+                        RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3, 0..30),
+                        RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), "2026-10-01 #1", 1, 4, 0..25),
                     ),
                 ),
             ),
