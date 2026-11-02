@@ -1,6 +1,7 @@
 package com.mediclog.medicationlogger.data
 
 import java.time.LocalDate
+import java.time.YearMonth
 
 /** Pills in a full weekly refill. */
 const val PILLS_PER_WEEK = 7
@@ -41,19 +42,24 @@ data class MedicationData(
         return withPrescription(prescription.copy(status = Prescription.Status.ORDERED, orderedDate = today))
     }
 
-    fun buyRepetition(prescriptionId: Long, today: LocalDate): MedicationData {
+    /** Buys a repetition's boxes, each with its date from [expiryDates]. */
+    fun buyRepetition(
+        prescriptionId: Long,
+        today: LocalDate,
+        expiryDates: List<YearMonth> = emptyList(),
+    ): MedicationData {
         val prescription = prescriptions.find { it.id == prescriptionId } ?: return this
         if (!prescription.canBuy) return this
-        val firstBoxNumber = prescription.repetitionsBought * prescription.boxesPerRepetition + 1
         val firstBoxId = (boxes.maxOfOrNull { it.id } ?: 0) + 1
         val newBoxes = List(prescription.boxesPerRepetition) { index ->
             Box(
                 id = firstBoxId + index,
                 prescriptionId = prescription.id,
-                boxNumber = firstBoxNumber + index,
+                boxNumber = prescription.nextBoxNumber + index,
                 boughtDate = today,
                 pillsLeft = prescription.pillsPerBox,
                 pillsTotal = prescription.pillsPerBox,
+                expiryDate = expiryDates.getOrNull(index),
             )
         }
         val repetitionsBought = prescription.repetitionsBought + 1
@@ -190,7 +196,9 @@ data class MedicationData(
     private fun takingPills(refill: Refill, pills: Int) = copy(
         boxes = boxes.map { box ->
             if (box.id == refill.boxId) {
-                box.copy(pillsLeft = (box.pillsLeft - pills).coerceIn(0, box.pillsTotal))
+                val pillsLeft = (box.pillsLeft - pills).coerceIn(0, box.pillsTotal)
+                // Full again means not started again, so its next first refill opens it anew
+                box.copy(pillsLeft = pillsLeft, openDate = box.openDate.takeIf { pillsLeft < box.pillsTotal })
             } else {
                 box
             }
@@ -217,7 +225,8 @@ data class MedicationData(
             amountRemaining = pillsLeft,
             isPartial = isPartial,
         )
-        return copy(refills = refills + refill).withBox(box.copy(pillsLeft = pillsLeft))
+        val openDate = box.openDate ?: today.takeIf { box.pillsLeft == box.pillsTotal }
+        return copy(refills = refills + refill).withBox(box.copy(pillsLeft = pillsLeft, openDate = openDate))
     }
 
     private fun withPrescription(updated: Prescription) =

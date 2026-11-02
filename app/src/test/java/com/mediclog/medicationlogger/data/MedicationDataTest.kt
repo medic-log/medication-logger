@@ -6,6 +6,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.YearMonth
 
 class MedicationDataTest {
     private val day1 = LocalDate.of(2026, 1, 5)
@@ -271,6 +272,42 @@ class MedicationDataTest {
 
         assertEquals(refilled.refills.size, data.refills.size)
         assertTrue(data.refills.all { it.boxId == null && it.prescriptionId == null })
+    }
+
+    @Test
+    fun `buying gives each box its expiry date`() {
+        val dates = listOf(YearMonth.of(2030, 1), YearMonth.of(2030, 1), YearMonth.of(2031, 6))
+
+        val boxes = prescribed.buyRepetition(1, day1, dates).boxes
+
+        assertEquals(dates, boxes.map { it.expiryDate })
+    }
+
+    @Test
+    fun `a box's first refill sets its open date, and later ones keep it`() {
+        val bought = prescribed.buyRepetition(1, day1)
+        assertEquals(null, bought.boxes.first().openDate)
+
+        val opened = bought.refillWeekly(1, day1).refillWeekly(1, day2)
+
+        assertEquals(day1, opened.boxes.first().openDate)
+    }
+
+    @Test
+    fun `deleting the only refill makes the box not opened again`() {
+        val opened = prescribed.buyRepetition(1, day1).refillWeekly(1, day1)
+
+        val deleted = opened.deleteRefill(opened.refills.single().id)
+
+        assertEquals(null, deleted.boxes.first().openDate)
+    }
+
+    @Test
+    fun `a box already under way without an open date doesn't get one from a later refill`() {
+        val bought = prescribed.buyRepetition(1, day1)
+        val underWay = bought.editBox(bought.boxes.first().copy(pillsLeft = 20))
+
+        assertEquals(null, underWay.refillWeekly(1, day2).boxes.first().openDate)
     }
 
     @Test

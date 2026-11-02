@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import java.io.IOException
 import java.time.Clock
 import java.time.LocalDate
+import java.time.YearMonth
 
 /**
  * The single source of the app's data. Changes apply in memory at once and are written in [saveScope],
@@ -34,7 +35,8 @@ class MedicationRepository(
 
     fun orderRepetition(prescriptionId: Long) = change { it.orderRepetition(prescriptionId, today()) }
 
-    fun buyRepetition(prescriptionId: Long) = change { it.buyRepetition(prescriptionId, today()) }
+    fun buyRepetition(prescriptionId: Long, expiryDates: List<YearMonth> = emptyList()) =
+        change { it.buyRepetition(prescriptionId, today(), expiryDates) }
 
     fun refillWeekly(boxId: Long) = change { it.refillWeekly(boxId, today()) }
 

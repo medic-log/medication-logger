@@ -45,6 +45,7 @@ import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
+import java.time.YearMonth
 
 /** The prescriptions tab with its ViewModel. */
 @Composable
@@ -80,7 +81,7 @@ fun PrescriptionsScreen(
     onFilterChange: (ListFilter) -> Unit,
     onAddPrescription: (PrescriptionDraft) -> Unit,
     onOrderRepetition: (Long) -> Unit,
-    onBuyRepetition: (Long) -> Unit,
+    onBuyRepetition: (Long, List<YearMonth>) -> Unit,
     onEditPrescription: (Prescription) -> Unit,
     onDeletePrescription: (Long, Boolean) -> Unit,
     onOpenBox: (Long) -> Unit,
@@ -88,6 +89,7 @@ fun PrescriptionsScreen(
 ) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
     var editingId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var buyingId by rememberSaveable { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
     val focusedIndex = state.items.indexOfFirst { it.prescription.id == focusedPrescriptionId }
     LaunchedEffect(focusedPrescriptionId, focusedIndex) {
@@ -128,7 +130,7 @@ fun PrescriptionsScreen(
                     item = item,
                     isHighlighted = item.prescription.id == focusedPrescriptionId,
                     onOrderRepetition = { onOrderRepetition(item.prescription.id) },
-                    onBuyRepetition = { onBuyRepetition(item.prescription.id) },
+                    onBuyRepetition = { buyingId = item.prescription.id },
                     onEdit = { editingId = item.prescription.id },
                     onOpenBox = onOpenBox,
                 )
@@ -154,6 +156,17 @@ fun PrescriptionsScreen(
                 isDialogOpen = false
             },
             onDismiss = { isDialogOpen = false },
+        )
+    }
+    state.items.find { it.prescription.id == buyingId }?.let { item ->
+        BuyRepetitionDialog(
+            boxCount = item.prescription.boxesPerRepetition,
+            firstBoxNumber = item.prescription.nextBoxNumber,
+            onSave = { expiryDates ->
+                onBuyRepetition(item.prescription.id, expiryDates)
+                buyingId = null
+            },
+            onDismiss = { buyingId = null },
         )
     }
     state.items.find { it.prescription.id == editingId }?.let { item ->
@@ -281,7 +294,7 @@ private fun PrescriptionsPreviewContent(state: PrescriptionsUiState) {
                 onFilterChange = {},
                 onAddPrescription = {},
                 onOrderRepetition = {},
-                onBuyRepetition = {},
+                onBuyRepetition = { _, _ -> },
                 onEditPrescription = {},
                 onDeletePrescription = { _, _ -> },
                 onOpenBox = {},

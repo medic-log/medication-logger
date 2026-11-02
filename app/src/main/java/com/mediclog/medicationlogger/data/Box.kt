@@ -1,6 +1,7 @@
 package com.mediclog.medicationlogger.data
 
 import java.time.LocalDate
+import java.time.YearMonth
 
 /** A box of pills bought with a prescription; [prescriptionId] is null once that's deleted. */
 data class Box(
@@ -11,6 +12,8 @@ data class Box(
     val pillsLeft: Int,
     val pillsTotal: Int,
     val isExtra: Boolean = false,
+    val openDate: LocalDate? = null,
+    val expiryDate: YearMonth? = null,
 ) {
     /** How much of the box is used, or that it's saved as extra. */
     enum class Status { NOT_STARTED, IN_PROGRESS, FINISHED, EXTRA }

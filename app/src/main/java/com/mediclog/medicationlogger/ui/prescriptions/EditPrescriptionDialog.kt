@@ -14,6 +14,7 @@ import com.mediclog.medicationlogger.ui.components.DialogField
 import com.mediclog.medicationlogger.ui.components.RecordEditDialog
 import com.mediclog.medicationlogger.ui.components.countOrNull
 import com.mediclog.medicationlogger.ui.components.dateOrNull
+import com.mediclog.medicationlogger.ui.components.isOptionalDate
 import com.mediclog.medicationlogger.ui.components.positiveCountOrNull
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
@@ -134,8 +135,6 @@ fun EditPrescriptionDialog(
         )
     }
 }
-
-private fun String.isOptionalDate() = isBlank() || dateOrNull() != null
 
 @PreviewLightDark
 @Composable

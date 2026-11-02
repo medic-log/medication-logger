@@ -1,5 +1,6 @@
 package com.mediclog.medicationlogger.ui.boxes
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,9 +12,11 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.ui.components.DialogField
+import com.mediclog.medicationlogger.ui.components.MonthSelector
 import com.mediclog.medicationlogger.ui.components.RecordEditDialog
 import com.mediclog.medicationlogger.ui.components.countOrNull
 import com.mediclog.medicationlogger.ui.components.dateOrNull
+import com.mediclog.medicationlogger.ui.components.isOptionalDate
 import com.mediclog.medicationlogger.ui.components.positiveCountOrNull
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
@@ -30,6 +33,8 @@ fun EditBoxDialog(
 ) {
     var boxNumber by rememberSaveable { mutableStateOf(box.boxNumber.toString()) }
     var boughtDate by rememberSaveable { mutableStateOf(box.boughtDate.toString()) }
+    var openDate by rememberSaveable { mutableStateOf(box.openDate?.toString().orEmpty()) }
+    var expiryDate by rememberSaveable { mutableStateOf(box.expiryDate) }
     var pillsLeft by rememberSaveable { mutableStateOf(box.pillsLeft.toString()) }
     var pillsTotal by rememberSaveable { mutableStateOf(box.pillsTotal.toString()) }
 
@@ -37,10 +42,14 @@ fun EditBoxDialog(
     val date = boughtDate.dateOrNull()
     val total = pillsTotal.positiveCountOrNull()
     val left = pillsLeft.countOrNull()?.takeIf { total != null && it <= total }
-    val updated = if (number != null && date != null && total != null && left != null) {
+    val updated = if (
+        number != null && date != null && total != null && left != null && openDate.isOptionalDate()
+    ) {
         box.copy(
             boxNumber = number,
             boughtDate = date,
+            openDate = openDate.dateOrNull(),
+            expiryDate = expiryDate,
             pillsLeft = left,
             pillsTotal = total,
         )
@@ -69,6 +78,19 @@ fun EditBoxDialog(
             isError = number == null,
         )
         DialogField(boughtDate, { boughtDate = it }, R.string.edit_field_bought_date, isError = date == null)
+        DialogField(
+            openDate,
+            { openDate = it },
+            R.string.edit_field_open_date,
+            isError = !openDate.isOptionalDate(),
+        )
+        MonthSelector(
+            month = expiryDate,
+            label = stringResource(R.string.edit_field_expiry_date),
+            onMonthChange = { expiryDate = it },
+            modifier = Modifier.fillMaxWidth(),
+            canClear = true,
+        )
         DialogField(
             pillsLeft,
             { pillsLeft = it },

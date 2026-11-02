@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import java.time.YearMonth
 
 /** A prescription with the boxes bought with it. */
 data class PrescriptionItem(val prescription: Prescription, val boxes: List<Box>)
@@ -39,7 +40,8 @@ class PrescriptionsViewModel(private val repository: MedicationRepository) : Vie
 
     fun orderRepetition(prescriptionId: Long) = repository.orderRepetition(prescriptionId)
 
-    fun buyRepetition(prescriptionId: Long) = repository.buyRepetition(prescriptionId)
+    fun buyRepetition(prescriptionId: Long, expiryDates: List<YearMonth>) =
+        repository.buyRepetition(prescriptionId, expiryDates)
 
     fun editPrescription(updated: Prescription) = repository.editPrescription(updated)
 

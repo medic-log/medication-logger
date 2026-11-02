@@ -84,7 +84,7 @@ class ViewModelsTest {
         val viewModel = PrescriptionsViewModel(repository)
         viewModel.addPrescription(draft)
         viewModel.addPrescription(draft.copy(prescribedBy = "Dr Second"))
-        viewModel.buyRepetition(1)
+        viewModel.buyRepetition(1, emptyList())
 
         assertEquals(listOf(2L), viewModel.uiState.value.items.map { it.prescription.id })
 
@@ -120,8 +120,8 @@ class ViewModelsTest {
         viewModel.addPrescription(draft)
         viewModel.addPrescription(draft)
         viewModel.addPrescription(draft)
-        viewModel.buyRepetition(1)
-        viewModel.buyRepetition(2)
+        viewModel.buyRepetition(1, emptyList())
+        viewModel.buyRepetition(2, emptyList())
         viewModel.orderRepetition(3)
 
         viewModel.setFilter(ListFilter.ALL)

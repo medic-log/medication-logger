@@ -40,6 +40,13 @@
     <string name="edit_field_bought_last_date">Last bought (YYYY-MM-DD, optional)</string>
     <string name="edit_field_box_number">Box number</string>
     <string name="edit_field_bought_date">Bought (YYYY-MM-DD)</string>
+    <string name="edit_field_open_date">Opened (YYYY-MM-DD, optional)</string>
+    <string name="edit_field_expiry_date">Expires</string>
+    <string name="month_selector_value">%1$s: %2$s</string>
+    <string name="month_selector_empty">%1$s: choose</string>
+    <string name="month_selector_previous_year">Previous year</string>
+    <string name="month_selector_next_year">Next year</string>
+    <string name="month_selector_clear">Clear</string>
     <string name="edit_field_pills_left">Pills left</string>
     <string name="edit_field_pills_total">Pills in total</string>
     <string name="edit_field_date">Date (YYYY-MM-DD)</string>
@@ -72,6 +79,8 @@
     <string name="prescriptions_field_boxes_per_repetition">Boxes per repetition</string>
     <string name="prescriptions_field_repetitions_total">Repetitions</string>
     <string name="prescriptions_save">Save</string>
+    <string name="prescriptions_expiry_title">Expiry dates</string>
+    <string name="prescriptions_expiry_field">Box #%1$d expires</string>
     <string name="prescriptions_cancel">Cancel</string>
 
     <string name="boxes_empty_active">No active boxes. Buy a repetition in Prescriptions, or choose All to see finished and extra boxes.</string>
@@ -79,6 +88,8 @@
     <string name="boxes_empty_extra">No extra boxes. Use Save as extra on a box to set it aside.</string>
     <string name="boxes_pills_left">%1$d/%2$d pills</string>
     <string name="boxes_refills_title">Refills:</string>
+    <string name="boxes_opened">Opened: %1$s</string>
+    <string name="boxes_expires">Expires: %1$s</string>
     <string name="boxes_refill_weekly">Weekly refill</string>
     <string name="boxes_save_as_extra">Save as extra</string>
     <string name="boxes_back_to_inventory">Back to inventory</string>

@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelected
@@ -39,6 +40,8 @@ import org.robolectric.annotation.Config
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Month
+import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -74,8 +77,20 @@ class MainActivityTest {
         tap(string(R.string.prescriptions_save))
     }
 
+    private fun buyRepetition() {
+        tap(string(R.string.prescriptions_buy))
+        // The first date chosen fills in the rest
+        composeRule.onAllNodes(hasText(string(R.string.month_selector_empty, ""), substring = true))
+            .onFirst()
+            .performClick()
+        tap(monthName(Month.JANUARY))
+        tap(string(R.string.prescriptions_save))
+    }
+
     private fun fillField(labelId: Int, value: String) =
         composeRule.onNodeWithText(string(labelId)).performTextReplacement(value)
+
+    private fun monthName(month: Month) = month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
 
     private fun assertShown(text: String) {
         composeRule.onNodeWithText(text).assertIsDisplayed()
@@ -127,7 +142,7 @@ class MainActivityTest {
         assertShown(string(R.string.prescriptions_repetitions, 0, 2))
         composeRule.onNodeWithText(string(R.string.prescriptions_order)).assertIsNotEnabled()
 
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         assertShown(string(R.string.prescriptions_status_in_progress))
         assertShown(string(R.string.prescriptions_repetitions, 1, 2))
         assertShown(string(R.string.prescriptions_bought_first, today))
@@ -142,12 +157,61 @@ class MainActivityTest {
         composeRule.onAllNodesWithText(string(R.string.boxes_pills_left, 30, 30)).onFirst().assertIsDisplayed()
 
         openTab(R.string.main_tab_prescriptions)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         // Now finished, so only under "All"
         tap(string(R.string.filter_all))
         assertShown(string(R.string.link_box_number, 4))
         assertShown(string(R.string.link_box_number, 6))
         composeRule.onNodeWithText(string(R.string.prescriptions_buy)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `buying asks each box's expiry date, starting them all from the first one entered`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 3, repetitions = 1)
+
+        tap(string(R.string.prescriptions_buy))
+        composeRule.onNodeWithText(string(R.string.prescriptions_save)).assertIsNotEnabled()
+        assertEquals(0, data.boxes.size)
+
+        val january = YearMonth.now().withMonth(1)
+        val nextJune = YearMonth.now().plusYears(1).withMonth(6)
+        fun field(box: Int) = string(R.string.prescriptions_expiry_field, box)
+        tap(string(R.string.month_selector_empty, field(1)))
+        tap(monthName(Month.JANUARY))
+        (1..3).forEach { assertShown(string(R.string.month_selector_value, field(it), january.toString())) }
+
+        tap(string(R.string.month_selector_value, field(3), january.toString()))
+        composeRule.onNodeWithContentDescription(string(R.string.month_selector_next_year)).performClick()
+        tap(monthName(Month.JUNE))
+        assertShown(string(R.string.month_selector_value, field(1), january.toString()))
+        assertShown(string(R.string.month_selector_value, field(3), nextJune.toString()))
+        tap(string(R.string.prescriptions_save))
+
+        assertEquals(listOf(january, january, nextJune), data.boxes.map { it.expiryDate })
+        openTab(R.string.main_tab_boxes)
+        composeRule.onAllNodesWithText(string(R.string.boxes_expires, nextJune.toString())).assertCountEquals(1)
+    }
+
+    @Test
+    fun `cancelling the expiry dates doesn't buy`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+
+        tap(string(R.string.prescriptions_buy))
+        tap(string(R.string.prescriptions_cancel))
+
+        assertTrue(data.boxes.isEmpty())
+    }
+
+    @Test
+    fun `the first refill shows when the box was opened`() {
+        addBox()
+        assertNotShown(string(R.string.boxes_opened, today))
+
+        tap(string(R.string.boxes_refill_weekly))
+
+        assertShown(string(R.string.boxes_opened, today))
     }
 
     @Test
@@ -178,12 +242,12 @@ class MainActivityTest {
     fun `refills follow the concept's example, with partial refill highlighted when incomplete`() {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 25, boxesPerRepetition = 1, repetitions = 1)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         // The filter hides the finished prescription
         composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
         fillSecondPrescriptionPillsPerBox(30)
         tap(string(R.string.prescriptions_save))
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         openTab(R.string.main_tab_boxes)
 
         val weekly = string(R.string.boxes_refill_weekly)
@@ -216,7 +280,7 @@ class MainActivityTest {
     fun `links open the linked prescription and box, highlighted`() {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         openTab(R.string.main_tab_boxes)
         tap(string(R.string.boxes_refill_weekly))
 
@@ -244,7 +308,7 @@ class MainActivityTest {
     fun `a box saved as extra leaves the active list, can't be refilled and can go back`() {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         openTab(R.string.main_tab_boxes)
 
         tap(string(R.string.boxes_save_as_extra))
@@ -265,7 +329,7 @@ class MainActivityTest {
     fun `the filter hides finished prescriptions until all is selected`() {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         val prescribedOn = string(R.string.prescriptions_prescribed_date, today)
         assertNotShown(prescribedOn)
 
@@ -299,7 +363,7 @@ class MainActivityTest {
     private fun addBox() {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
-        tap(string(R.string.prescriptions_buy))
+        buyRepetition()
         openTab(R.string.main_tab_boxes)
     }
 
@@ -342,6 +406,22 @@ class MainActivityTest {
         assertEquals(12, data.boxes.single().pillsLeft)
         assertNotShown(string(R.string.edit_box_title))
         assertShown(string(R.string.boxes_pills_left, 12, 30))
+    }
+
+    @Test
+    fun `a box's expiry date can be cleared when editing`() {
+        addBox()
+        val label = string(R.string.edit_field_expiry_date)
+
+        hold("$today #1")
+        // The card shows the same text, so this asks for the button
+        val expiry = string(R.string.month_selector_value, label, YearMonth.now().withMonth(1).toString())
+        composeRule.onNode(hasText(expiry) and hasClickAction()).performClick()
+        tap(string(R.string.month_selector_clear))
+        assertShown(string(R.string.month_selector_empty, label))
+        tap(string(R.string.edit_save))
+
+        assertEquals(null, data.boxes.single().expiryDate)
     }
 
     @Test

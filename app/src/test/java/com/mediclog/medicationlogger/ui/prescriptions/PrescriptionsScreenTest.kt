@@ -56,7 +56,7 @@ class PrescriptionsScreenTest {
                     onFilterChange = {},
                     onAddPrescription = {},
                     onOrderRepetition = {},
-                    onBuyRepetition = {},
+                    onBuyRepetition = { _, _ -> },
                     onEditPrescription = {},
                     onDeletePrescription = { _, _ -> },
                     onOpenBox = {},

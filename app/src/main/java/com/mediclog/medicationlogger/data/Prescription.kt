@@ -26,5 +26,6 @@ data class Prescription(
     val repetitionsLeft: Int get() = repetitionsTotal - repetitionsBought
     val isActive: Boolean get() = status != Status.FINISHED
     val canOrder: Boolean get() = repetitionsLeft > 0 && status != Status.ORDERED
+    val nextBoxNumber: Int get() = repetitionsBought * boxesPerRepetition + 1
     val canBuy: Boolean get() = repetitionsLeft > 0
 }

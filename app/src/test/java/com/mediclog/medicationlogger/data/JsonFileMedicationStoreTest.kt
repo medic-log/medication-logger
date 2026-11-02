@@ -12,6 +12,7 @@ import java.io.File
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 
 @RunWith(RobolectricTestRunner::class)
 class JsonFileMedicationStoreTest {
@@ -51,6 +52,31 @@ class JsonFileMedicationStoreTest {
             .logMiss(MedicationMiss.Kind.MISSED, day)
 
         JsonFileMedicationStore(file).save(data)
+
+        assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `open and expiry dates load back`() {
+        val data = MedicationData()
+            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
+            .buyRepetition(1, day, listOf(YearMonth.of(2030, 1), YearMonth.of(2031, 6)))
+            .refillWeekly(1, day)
+
+        JsonFileMedicationStore(file).save(data)
+
+        assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `an expiry saved as a full date loads as its year and month`() {
+        val data = MedicationData()
+            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1), day)
+            .buyRepetition(1, day, listOf(YearMonth.of(2030, 1)))
+        JsonFileMedicationStore(file).save(data)
+        val json = JSONObject(file.readText())
+        json.getJSONArray("boxes").getJSONObject(0).put("expiryDate", "2030-01-31")
+        file.writeText(json.toString())
 
         assertEquals(data, JsonFileMedicationStore(file).load())
     }

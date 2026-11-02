@@ -43,6 +43,7 @@ import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
+import java.time.YearMonth
 
 /** The boxes tab with its ViewModel. */
 @Composable
@@ -187,11 +188,21 @@ private fun BoxCard(
     val statusColors = box.status.tone().colors
     RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
-            Text(
-                text = box.name,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = box.name, style = MaterialTheme.typography.titleMedium)
+                box.openDate?.let {
+                    Text(
+                        text = stringResource(R.string.boxes_opened, it.toString()),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                box.expiryDate?.let {
+                    Text(
+                        text = stringResource(R.string.boxes_expires, it.toString()),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+            }
             StatusBadge(
                 status = stringResource(box.status.labelRes()),
                 amount = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
@@ -285,6 +296,8 @@ private val previewBox = Box(
     boughtDate = LocalDate.of(2026, 11, 2),
     pillsLeft = 23,
     pillsTotal = 30,
+    openDate = LocalDate.of(2026, 11, 3),
+    expiryDate = YearMonth.of(2028, 6),
 )
 
 @Composable

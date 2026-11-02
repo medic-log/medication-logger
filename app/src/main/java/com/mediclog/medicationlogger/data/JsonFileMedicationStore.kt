@@ -9,6 +9,7 @@ import java.io.IOException
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.format.DateTimeParseException
 
 /** Stores everything as one JSON file, written atomically so a crash can't leave half a file. */
@@ -63,6 +64,8 @@ private fun JSONObject.toMedicationData() = MedicationData(
     reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
 )
 
+private const val YEAR_MONTH_LENGTH = 7
+
 private fun Prescription.toJson() = JSONObject()
     .put("id", id)
     .put("prescribedDate", prescribedDate.toString())
@@ -100,6 +103,8 @@ private fun Box.toJson() = JSONObject()
     .put("pillsLeft", pillsLeft)
     .put("pillsTotal", pillsTotal)
     .put("isExtra", isExtra)
+    .put("openDate", openDate?.toString())
+    .put("expiryDate", expiryDate?.toString())
 
 private fun JSONObject.toBox() = Box(
     id = getLong("id"),
@@ -109,6 +114,8 @@ private fun JSONObject.toBox() = Box(
     pillsLeft = getInt("pillsLeft"),
     pillsTotal = getInt("pillsTotal"),
     isExtra = getBoolean("isExtra"),
+    openDate = dateOrNull("openDate"),
+    expiryDate = yearMonthOrNull("expiryDate"),
 )
 
 private fun Refill.toJson() = JSONObject()
@@ -175,5 +182,9 @@ private fun <T> JSONArray.map(transform: (JSONObject) -> T): List<T> =
     List(length()) { transform(getJSONObject(it)) }
 
 // put() leaves null values out, so an absent key means null
+// Taking only the year and month also reads the full dates that expiry dates were first saved as
+private fun JSONObject.yearMonthOrNull(key: String): YearMonth? =
+    if (has(key)) YearMonth.parse(getString(key).take(YEAR_MONTH_LENGTH)) else null
+
 private fun JSONObject.dateOrNull(key: String): LocalDate? =
     if (has(key)) LocalDate.parse(getString(key)) else null
