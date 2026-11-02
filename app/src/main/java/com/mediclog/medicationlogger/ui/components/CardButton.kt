@@ -23,11 +23,12 @@ fun CardButton(
     enabled: Boolean = true,
     isFilled: Boolean = false,
     shape: Shape = CircleShape,
+    isIconOnly: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
     // Material still keeps a 48 dp touch target around the smaller button
-    val sizedModifier = modifier.widthIn(min = 40.dp).heightIn(min = 32.dp)
-    val contentPadding = PaddingValues(horizontal = 12.dp)
+    val sizedModifier = modifier.widthIn(min = if (isIconOnly) 32.dp else 40.dp).heightIn(min = 32.dp)
+    val contentPadding = PaddingValues(horizontal = if (isIconOnly) 0.dp else 12.dp)
     val styledContent: @Composable RowScope.() -> Unit = {
         ProvideTextStyle(MaterialTheme.typography.labelMedium) { content() }
     }

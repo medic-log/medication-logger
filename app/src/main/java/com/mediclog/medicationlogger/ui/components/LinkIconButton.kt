@@ -22,7 +22,12 @@ fun LinkIconButton(
     modifier: Modifier = Modifier,
     label: String? = null,
 ) {
-    CardButton(onClick = onClick, modifier = modifier, shape = MaterialTheme.shapes.small) {
+    CardButton(
+        onClick = onClick,
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        isIconOnly = label == null,
+    ) {
         Icon(
             painter = painterResource(iconRes),
             contentDescription = stringResource(descriptionRes),

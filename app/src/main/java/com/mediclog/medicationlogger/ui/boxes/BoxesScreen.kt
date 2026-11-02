@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -161,16 +162,11 @@ private fun BoxCard(
     val statusColors = box.status.tone().colors
     RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors) {
         Row {
-            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = box.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = box.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                LinkIconButton(
-                    iconRes = R.drawable.ic_prescription,
-                    descriptionRes = R.string.link_open_prescription,
-                    onClick = onOpenPrescription,
+                    text = stringResource(R.string.pharmacy_label, box.pharmacy),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
             StatusBadge(
@@ -181,13 +177,23 @@ private fun BoxCard(
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
-        Text(
-            text = stringResource(R.string.pharmacy_label, box.pharmacy),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        if (item.refills.isNotEmpty()) {
-            Text(text = stringResource(R.string.boxes_refills_title), style = MaterialTheme.typography.labelLarge)
-            item.refills.forEach { refill -> Text(refill.summary(), style = MaterialTheme.typography.bodySmall) }
+        Row(verticalAlignment = Alignment.Bottom) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (item.refills.isNotEmpty()) {
+                    Text(
+                        text = stringResource(R.string.boxes_refills_title),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                    item.refills.forEach { refill ->
+                        Text(refill.summary(), style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+            LinkIconButton(
+                iconRes = R.drawable.ic_prescription,
+                descriptionRes = R.string.link_open_prescription,
+                onClick = onOpenPrescription,
+            )
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // The action the user most likely needs next gets the filled button
