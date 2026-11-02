@@ -104,6 +104,30 @@ class ReminderCalculatorTest {
     }
 
     @Test
+    fun `a missed dose after a refill makes the medication last a day longer`() {
+        val refilled = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, today)
+        val before = ReminderCalculator.runOutDate(refilled, today)
+
+        val missed = refilled.logMiss(MedicationMiss.Kind.MISSED, today)
+
+        assertEquals(before?.plusDays(1), ReminderCalculator.runOutDate(missed, today))
+        assertEquals(refilled.boxes, missed.boxes)
+    }
+
+    @Test
+    fun `a delayed dose, or one missed before any refill, changes no dates`() {
+        val bought = MedicationData().addPrescription(draft, today).buyRepetition(1, today)
+        val before = ReminderCalculator.runOutDate(bought, today)
+        val refilled = bought.refillWeekly(1, today)
+
+        assertEquals(before, ReminderCalculator.runOutDate(bought.logMiss(MedicationMiss.Kind.MISSED, today), today))
+        assertEquals(
+            ReminderCalculator.runOutDate(refilled, today),
+            ReminderCalculator.runOutDate(refilled.logMiss(MedicationMiss.Kind.DELAYED, today), today),
+        )
+    }
+
+    @Test
     fun `pickup reminder fires the chosen days after ordering, then daily until bought`() {
         val settings = ReminderSettings(isPickupEnabled = true, pickupDaysAfterOrder = 3)
         val ordered = MedicationData(reminderSettings = settings).addPrescription(draft, today).orderRepetition(1, today)

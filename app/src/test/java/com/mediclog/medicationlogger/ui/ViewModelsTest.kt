@@ -200,7 +200,7 @@ class ViewModelsTest {
         repository.buyRepetition(1)
         repository.refillWeekly(1)
         repository.refillWeekly(1)
-        viewModel.logMiss(MedicationMiss.Kind.MISSED)
+        viewModel.logMiss(MedicationMiss.Kind.DELAYED)
 
         val entries = viewModel.uiState.value.entries
         assertTrue(entries.first() is RefillLogEntry.MissEntry)
@@ -212,8 +212,8 @@ class ViewModelsTest {
     private fun partial(id: Long, amount: Int, date: LocalDate = today) =
         Refill(id, 1, 1, date, amount, 0, isPartial = true)
 
-    private fun logOf(vararg refills: Refill): List<RefillLogEntry> {
-        val data = MedicationData(refills = refills.toList())
+    private fun logOf(vararg refills: Refill, misses: List<MedicationMiss> = emptyList()): List<RefillLogEntry> {
+        val data = MedicationData(refills = refills.toList(), misses = misses)
         val scope = CoroutineScope(UnconfinedTestDispatcher())
         return RefillsViewModel(MedicationRepository(FakeMedicationStore(data), clock, scope)).uiState.value.entries
     }
@@ -253,6 +253,47 @@ class ViewModelsTest {
     @Test
     fun `a week is found after a partial refill that doesn't fit in it`() {
         assertEquals(listOf(listOf(3L, 2L), listOf(1L)), logOf(partial(1, 5), partial(2, 3), partial(3, 4)).ids())
+    }
+
+    private fun missed(id: Long, date: LocalDate = today) = MedicationMiss(id, date, MedicationMiss.Kind.MISSED)
+
+    private fun List<RefillLogEntry>.keys() = map { entry ->
+        if (entry is RefillLogEntry.RefillGroupEntry) entry.members.map { it.key } else listOf(entry.key)
+    }
+
+    @Test
+    fun `a missed dose joins the refill before it, on top`() {
+        val log = logOf(partial(1, 7), misses = listOf(missed(1, today.plusDays(2))))
+
+        assertEquals(listOf(listOf("miss-1", "refill-1")), log.keys())
+    }
+
+    @Test
+    fun `a missed dose joins a group of refills`() {
+        val log = logOf(partial(1, 4), partial(2, 3), misses = listOf(missed(1)))
+
+        assertEquals(listOf(listOf("miss-1", "refill-2", "refill-1")), log.keys())
+    }
+
+    @Test
+    fun `a missed dose joins the last refill made by its date, not a later one`() {
+        val log = logOf(
+            partial(1, 7, today.minusDays(7)),
+            partial(2, 7),
+            misses = listOf(missed(1, today.minusDays(3))),
+        )
+
+        assertEquals(listOf(listOf("refill-2"), listOf("miss-1", "refill-1")), log.keys())
+    }
+
+    @Test
+    fun `a missed dose before any refill, and a delayed dose, stand alone`() {
+        val log = logOf(
+            partial(1, 7),
+            misses = listOf(missed(1, today.minusDays(1)), MedicationMiss(2, today, MedicationMiss.Kind.DELAYED)),
+        )
+
+        assertEquals(listOf(listOf("miss-2"), listOf("refill-1"), listOf("miss-1")), log.keys())
     }
 
     @Test

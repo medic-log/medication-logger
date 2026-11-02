@@ -24,6 +24,12 @@ data class MedicationData(
             return (PILLS_PER_WEEK - partialPills % PILLS_PER_WEEK) % PILLS_PER_WEEK
         }
 
+    /** Pills left unused by missed doses. A dose missed before any refill had no pill to leave. */
+    val missedPills: Int
+        get() = misses.count { miss ->
+            miss.kind == MedicationMiss.Kind.MISSED && refills.any { it.date <= miss.date }
+        }
+
     fun addPrescription(draft: PrescriptionDraft, today: LocalDate): MedicationData = copy(
         prescriptions = prescriptions + Prescription(
             id = (prescriptions.maxOfOrNull { it.id } ?: 0) + 1,

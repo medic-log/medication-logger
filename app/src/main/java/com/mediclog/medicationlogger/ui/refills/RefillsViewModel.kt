@@ -33,10 +33,17 @@ sealed interface RefillLogEntry {
         override val date get() = refill.date
     }
 
-    /** Partial refills made one after another on one day that add up to a full week, newest first. */
-    data class RefillGroupEntry(val refills: List<RefillEntry>) : RefillLogEntry {
+    /**
+     * Cards pasted together, each newest first: [refills] that belong together, either partial ones made one after
+     * another on one day that add up to a full week or a single one, and the [missedDoses] since then.
+     */
+    data class RefillGroupEntry(
+        val refills: List<RefillEntry>,
+        val missedDoses: List<MissEntry> = emptyList(),
+    ) : RefillLogEntry {
+        val members: List<RefillLogEntry> get() = missedDoses + refills
         override val key get() = "group-${refills.last().refill.id}"
-        override val date get() = refills.first().date
+        override val date get() = members.maxOf { it.date }
     }
 
     /** A missed or delayed dose. */
@@ -76,8 +83,22 @@ class RefillsViewModel(private val repository: MedicationRepository) : ViewModel
             }
             RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount, leftRange)
         }
-        val misses = data.misses.asReversed().map { RefillLogEntry.MissEntry(it) }
-        return RefillsUiState((misses + groupingFullWeeks(refills).asReversed()).sortedByDescending { it.date })
+        val refillEntries = groupingFullWeeks(refills)
+        val (missed, others) = data.misses.map { RefillLogEntry.MissEntry(it) }
+            .partition { it.miss.kind == MedicationMiss.Kind.MISSED }
+        // A missed dose belongs to the last refill made by then; before any refill, it stands alone
+        val missedByRefill = missed.groupBy { dose -> refillEntries.indexOfLast { it.date <= dose.date } }
+        val stacked = refillEntries.mapIndexed { index, entry ->
+            val doses = missedByRefill[index].orEmpty().asReversed()
+            when {
+                doses.isEmpty() -> entry
+                entry is RefillLogEntry.RefillGroupEntry -> entry.copy(missedDoses = doses)
+                entry is RefillLogEntry.RefillEntry -> RefillLogEntry.RefillGroupEntry(listOf(entry), doses)
+                else -> entry
+            }
+        }
+        val alone = (others + missedByRefill[-1].orEmpty()).sortedByDescending { it.miss.id }
+        return RefillsUiState((alone + stacked.asReversed()).sortedByDescending { it.date })
     }
 
     private fun groupingFullWeeks(refills: List<RefillLogEntry.RefillEntry>): List<RefillLogEntry> {

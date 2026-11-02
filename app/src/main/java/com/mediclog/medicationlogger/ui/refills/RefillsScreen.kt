@@ -115,7 +115,7 @@ fun RefillsScreen(
             }
         }
     }
-    val allEntries = state.entries.flatMap { if (it is RefillLogEntry.RefillGroupEntry) it.refills else listOf(it) }
+    val allEntries = state.entries.flatMap { if (it is RefillLogEntry.RefillGroupEntry) it.members else listOf(it) }
     when (val entry = allEntries.find { it.key == editingKey }) {
         is RefillLogEntry.RefillEntry -> EditRefillDialog(
             refill = entry.refill,
@@ -158,20 +158,31 @@ private fun RefillGroupCard(
 ) {
     val cornerShape = MaterialTheme.shapes.medium
     Column(modifier = modifier.fillMaxWidth()) {
-        group.refills.forEachIndexed { index, entry ->
+        val members = group.members
+        members.forEachIndexed { index, member ->
             if (index > 0) HorizontalDivider()
-            RefillCard(
-                entry = entry,
-                onOpenPrescription = onOpenPrescription,
-                onOpenBox = onOpenBox,
-                onEdit = { onEdit(entry.key) },
-                shape = cornerShape.copy(
-                    topStart = if (index == 0) cornerShape.topStart else ZeroCornerSize,
-                    topEnd = if (index == 0) cornerShape.topEnd else ZeroCornerSize,
-                    bottomStart = if (index == group.refills.lastIndex) cornerShape.bottomStart else ZeroCornerSize,
-                    bottomEnd = if (index == group.refills.lastIndex) cornerShape.bottomEnd else ZeroCornerSize,
-                ),
+            val shape = cornerShape.copy(
+                topStart = if (index == 0) cornerShape.topStart else ZeroCornerSize,
+                topEnd = if (index == 0) cornerShape.topEnd else ZeroCornerSize,
+                bottomStart = if (index == members.lastIndex) cornerShape.bottomStart else ZeroCornerSize,
+                bottomEnd = if (index == members.lastIndex) cornerShape.bottomEnd else ZeroCornerSize,
             )
+            when (member) {
+                is RefillLogEntry.RefillEntry -> RefillCard(
+                    entry = member,
+                    onOpenPrescription = onOpenPrescription,
+                    onOpenBox = onOpenBox,
+                    onEdit = { onEdit(member.key) },
+                    shape = shape,
+                )
+                is RefillLogEntry.MissEntry -> MissCard(
+                    miss = member.miss,
+                    onEdit = { onEdit(member.key) },
+                    shape = shape,
+                    isCounted = true,
+                )
+                is RefillLogEntry.RefillGroupEntry -> Unit
+            }
         }
     }
 }
@@ -247,8 +258,14 @@ private fun PartialBadge(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun MissCard(miss: MedicationMiss, onEdit: () -> Unit, modifier: Modifier = Modifier) {
-    RecordCard(modifier = modifier, onEdit = onEdit) {
+private fun MissCard(
+    miss: MedicationMiss,
+    onEdit: () -> Unit,
+    modifier: Modifier = Modifier,
+    shape: Shape = CardDefaults.shape,
+    isCounted: Boolean = false,
+) {
+    RecordCard(modifier = modifier, onEdit = onEdit, shape = shape) {
         Text(text = miss.date.toString(), style = MaterialTheme.typography.titleMedium)
         Text(
             text = stringResource(
@@ -259,6 +276,12 @@ private fun MissCard(miss: MedicationMiss, onEdit: () -> Unit, modifier: Modifie
             ),
             style = MaterialTheme.typography.bodyMedium,
         )
+        if (isCounted) {
+            Text(
+                text = stringResource(R.string.refills_missed_pill),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
@@ -293,6 +316,7 @@ private fun RefillsScreenPreview() {
                         RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3, 0..30),
                         RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), "2026-10-01 #1", 1, 4, 0..25),
                     ),
+                    listOf(RefillLogEntry.MissEntry(MedicationMiss(2, date, MedicationMiss.Kind.MISSED))),
                 ),
             ),
         ),

@@ -557,6 +557,21 @@ class MainActivityTest {
     }
 
     @Test
+    fun `a missed dose after a refill shows as one pill less, and is still edited on its own`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+        openTab(R.string.main_tab_refills)
+
+        tap(string(R.string.refills_log_missed))
+
+        assertShown(string(R.string.refills_missed_pill))
+        assertShown(refillBox(23))
+        assertEquals(7, data.refills.single().amount)
+        hold(string(R.string.refills_missed))
+        assertShown(string(R.string.edit_miss_title))
+    }
+
+    @Test
     fun `holding a missed dose card edits it`() {
         openTab(R.string.main_tab_refills)
         tap(string(R.string.refills_log_missed))

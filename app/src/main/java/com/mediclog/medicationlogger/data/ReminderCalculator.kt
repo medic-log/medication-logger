@@ -32,7 +32,8 @@ object ReminderCalculator {
         val lastRefill = data.refills.lastOrNull()
         if (lastRefill == null && pillsRemaining(data) == 0) return null
         val refillEnd = lastRefill?.date?.plusDays((PILLS_PER_WEEK - data.pendingRefillAmount).toLong())
-        return if (refillEnd != null && refillEnd.isAfter(today)) refillEnd else today
+        val start = if (refillEnd != null && refillEnd.isAfter(today)) refillEnd else today
+        return start.plusDays(data.missedPills.toLong())
     }
 
     /** The next weekly refill reminder after [now]. */
