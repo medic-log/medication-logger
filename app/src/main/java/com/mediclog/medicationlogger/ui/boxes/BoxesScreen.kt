@@ -186,13 +186,11 @@ private fun BoxCard(
     val statusColors = box.status.tone().colors
     RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text = box.name, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = stringResource(R.string.pharmacy_label, box.pharmacy),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
+            Text(
+                text = box.name,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
             StatusBadge(
                 status = stringResource(box.status.labelRes()),
                 amount = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
@@ -279,7 +277,6 @@ private val previewBox = Box(
     id = 1,
     prescriptionId = 1,
     boxNumber = 1,
-    pharmacy = "Corner pharmacy",
     boughtDate = LocalDate.of(2026, 11, 2),
     pillsLeft = 23,
     pillsTotal = 30,

@@ -7,7 +7,6 @@ data class Box(
     val id: Long,
     val prescriptionId: Long,
     val boxNumber: Int,
-    val pharmacy: String,
     val boughtDate: LocalDate,
     val pillsLeft: Int,
     val pillsTotal: Int,

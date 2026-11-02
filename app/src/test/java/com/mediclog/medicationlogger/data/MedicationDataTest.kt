@@ -45,7 +45,7 @@ class MedicationDataTest {
 
         val second = first.buyRepetition(1, day2)
         assertEquals(listOf(1, 2, 3, 4, 5, 6), second.boxes.map { it.boxNumber })
-        assertTrue(second.boxes.all { it.prescriptionId == 1L && it.pharmacy == "Test Pharmacy" })
+        assertTrue(second.boxes.all { it.prescriptionId == 1L })
         assertEquals(30, second.boxes.last().pillsLeft)
         assertEquals("$day2 #4", second.boxes[3].name)
     }

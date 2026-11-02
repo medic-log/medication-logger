@@ -96,7 +96,6 @@ private fun Box.toJson() = JSONObject()
     .put("id", id)
     .put("prescriptionId", prescriptionId)
     .put("boxNumber", boxNumber)
-    .put("pharmacy", pharmacy)
     .put("boughtDate", boughtDate.toString())
     .put("pillsLeft", pillsLeft)
     .put("pillsTotal", pillsTotal)
@@ -106,7 +105,6 @@ private fun JSONObject.toBox() = Box(
     id = getLong("id"),
     prescriptionId = getLong("prescriptionId"),
     boxNumber = getInt("boxNumber"),
-    pharmacy = getString("pharmacy"),
     boughtDate = LocalDate.parse(getString("boughtDate")),
     pillsLeft = getInt("pillsLeft"),
     pillsTotal = getInt("pillsTotal"),

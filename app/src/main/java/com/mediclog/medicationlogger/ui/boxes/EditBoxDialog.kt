@@ -28,7 +28,6 @@ fun EditBoxDialog(
     modifier: Modifier = Modifier,
 ) {
     var boxNumber by rememberSaveable { mutableStateOf(box.boxNumber.toString()) }
-    var pharmacy by rememberSaveable { mutableStateOf(box.pharmacy) }
     var boughtDate by rememberSaveable { mutableStateOf(box.boughtDate.toString()) }
     var pillsLeft by rememberSaveable { mutableStateOf(box.pillsLeft.toString()) }
     var pillsTotal by rememberSaveable { mutableStateOf(box.pillsTotal.toString()) }
@@ -37,10 +36,9 @@ fun EditBoxDialog(
     val date = boughtDate.dateOrNull()
     val total = pillsTotal.positiveCountOrNull()
     val left = pillsLeft.countOrNull()?.takeIf { total != null && it <= total }
-    val updated = if (number != null && date != null && total != null && left != null && pharmacy.isNotBlank()) {
+    val updated = if (number != null && date != null && total != null && left != null) {
         box.copy(
             boxNumber = number,
-            pharmacy = pharmacy.trim(),
             boughtDate = date,
             pillsLeft = left,
             pillsTotal = total,
@@ -65,7 +63,6 @@ fun EditBoxDialog(
             isNumber = true,
             isError = number == null,
         )
-        DialogField(pharmacy, { pharmacy = it }, R.string.prescriptions_field_pharmacy, isError = pharmacy.isBlank())
         DialogField(boughtDate, { boughtDate = it }, R.string.edit_field_bought_date, isError = date == null)
         DialogField(
             pillsLeft,
@@ -93,7 +90,6 @@ private fun EditBoxDialogPreview() {
                 id = 1,
                 prescriptionId = 1,
                 boxNumber = 1,
-                pharmacy = "Corner pharmacy",
                 boughtDate = LocalDate.of(2026, 11, 2),
                 pillsLeft = 23,
                 pillsTotal = 30,

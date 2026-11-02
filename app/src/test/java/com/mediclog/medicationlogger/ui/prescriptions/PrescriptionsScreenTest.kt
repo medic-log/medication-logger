@@ -42,7 +42,6 @@ class PrescriptionsScreenTest {
                 id = index + 1L,
                 prescriptionId = 1,
                 boxNumber = index + 1,
-                pharmacy = "Test Pharmacy",
                 boughtDate = date,
                 pillsLeft = 30,
                 pillsTotal = 30,

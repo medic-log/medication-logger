@@ -51,7 +51,6 @@ data class MedicationData(
                 id = firstBoxId + index,
                 prescriptionId = prescription.id,
                 boxNumber = firstBoxNumber + index,
-                pharmacy = prescription.pharmacy,
                 boughtDate = today,
                 pillsLeft = prescription.pillsPerBox,
                 pillsTotal = prescription.pillsPerBox,
@@ -130,7 +129,6 @@ data class MedicationData(
     fun editBox(updated: Box): MedicationData {
         val isValid = boxes.any { it.id == updated.id } &&
             updated.boxNumber > 0 &&
-            updated.pharmacy.isNotBlank() &&
             updated.pillsTotal > 0 &&
             updated.pillsLeft in 0..updated.pillsTotal
         if (!isValid) return this
