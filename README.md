@@ -1,12 +1,12 @@
 # Medication logger
 
-Logs your medication prescriptions, pill boxes, and weekly refills, with reminders to take your pill, refills, pickups, and running out. Everything stays on your device.
+Logs your medication prescriptions, pill boxes, and weekly refills, with reminders to take your pill, refills, pickups, running out, and expiry. Everything stays on your device.
 
 ## Using the app
 
 The app opens on **Boxes**, and has four tabs:
 
-- **Reminders:** all start on, so turn off the ones you don't want. Daily pill: every day at a chosen time. Refill: weekly on a chosen weekday and time. Pickup: a number of days after ordering. Running out: a number of days before the pills you've bought run out, to get your next repetition, or a new prescription when none are left. It also shows the estimated date all your medication runs out, repetitions not bought included, at one pill a day.
+- **Reminders:** all start on, so turn off the ones you don't want. Daily pill: every day at a chosen time. Refill: weekly on a chosen weekday and time. Pickup: a number of days after ordering. Running out: a number of days before the pills you've bought run out, to get your next repetition, or a new prescription when none are left. Expiry: a number of days before a box with pills left expires. It also shows the estimated date all your medication runs out, repetitions not bought included, at one pill a day.
 - **Prescriptions:** add a prescription with **New prescription**, whose fields start from your previous one. **Order repetition** records an order, and **Buy repetition** asks each box's expiry date and adds that repetition's boxes.
 - **Boxes:** **Weekly refill** takes 7 pills from a box, or what's left if it has fewer. When that leaves a week incomplete, **Partial refill** appears: use it on the next box to make up the difference. **Save as extra** sets a box aside until you bring it **Back to inventory**.
 - **Refills:** the log of your refills. Register a dose with **Log missed dose** or **Log delayed dose**.

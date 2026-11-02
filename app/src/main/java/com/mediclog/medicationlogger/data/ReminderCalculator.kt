@@ -3,11 +3,12 @@ package com.mediclog.medicationlogger.data
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.temporal.TemporalAdjusters
 
 /** Works out when reminders are due. Holds no state, so it's the same after a reboot or a missed alarm. */
 object ReminderCalculator {
-    // The concept gives pickup and run-out reminders only a number of days, so they arrive at a fixed time
+    // Pickup, run-out and expiry reminders have only a number of days, so they arrive at a fixed time
     private val DAILY_REMINDER_TIME = LocalTime.of(9, 0)
 
     /** Pills that can still be taken: those in non-extra boxes and in repetitions not bought yet. */
@@ -53,14 +54,19 @@ object ReminderCalculator {
         .minOrNull()
         ?.plusDays(data.reminderSettings.pickupDaysAfterOrder.toLong())
 
+    /** The box with pills left that expires first, extra ones included, or null when none has an expiry date. */
+    fun expiringBox(data: MedicationData): Box? = data.boxes
+        .filter { it.pillsLeft > 0 && it.expiryDate != null }
+        .minByOrNull { it.expiryDate ?: YearMonth.from(LocalDate.MAX) }
+
     /** When the alarm for [kind] should fire next, or null when it shouldn't be set. */
     fun nextTrigger(kind: ReminderKind, data: MedicationData, now: LocalDateTime): LocalDateTime? {
         val settings = data.reminderSettings
         return when (kind) {
             ReminderKind.REFILL -> if (settings.isRefillEnabled) nextRefill(settings, now) else null
             ReminderKind.PILL -> if (settings.isPillEnabled) nextPill(settings, now) else null
-            ReminderKind.PICKUP, ReminderKind.RUN_OUT -> dailyReminderDate(kind, data, now.toLocalDate())
-                ?.let { nextDailyTrigger(it, now) }
+            ReminderKind.PICKUP, ReminderKind.RUN_OUT, ReminderKind.EXPIRY ->
+                dailyReminderDate(kind, data, now.toLocalDate())?.let { nextDailyTrigger(it, now) }
         }
     }
 
@@ -68,9 +74,8 @@ object ReminderCalculator {
     fun isDue(kind: ReminderKind, data: MedicationData, now: LocalDateTime): Boolean = when (kind) {
         ReminderKind.REFILL -> data.reminderSettings.isRefillEnabled
         ReminderKind.PILL -> data.reminderSettings.isPillEnabled
-        ReminderKind.PICKUP, ReminderKind.RUN_OUT -> dailyReminderDate(kind, data, now.toLocalDate())
-            ?.atTime(DAILY_REMINDER_TIME)
-            ?.isAfter(now) == false
+        ReminderKind.PICKUP, ReminderKind.RUN_OUT, ReminderKind.EXPIRY ->
+            dailyReminderDate(kind, data, now.toLocalDate())?.atTime(DAILY_REMINDER_TIME)?.isAfter(now) == false
     }
 
     private fun dailyReminderDate(kind: ReminderKind, data: MedicationData, today: LocalDate): LocalDate? {
@@ -79,6 +84,9 @@ object ReminderCalculator {
             kind == ReminderKind.PICKUP && settings.isPickupEnabled -> pickupDate(data)
             kind == ReminderKind.RUN_OUT && settings.isRunOutEnabled ->
                 boughtPillsRunOutDate(data, today)?.minusDays(settings.runOutDaysBefore.toLong())
+            // A month on the box means usable until that month ends
+            kind == ReminderKind.EXPIRY && settings.isExpiryEnabled ->
+                expiringBox(data)?.expiryDate?.atEndOfMonth()?.minusDays(settings.expiryDaysBefore.toLong())
             else -> null
         }
     }

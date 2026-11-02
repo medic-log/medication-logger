@@ -106,7 +106,7 @@ fun RemindersRoute(
     )
 }
 
-/** The configuration of the four reminders. */
+/** The configuration of the five reminders. */
 @Composable
 fun RemindersScreen(
     state: RemindersUiState,
@@ -217,6 +217,24 @@ fun RemindersScreen(
             Text(
                 text = state.pickupDate?.let { stringResource(R.string.reminders_pickup_next, it.toString()) }
                     ?: stringResource(R.string.reminders_pickup_none),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        ReminderCard(
+            title = stringResource(R.string.reminders_expiry_title),
+            summary = stringResource(R.string.reminders_expiry_summary),
+            isEnabled = settings.isExpiryEnabled,
+            onEnabledChange = { onSettingsChange(settings.copy(isExpiryEnabled = it)) },
+        ) {
+            DaysStepper(
+                reminderName = stringResource(R.string.reminders_expiry_title),
+                days = settings.expiryDaysBefore,
+                onDaysChange = { onSettingsChange(settings.copy(expiryDaysBefore = it)) },
+            )
+            Text(
+                text = state.expiringBox?.let {
+                    stringResource(R.string.reminders_expiry_next, it.name, it.expiryDate.toString())
+                } ?: stringResource(R.string.reminders_expiry_none),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

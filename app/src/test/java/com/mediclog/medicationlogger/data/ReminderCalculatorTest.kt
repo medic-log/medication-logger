@@ -9,6 +9,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.YearMonth
 
 class ReminderCalculatorTest {
     // A Monday
@@ -60,6 +61,46 @@ class ReminderCalculatorTest {
             assertNull(ReminderCalculator.nextTrigger(kind, data, today.atTime(12, 0)))
             assertFalse(kind == ReminderKind.REFILL && ReminderCalculator.isDue(kind, data, today.atTime(12, 0)))
         }
+    }
+
+    private val expiryOnly = MedicationData(reminderSettings = AllRemindersOff.copy(isExpiryEnabled = true))
+        .addPrescription(draft, today)
+
+    @Test
+    fun `expiry reminder fires the chosen days before its month ends, then daily`() {
+        val data = expiryOnly.buyRepetition(1, today, listOf(YearMonth.of(2027, 1)))
+        val dueDay = LocalDate.of(2026, 12, 2)
+
+        assertEquals(
+            dueDay.atTime(9, 0),
+            ReminderCalculator.nextTrigger(ReminderKind.EXPIRY, data, today.atTime(12, 0)),
+        )
+        assertFalse(ReminderCalculator.isDue(ReminderKind.EXPIRY, data, today.atTime(12, 0)))
+        assertTrue(ReminderCalculator.isDue(ReminderKind.EXPIRY, data, dueDay.atTime(9, 0)))
+        assertEquals(
+            dueDay.plusDays(1).atTime(9, 0),
+            ReminderCalculator.nextTrigger(ReminderKind.EXPIRY, data, dueDay.atTime(9, 0)),
+        )
+    }
+
+    @Test
+    fun `expiry reminder follows the first box to expire, extra ones included`() {
+        val data = expiryOnly
+            .buyRepetition(1, today, listOf(YearMonth.of(2028, 1)))
+            .buyRepetition(1, today, listOf(YearMonth.of(2027, 1)))
+            .saveAsExtra(2)
+
+        assertEquals(2L, ReminderCalculator.expiringBox(data)?.id)
+    }
+
+    @Test
+    fun `expiry reminder stops for an empty box, and without any date`() {
+        val bought = expiryOnly.buyRepetition(1, today, listOf(YearMonth.of(2027, 1)))
+        val emptied = bought.editBox(bought.boxes.single().copy(pillsLeft = 0))
+        val undated = expiryOnly.buyRepetition(1, today)
+
+        assertNull(ReminderCalculator.nextTrigger(ReminderKind.EXPIRY, emptied, today.atTime(12, 0)))
+        assertNull(ReminderCalculator.nextTrigger(ReminderKind.EXPIRY, undated, today.atTime(12, 0)))
     }
 
     @Test

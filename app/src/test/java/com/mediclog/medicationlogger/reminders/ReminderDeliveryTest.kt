@@ -23,6 +23,7 @@ import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZoneOffset
 
 @RunWith(RobolectricTestRunner::class)
@@ -127,12 +128,31 @@ class ReminderDeliveryTest {
     }
 
     @Test
+    fun `a firing expiry alarm names the box`() {
+        app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1))
+        val prescription = app.repository.data.value.prescriptions.single()
+        app.repository.buyRepetition(prescription.id, listOf(YearMonth.now()))
+        app.repository.updateReminderSettings(AllRemindersOff.copy(isExpiryEnabled = true))
+
+        fire(ReminderKind.EXPIRY)
+
+        val box = app.repository.data.value.boxes.single()
+        val notification = shadowOf(notifications.allNotifications.single())
+        assertEquals(app.getString(R.string.reminders_notification_expiry_title), notification.contentTitle)
+        assertEquals(
+            app.getString(R.string.reminders_notification_expiry_text, box.name, YearMonth.now().toString()),
+            notification.contentText,
+        )
+    }
+
+    @Test
     fun `an alarm that's no longer due shows nothing`() {
         app.repository.updateReminderSettings(AllRemindersOff)
 
         fire(ReminderKind.PICKUP)
         fire(ReminderKind.REFILL)
         fire(ReminderKind.PILL)
+        fire(ReminderKind.EXPIRY)
 
         assertTrue(notifications.allNotifications.isEmpty())
     }

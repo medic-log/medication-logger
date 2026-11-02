@@ -51,6 +51,7 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
         ReminderKind.PICKUP -> R.string.reminders_notification_pickup_title
         ReminderKind.RUN_OUT -> R.string.reminders_notification_run_out_title
         ReminderKind.PILL -> R.string.reminders_notification_pill_title
+        ReminderKind.EXPIRY -> R.string.reminders_notification_expiry_title
     }
 
     private fun textOf(kind: ReminderKind, data: MedicationData) = when (kind) {
@@ -65,5 +66,12 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
             },
             ReminderCalculator.boughtPillsRunOutDate(data, LocalDate.now(clock)).toString(),
         )
+        ReminderKind.EXPIRY -> ReminderCalculator.expiringBox(data).let { box ->
+            context.getString(
+                R.string.reminders_notification_expiry_text,
+                box?.name.orEmpty(),
+                box?.expiryDate.toString(),
+            )
+        }
     }
 }

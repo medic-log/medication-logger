@@ -160,6 +160,8 @@ private fun ReminderSettings.toJson() = JSONObject()
     .put("runOutDaysBefore", runOutDaysBefore)
     .put("isPillEnabled", isPillEnabled)
     .put("pillTime", pillTime.toString())
+    .put("isExpiryEnabled", isExpiryEnabled)
+    .put("expiryDaysBefore", expiryDaysBefore)
 
 private fun JSONObject.toReminderSettings() = ReminderSettings(
     isRefillEnabled = getBoolean("isRefillEnabled"),
@@ -172,6 +174,9 @@ private fun JSONObject.toReminderSettings() = ReminderSettings(
     // Files saved before the pill reminder existed don't have these
     isPillEnabled = optBoolean("isPillEnabled", ReminderSettings().isPillEnabled),
     pillTime = if (has("pillTime")) LocalTime.parse(getString("pillTime")) else ReminderSettings().pillTime,
+    // And files saved before the expiry reminder existed don't have these
+    isExpiryEnabled = optBoolean("isExpiryEnabled", ReminderSettings().isExpiryEnabled),
+    expiryDaysBefore = optInt("expiryDaysBefore", ReminderSettings().expiryDaysBefore),
 )
 
 private fun <T> List<T>.toJsonArray(toJson: (T) -> JSONObject) = JSONArray().also { array ->
@@ -182,9 +187,9 @@ private fun <T> JSONArray.map(transform: (JSONObject) -> T): List<T> =
     List(length()) { transform(getJSONObject(it)) }
 
 // put() leaves null values out, so an absent key means null
+private fun JSONObject.dateOrNull(key: String): LocalDate? =
+    if (has(key)) LocalDate.parse(getString(key)) else null
+
 // Taking only the year and month also reads the full dates that expiry dates were first saved as
 private fun JSONObject.yearMonthOrNull(key: String): YearMonth? =
     if (has(key)) YearMonth.parse(getString(key).take(YEAR_MONTH_LENGTH)) else null
-
-private fun JSONObject.dateOrNull(key: String): LocalDate? =
-    if (has(key)) LocalDate.parse(getString(key)) else null

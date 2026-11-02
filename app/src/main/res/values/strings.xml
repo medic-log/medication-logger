@@ -137,6 +137,10 @@
     <string name="reminders_run_out_summary">Days before the pills you\'ve bought run out, to get your next repetition or a new prescription. Repeated daily until you have more.</string>
     <string name="reminders_run_out_date">Runs out around %1$s</string>
     <string name="reminders_run_out_none">Add a prescription to estimate when you\'ll run out.</string>
+    <string name="reminders_expiry_title">Expiry</string>
+    <string name="reminders_expiry_summary">Days before a box with pills left expires, at the end of its month. Repeated daily until it\'s used up or removed.</string>
+    <string name="reminders_expiry_next">First to expire: %1$s, %2$s</string>
+    <string name="reminders_expiry_none">No boxes with pills left have an expiry date.</string>
     <string name="reminders_fewer_days">Fewer days: %1$s</string>
     <string name="reminders_more_days">More days: %1$s</string>
     <string name="reminders_notifications_off">Notifications are off, so reminders can\'t reach you. Allow them in system settings.</string>
@@ -151,6 +155,8 @@
     <string name="reminders_notification_run_out_title">Running out of medication</string>
     <string name="reminders_notification_run_out_text">You need a new prescription: your medication runs out around %1$s.</string>
     <string name="reminders_notification_run_out_repetition_text">Get your next repetition: your pills run out around %1$s.</string>
+    <string name="reminders_notification_expiry_title">Medication expiring</string>
+    <string name="reminders_notification_expiry_text">Box %1$s expires %2$s.</string>
     <plurals name="reminders_days">
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>

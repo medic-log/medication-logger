@@ -544,7 +544,7 @@ class MainActivityTest {
         openTab(R.string.main_tab_reminders)
         assertEquals(ReminderSettings(), data.reminderSettings)
 
-        repeat(4) { composeRule.onAllNodes(isToggleable())[it].performClick() }
+        repeat(5) { composeRule.onAllNodes(isToggleable())[it].performClick() }
 
         assertFalse(data.reminderSettings.hasAnyEnabled)
     }
@@ -582,6 +582,18 @@ class MainActivityTest {
 
         assertEquals(LocalTime.of(7, 0), data.reminderSettings.pillTime)
         assertShown(string(R.string.reminders_choose_time, "07:00"))
+    }
+
+    @Test
+    fun `the expiry reminder starts on at 60 days, and is configured in days`() {
+        openTab(R.string.main_tab_reminders)
+        val expiry = string(R.string.reminders_expiry_title)
+        assertTrue(data.reminderSettings.isExpiryEnabled)
+        assertEquals(60, data.reminderSettings.expiryDaysBefore)
+
+        composeRule.onNodeWithContentDescription(string(R.string.reminders_more_days, expiry)).performClick()
+
+        assertEquals(61, data.reminderSettings.expiryDaysBefore)
     }
 
     @Test

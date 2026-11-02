@@ -14,6 +14,9 @@ data class ReminderSettings(
     val runOutDaysBefore: Int = 14,
     val isPillEnabled: Boolean = true,
     val pillTime: LocalTime = LocalTime.of(8, 0),
+    val isExpiryEnabled: Boolean = true,
+    val expiryDaysBefore: Int = 60,
 ) {
-    val hasAnyEnabled: Boolean get() = isRefillEnabled || isPickupEnabled || isRunOutEnabled || isPillEnabled
+    val hasAnyEnabled: Boolean
+        get() = isRefillEnabled || isPickupEnabled || isRunOutEnabled || isPillEnabled || isExpiryEnabled
 }

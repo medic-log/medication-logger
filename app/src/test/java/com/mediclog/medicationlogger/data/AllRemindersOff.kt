@@ -6,4 +6,5 @@ val AllRemindersOff = ReminderSettings(
     isPickupEnabled = false,
     isRunOutEnabled = false,
     isPillEnabled = false,
+    isExpiryEnabled = false,
 )

@@ -2,6 +2,7 @@ package com.mediclog.medicationlogger.ui.reminders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.data.ReminderCalculator
@@ -22,6 +23,7 @@ data class RemindersUiState(
     val pickupDate: LocalDate? = null,
     val runOutDate: LocalDate? = null,
     val pillsRemaining: Int = 0,
+    val expiringBox: Box? = null,
 )
 
 /** Shows and changes the reminder configuration. */
@@ -39,5 +41,6 @@ class RemindersViewModel(private val repository: MedicationRepository, private v
         pickupDate = ReminderCalculator.pickupDate(data),
         runOutDate = ReminderCalculator.runOutDate(data, LocalDate.now(clock)),
         pillsRemaining = ReminderCalculator.pillsRemaining(data),
+        expiringBox = ReminderCalculator.expiringBox(data),
     )
 }

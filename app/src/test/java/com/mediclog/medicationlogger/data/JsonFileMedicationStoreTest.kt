@@ -40,6 +40,8 @@ class JsonFileMedicationStoreTest {
                 runOutDaysBefore = 20,
                 isPillEnabled = true,
                 pillTime = LocalTime.of(21, 15),
+                isExpiryEnabled = false,
+                expiryDaysBefore = 30,
             ),
         )
             .addPrescription(PrescriptionDraft("Dr \"Quote\"", "Pharmacy, ünï", 7, 1, 2), day)
@@ -54,6 +56,19 @@ class JsonFileMedicationStoreTest {
         JsonFileMedicationStore(file).save(data)
 
         assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `a file saved before the expiry reminder existed starts it on`() {
+        JsonFileMedicationStore(file).save(MedicationData())
+        val json = JSONObject(file.readText())
+        json.getJSONObject("reminderSettings").apply {
+            remove("isExpiryEnabled")
+            remove("expiryDaysBefore")
+        }
+        file.writeText(json.toString())
+
+        assertEquals(MedicationData(), JsonFileMedicationStore(file).load())
     }
 
     @Test
