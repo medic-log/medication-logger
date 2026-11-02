@@ -1,4 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Medication logger</string>
+
+    <string name="main_tab_reminders">Reminders</string>
+    <string name="main_tab_prescriptions">Prescriptions</string>
+    <string name="main_tab_boxes">Boxes</string>
+    <string name="main_tab_refills">Refills</string>
+    <string name="main_save_failed">Couldn\'t save your last change. Free up some storage, then make another change to try again.</string>
+
+    <string name="filter_active">Active</string>
+    <string name="filter_all">All</string>
+    <string name="link_open_prescription">Open prescription</string>
+    <string name="link_open_box">Open box</string>
+    <string name="status_label">Status: %1$s</string>
+    <string name="pharmacy_label">Pharmacy: %1$s</string>
+
+    <string name="prescriptions_new">New prescription</string>
+    <string name="prescriptions_empty_active">No active prescriptions. Add one with New prescription, or choose All to see finished ones.</string>
+    <string name="prescriptions_empty_all">No prescriptions yet. Add one with New prescription.</string>
+    <string name="prescriptions_prescribed_date">Prescribed %1$s</string>
+    <string name="prescriptions_prescribed_by">Prescribed by: %1$s</string>
+    <string name="prescriptions_ordered_date">Ordered: %1$s</string>
+    <string name="prescriptions_bought_first">First bought: %1$s</string>
+    <string name="prescriptions_bought_last">Last bought: %1$s</string>
+    <string name="prescriptions_repetitions">Repetitions bought: %1$d of %2$d</string>
+    <string name="prescriptions_per_box">Pills per box: %1$d</string>
+    <string name="prescriptions_per_repetition">Per repetition: boxes %1$d, pills %2$d</string>
+    <string name="prescriptions_total">In total: boxes %1$d, pills %2$d</string>
+    <string name="prescriptions_linked_boxes">Boxes:</string>
+    <string name="prescriptions_order">Order repetition</string>
+    <string name="prescriptions_buy">Buy repetition</string>
+    <string name="prescriptions_status_not_started">Not started</string>
+    <string name="prescriptions_status_ordered">Ordered</string>
+    <string name="prescriptions_status_in_progress">In progress</string>
+    <string name="prescriptions_status_finished">Finished</string>
+    <string name="prescriptions_field_doctor">Doctor</string>
+    <string name="prescriptions_field_pharmacy">Pharmacy</string>
+    <string name="prescriptions_field_pills_per_box">Pills per box</string>
+    <string name="prescriptions_field_boxes_per_repetition">Boxes per repetition</string>
+    <string name="prescriptions_field_repetitions_total">Repetitions</string>
+    <string name="prescriptions_save">Save</string>
+    <string name="prescriptions_cancel">Cancel</string>
+
+    <string name="boxes_empty_active">No active boxes. Buy a repetition in Prescriptions, or choose All to see finished and extra boxes.</string>
+    <string name="boxes_empty_all">No boxes yet. Buy a repetition in Prescriptions to add some.</string>
+    <string name="boxes_pills_left">Pills left: %1$d of %2$d</string>
+    <string name="boxes_refills_title">Refills:</string>
+    <string name="boxes_refill_weekly">Weekly refill</string>
+    <string name="boxes_refill_partial">Partial refill</string>
+    <string name="boxes_save_as_extra">Save as extra</string>
+    <string name="boxes_back_to_inventory">Back to inventory</string>
+    <string name="boxes_status_not_started">Not started</string>
+    <string name="boxes_status_in_progress">In progress</string>
+    <string name="boxes_status_finished">Finished</string>
+    <string name="boxes_status_extra">Extra</string>
+    <plurals name="boxes_refill_partial_pending">
+        <item quantity="one">Partial refill (%1$d pill)</item>
+        <item quantity="other">Partial refill (%1$d pills)</item>
+    </plurals>
+    <plurals name="boxes_pending_notice">
+        <item quantity="one">Your last refill is incomplete: %1$d more pill makes a full week. Use Partial refill.</item>
+        <item quantity="other">Your last refill is incomplete: %1$d more pills make a full week. Use Partial refill.</item>
+    </plurals>
+
+    <string name="refills_empty">No refills yet. Refill from a box in Boxes.</string>
+    <string name="refills_log_missed">Log missed dose</string>
+    <string name="refills_log_delayed">Log delayed dose</string>
+    <string name="refills_partial_suffix">%1$s, partial</string>
+    <string name="refills_box">Box %1$s</string>
+    <string name="refills_missed">Missed dose</string>
+    <string name="refills_delayed">Delayed dose</string>
+    <plurals name="refills_amount">
+        <item quantity="one">%1$d pill, %2$d left</item>
+        <item quantity="other">%1$d pills, %2$d left</item>
+    </plurals>
+
+    <string name="reminders_refill_title">Refill</string>
+    <string name="reminders_refill_summary">Weekly, on the day and time you choose.</string>
+    <string name="reminders_refill_next">Next reminder: %1$s, %2$s at %3$s</string>
+    <string name="reminders_refill_choose_time">Time: %1$s</string>
+    <string name="reminders_time_dialog_title">Refill reminder time</string>
+    <string name="reminders_time_confirm">OK</string>
+    <string name="reminders_time_cancel">Cancel</string>
+    <string name="reminders_pickup_title">Pickup</string>
+    <string name="reminders_pickup_summary">Days after ordering a repetition, repeated daily until it\'s bought.</string>
+    <string name="reminders_pickup_next">Pick up from: %1$s</string>
+    <string name="reminders_pickup_none">Nothing is ordered right now.</string>
+    <string name="reminders_run_out_title">Running out</string>
+    <string name="reminders_run_out_summary">Days before your medication runs out, to get a new prescription. Repeated daily until you have more.</string>
+    <string name="reminders_run_out_date">Runs out around %1$s</string>
+    <string name="reminders_run_out_none">Add a prescription to estimate when you\'ll run out.</string>
+    <string name="reminders_fewer_days">Fewer days: %1$s</string>
+    <string name="reminders_more_days">More days: %1$s</string>
+    <string name="reminders_notifications_off">Notifications are off, so reminders can\'t reach you. Allow them in system settings.</string>
+    <string name="reminders_open_settings">Open settings</string>
+    <string name="reminders_channel_name">Reminders</string>
+    <string name="reminders_notification_refill_title">Time for your weekly refill</string>
+    <string name="reminders_notification_refill_text">Refill your pills for the week.</string>
+    <string name="reminders_notification_pickup_title">Pick up your medication</string>
+    <string name="reminders_notification_pickup_text">Your ordered repetition should be ready at the pharmacy.</string>
+    <string name="reminders_notification_run_out_title">Running out of medication</string>
+    <string name="reminders_notification_run_out_text">You need a new prescription: your medication runs out around %1$s.</string>
+    <plurals name="reminders_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="reminders_pills_remaining">
+        <item quantity="one">%1$d pill to go, including repetitions not bought yet.</item>
+        <item quantity="other">%1$d pills to go, including repetitions not bought yet.</item>
+    </plurals>
 </resources>

@@ -18,11 +18,18 @@ This also works when pushing from Android Studio. Skip it for one push with `git
 
 ```
 app/src/main/java/com/mediclog/medicationlogger/
-├── MainActivity.kt   # Hosts the UI
-├── data/             # Repositories and data sources (add when needed)
+├── MainActivity.kt                 # Hosts the UI
+├── MedicationLoggerApplication.kt  # Shared objects; keeps alarms in step with the data
+├── data/                           # The records and their actions, reminder dates, storage
+├── reminders/                      # Alarms and notifications
 └── ui/
-    ├── <feature>/    # A feature's screen and ViewModel, e.g. home/
-    └── theme/        # Material 3 theme
+    ├── main/                       # The tab frame and links between tabs
+    ├── reminders/                  # One folder per tab: its screen and ViewModel
+    ├── prescriptions/
+    ├── boxes/
+    ├── refills/
+    ├── components/                 # Shared UI pieces
+    └── theme/                      # Material 3 theme
 app/src/test/java/com/mediclog/medicationlogger/  # JVM unit tests
 gradle/libs.versions.toml                       # Dependency versions
 scripts/check.sh                                # CI checks, also run by .githooks/pre-push

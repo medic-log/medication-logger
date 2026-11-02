@@ -1,0 +1,160 @@
+package com.mediclog.medicationlogger.ui
+
+import com.mediclog.medicationlogger.data.FakeMedicationStore
+import com.mediclog.medicationlogger.data.MedicationMiss
+import com.mediclog.medicationlogger.data.MedicationRepository
+import com.mediclog.medicationlogger.data.PrescriptionDraft
+import com.mediclog.medicationlogger.data.ReminderSettings
+import com.mediclog.medicationlogger.ui.boxes.BoxesViewModel
+import com.mediclog.medicationlogger.ui.components.ListFilter
+import com.mediclog.medicationlogger.ui.main.AppTab
+import com.mediclog.medicationlogger.ui.main.MainViewModel
+import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsViewModel
+import com.mediclog.medicationlogger.ui.refills.RefillLogEntry
+import com.mediclog.medicationlogger.ui.refills.RefillsViewModel
+import com.mediclog.medicationlogger.ui.reminders.RemindersViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import java.time.Clock
+import java.time.LocalDate
+import java.time.ZoneOffset
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class ViewModelsTest {
+    private val today = LocalDate.of(2026, 11, 2)
+    private val clock = Clock.fixed(today.atTime(12, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
+    private val store = FakeMedicationStore()
+    private val draft = PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1)
+    private lateinit var repository: MedicationRepository
+
+    @Before
+    fun setUp() {
+        val dispatcher = UnconfinedTestDispatcher()
+        Dispatchers.setMain(dispatcher)
+        repository = MedicationRepository(store, clock, CoroutineScope(dispatcher))
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `app opens on boxes, and links open the record's tab`() {
+        val viewModel = MainViewModel(repository)
+        assertEquals(AppTab.BOXES, viewModel.uiState.value.selectedTab)
+
+        viewModel.openPrescription(4)
+        assertEquals(AppTab.PRESCRIPTIONS, viewModel.uiState.value.selectedTab)
+        assertEquals(4L, viewModel.uiState.value.focusedPrescriptionId)
+
+        viewModel.openBox(7)
+        assertEquals(AppTab.BOXES, viewModel.uiState.value.selectedTab)
+        assertEquals(7L, viewModel.uiState.value.focusedBoxId)
+        assertNull(viewModel.uiState.value.focusedPrescriptionId)
+
+        viewModel.selectTab(AppTab.REFILLS)
+        assertNull(viewModel.uiState.value.focusedBoxId)
+    }
+
+    @Test
+    fun `save failures reach the main state`() {
+        val viewModel = MainViewModel(repository)
+
+        store.isFailing = true
+        repository.addPrescription(draft)
+
+        assertTrue(viewModel.uiState.value.isSaveFailed)
+    }
+
+    @Test
+    fun `prescriptions filter hides finished ones, and the newest comes first`() {
+        val viewModel = PrescriptionsViewModel(repository)
+        viewModel.addPrescription(draft)
+        viewModel.addPrescription(draft.copy(prescribedBy = "Dr Second"))
+        viewModel.buyRepetition(1)
+
+        assertEquals(listOf(2L), viewModel.uiState.value.items.map { it.prescription.id })
+
+        viewModel.setFilter(ListFilter.ALL)
+        assertEquals(listOf(2L, 1L), viewModel.uiState.value.items.map { it.prescription.id })
+        assertEquals("Dr Second", viewModel.uiState.value.previousPrescription?.prescribedBy)
+        assertEquals(1, viewModel.uiState.value.items.last().boxes.size)
+    }
+
+    @Test
+    fun `boxes filter shows only those in use, and all lists finished ones last`() {
+        val viewModel = BoxesViewModel(repository)
+        repository.addPrescription(draft.copy(pillsPerBox = 7, boxesPerRepetition = 3))
+        repository.buyRepetition(1)
+        viewModel.refillWeekly(1)
+        viewModel.saveAsExtra(2)
+
+        assertEquals(listOf(3L), viewModel.uiState.value.items.map { it.box.id })
+
+        viewModel.setFilter(ListFilter.ALL)
+        assertEquals(listOf(2L, 3L, 1L), viewModel.uiState.value.items.map { it.box.id })
+
+        viewModel.backToInventory(2)
+        viewModel.setFilter(ListFilter.ACTIVE)
+        assertEquals(listOf(2L, 3L), viewModel.uiState.value.items.map { it.box.id })
+    }
+
+    @Test
+    fun `box items hold their refills, and the pending amount follows the last refill`() {
+        val viewModel = BoxesViewModel(repository)
+        repository.addPrescription(draft.copy(pillsPerBox = 11, boxesPerRepetition = 2))
+        repository.buyRepetition(1)
+
+        viewModel.refillWeekly(1)
+        viewModel.refillWeekly(1)
+        assertEquals(3, viewModel.uiState.value.pendingRefillAmount)
+
+        viewModel.refillPartial(2)
+        val state = viewModel.uiState.value
+        assertEquals(0, state.pendingRefillAmount)
+        assertEquals(listOf(8), state.items.single().refills.map { it.amountRemaining })
+    }
+
+    @Test
+    fun `refills log lists entries newest first, with box names and misses`() {
+        val viewModel = RefillsViewModel(repository)
+        repository.addPrescription(draft)
+        repository.buyRepetition(1)
+        repository.refillWeekly(1)
+        repository.refillWeekly(1)
+        viewModel.logMiss(MedicationMiss.Kind.MISSED)
+
+        val entries = viewModel.uiState.value.entries
+        assertTrue(entries.first() is RefillLogEntry.MissEntry)
+        val refills = entries.filterIsInstance<RefillLogEntry.RefillEntry>()
+        assertEquals(listOf(16, 23), refills.map { it.refill.amountRemaining })
+        assertEquals("$today #1", refills.first().boxName)
+    }
+
+    @Test
+    fun `reminders state follows settings and data`() {
+        val viewModel = RemindersViewModel(repository, clock)
+        assertNull(viewModel.uiState.value.runOutDate)
+
+        repository.addPrescription(draft)
+        viewModel.updateSettings(ReminderSettings(isPickupEnabled = true, pickupDaysAfterOrder = 2))
+        repository.orderRepetition(1)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.settings.isPickupEnabled)
+        assertEquals(today.plusDays(2), state.pickupDate)
+        assertEquals(today.plusDays(30), state.runOutDate)
+        assertEquals(30, state.pillsRemaining)
+    }
+}

@@ -1,21 +1,332 @@
 package com.mediclog.medicationlogger
 
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelected
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import com.mediclog.medicationlogger.data.MedicationData
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.TextStyle
+import java.util.Locale
 
+// Tablet-sized, so whole lists are composed without scrolling. Not phone-sized: under Robolectric, a Material
+// text field in a dialog never goes idle at some window sizes, including 412x915
 @RunWith(RobolectricTestRunner::class)
+@Config(qualifiers = "w800dp-h1280dp")
 class MainActivityTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
+    private val today get() = LocalDate.now().toString()
+
+    private fun string(id: Int, vararg args: Any) = composeRule.activity.getString(id, *args)
+
+    private fun plural(id: Int, count: Int, vararg args: Any) =
+        composeRule.activity.resources.getQuantityString(id, count, *args)
+
+    private val data: MedicationData
+        get() = (composeRule.activity.application as MedicationLoggerApplication).repository.data.value
+
+    private fun tap(text: String) = composeRule.onNodeWithText(text).performClick()
+
+    private fun openTab(id: Int) = tap(string(id))
+
+    private fun addPrescription(pillsPerBox: Int, boxesPerRepetition: Int, repetitions: Int) {
+        composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+        fillField(R.string.prescriptions_field_doctor, "Dr Test")
+        fillField(R.string.prescriptions_field_pharmacy, "Test Pharmacy")
+        fillField(R.string.prescriptions_field_pills_per_box, pillsPerBox.toString())
+        fillField(R.string.prescriptions_field_boxes_per_repetition, boxesPerRepetition.toString())
+        fillField(R.string.prescriptions_field_repetitions_total, repetitions.toString())
+        tap(string(R.string.prescriptions_save))
+    }
+
+    private fun fillField(labelId: Int, value: String) =
+        composeRule.onNodeWithText(string(labelId)).performTextReplacement(value)
+
+    private fun assertShown(text: String) {
+        composeRule.onNodeWithText(text).assertIsDisplayed()
+    }
+
+    private fun assertNotShown(text: String) {
+        composeRule.onNodeWithText(text).assertDoesNotExist()
+    }
+
+    private fun refillAmount(amount: Int, left: Int) = plural(R.plurals.refills_amount, amount, amount, left)
+
     @Test
-    fun `app opens on the home screen`() {
-        val appName = composeRule.activity.getString(R.string.app_name)
-        composeRule.onNodeWithText(appName).assertIsDisplayed()
+    fun `app opens on the boxes tab`() {
+        composeRule.onNodeWithText(string(R.string.main_tab_boxes)).assertIsSelected()
+        assertShown(string(R.string.boxes_empty_active))
+    }
+
+    @Test
+    fun `tabs are in the order reminders, prescriptions, boxes, refills`() {
+        val tabs = composeRule.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+            .fetchSemanticsNodes()
+            .map { it.config.getOrNull(SemanticsProperties.Text)?.joinToString() }
+        val expected = listOf(
+            R.string.main_tab_reminders,
+            R.string.main_tab_prescriptions,
+            R.string.main_tab_boxes,
+            R.string.main_tab_refills,
+        ).map { string(it) }
+        assertEquals(expected, tabs)
+    }
+
+    @Test
+    fun `a new prescription is dated today, shows its totals and buys boxes`() {
+        openTab(R.string.main_tab_prescriptions)
+        assertShown(string(R.string.prescriptions_empty_active))
+
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 3, repetitions = 2)
+
+        assertShown(string(R.string.prescriptions_prescribed_date, today))
+        assertShown(string(R.string.prescriptions_prescribed_by, "Dr Test"))
+        assertShown(string(R.string.pharmacy_label, "Test Pharmacy"))
+        assertShown(string(R.string.prescriptions_per_repetition, 3, 90))
+        assertShown(string(R.string.prescriptions_total, 6, 180))
+        val notStarted = string(R.string.prescriptions_status_not_started)
+        assertShown(string(R.string.status_label, notStarted))
+
+        tap(string(R.string.prescriptions_order))
+        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_ordered)))
+        assertShown(string(R.string.prescriptions_repetitions, 0, 2))
+        composeRule.onNodeWithText(string(R.string.prescriptions_order)).assertIsNotEnabled()
+
+        tap(string(R.string.prescriptions_buy))
+        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_in_progress)))
+        assertShown(string(R.string.prescriptions_repetitions, 1, 2))
+        assertShown(string(R.string.prescriptions_bought_first, today))
+        assertShown(string(R.string.prescriptions_bought_last, today))
+        assertShown("$today #1")
+        assertShown("$today #3")
+
+        openTab(R.string.main_tab_boxes)
+        assertShown("$today #1")
+        assertShown("$today #2")
+        assertShown("$today #3")
+        composeRule.onAllNodesWithText(string(R.string.boxes_pills_left, 30, 30)).onFirst().assertIsDisplayed()
+
+        openTab(R.string.main_tab_prescriptions)
+        tap(string(R.string.prescriptions_buy))
+        // Now finished, so only under "All"
+        tap(string(R.string.filter_all))
+        assertShown("$today #4")
+        assertShown("$today #6")
+        composeRule.onNodeWithText(string(R.string.prescriptions_buy)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `a new prescription starts from the previous values`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 28, boxesPerRepetition = 2, repetitions = 5)
+
+        composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+
+        composeRule.onNodeWithText("Dr Test").assertExists()
+        composeRule.onNodeWithText("Test Pharmacy").assertExists()
+        composeRule.onNodeWithText("28").assertExists()
+        composeRule.onNodeWithText("2").assertExists()
+        composeRule.onNodeWithText("5").assertExists()
+        composeRule.onNodeWithText(string(R.string.prescriptions_save)).assertIsEnabled()
+    }
+
+    @Test
+    fun `save stays disabled until the prescription is complete`() {
+        openTab(R.string.main_tab_prescriptions)
+        composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+        fillField(R.string.prescriptions_field_doctor, "Dr Test")
+
+        composeRule.onNodeWithText(string(R.string.prescriptions_save)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `refills follow the concept's example, with partial refill highlighted when incomplete`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 25, boxesPerRepetition = 1, repetitions = 1)
+        tap(string(R.string.prescriptions_buy))
+        // The filter hides the finished prescription
+        composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+        fillSecondPrescriptionPillsPerBox(30)
+        tap(string(R.string.prescriptions_save))
+        tap(string(R.string.prescriptions_buy))
+        openTab(R.string.main_tab_boxes)
+
+        val weekly = string(R.string.boxes_refill_weekly)
+        val partial = string(R.string.boxes_refill_partial)
+        val pending = plural(R.plurals.boxes_refill_partial_pending, 3, 3)
+        composeRule.onAllNodesWithText(partial).onFirst().assertIsNotEnabled()
+
+        repeat(4) { composeRule.onAllNodesWithText(weekly).onFirst().performClick() }
+
+        assertShown(plural(R.plurals.boxes_pending_notice, 3, 3))
+        tap(pending)
+        assertNotShown(pending)
+        assertNotShown(plural(R.plurals.boxes_pending_notice, 3, 3))
+        tap(weekly)
+        assertShown(string(R.string.boxes_pills_left, 20, 30))
+
+        openTab(R.string.main_tab_refills)
+        assertShown(refillAmount(7, 18))
+        assertShown(refillAmount(7, 11))
+        assertShown(refillAmount(7, 4))
+        assertShown(string(R.string.refills_partial_suffix, refillAmount(4, 0)))
+        assertShown(string(R.string.refills_partial_suffix, refillAmount(3, 27)))
+        assertShown(refillAmount(7, 20))
+    }
+
+    private fun fillSecondPrescriptionPillsPerBox(pills: Int) {
+        composeRule.onNodeWithText("25").performTextReplacement(pills.toString())
+    }
+
+    @Test
+    fun `links open the linked prescription and box, highlighted`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+        tap(string(R.string.prescriptions_buy))
+        openTab(R.string.main_tab_boxes)
+        tap(string(R.string.boxes_refill_weekly))
+
+        openTab(R.string.main_tab_refills)
+        composeRule.onNodeWithContentDescription(string(R.string.link_open_box)).performClick()
+        composeRule.onNodeWithText(string(R.string.main_tab_boxes)).assertIsSelected()
+        composeRule.onNode(isSelected() and hasAnyDescendant(hasText("$today #1"))).assertIsDisplayed()
+
+        openTab(R.string.main_tab_refills)
+        composeRule.onNodeWithContentDescription(string(R.string.link_open_prescription)).performClick()
+        composeRule.onNodeWithText(string(R.string.main_tab_prescriptions)).assertIsSelected()
+        // The prescription is finished, so the link has to reach past the active filter
+        composeRule.onNode(
+            isSelected() and hasAnyDescendant(hasText(string(R.string.prescriptions_prescribed_date, today))),
+        ).assertIsDisplayed()
+
+        composeRule.onNodeWithText("$today #1").performClick()
+        composeRule.onNodeWithText(string(R.string.main_tab_boxes)).assertIsSelected()
+
+        composeRule.onNodeWithContentDescription(string(R.string.link_open_prescription)).performClick()
+        composeRule.onNodeWithText(string(R.string.main_tab_prescriptions)).assertIsSelected()
+    }
+
+    @Test
+    fun `a box saved as extra leaves the active list, can't be refilled and can go back`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+        tap(string(R.string.prescriptions_buy))
+        openTab(R.string.main_tab_boxes)
+
+        tap(string(R.string.boxes_save_as_extra))
+        assertNotShown("$today #1")
+        assertShown(string(R.string.boxes_empty_active))
+
+        tap(string(R.string.filter_all))
+        assertShown(string(R.string.status_label, string(R.string.boxes_status_extra)))
+        composeRule.onNodeWithText(string(R.string.boxes_refill_weekly)).assertIsNotEnabled()
+
+        tap(string(R.string.boxes_back_to_inventory))
+        assertShown(string(R.string.status_label, string(R.string.boxes_status_not_started)))
+        composeRule.onNodeWithText(string(R.string.boxes_refill_weekly)).assertIsEnabled()
+    }
+
+    @Test
+    fun `the filter hides finished prescriptions until all is selected`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+        tap(string(R.string.prescriptions_buy))
+        val prescribedOn = string(R.string.prescriptions_prescribed_date, today)
+        assertNotShown(prescribedOn)
+
+        tap(string(R.string.filter_all))
+        assertShown(prescribedOn)
+        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_finished)))
+
+        tap(string(R.string.filter_active))
+        assertNotShown(prescribedOn)
+    }
+
+    @Test
+    fun `misses and delays are registered in the refills tab`() {
+        openTab(R.string.main_tab_refills)
+        assertShown(string(R.string.refills_empty))
+
+        tap(string(R.string.refills_log_missed))
+        tap(string(R.string.refills_log_delayed))
+
+        assertShown(string(R.string.refills_missed))
+        assertShown(string(R.string.refills_delayed))
+        composeRule.onAllNodesWithText(today).onFirst().assertIsDisplayed()
+        assertEquals(2, data.misses.size)
+    }
+
+    @Test
+    fun `refill reminder is configured with a weekday and time`() {
+        openTab(R.string.main_tab_reminders)
+        composeRule.onAllNodes(isToggleable())[0].performClick()
+        assertTrue(data.reminderSettings.isRefillEnabled)
+
+        tap(DayOfWeek.SUNDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
+        tap(DayOfWeek.MONDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
+        assertEquals(DayOfWeek.MONDAY, data.reminderSettings.refillDay)
+
+        tap(string(R.string.reminders_refill_choose_time, "09:00"))
+        composeRule.onAllNodes(hasSetTextAction())[0].performTextReplacement("07")
+        tap(string(R.string.reminders_time_confirm))
+        assertEquals(LocalTime.of(7, 0), data.reminderSettings.refillTime)
+        assertShown(string(R.string.reminders_refill_choose_time, "07:00"))
+    }
+
+    @Test
+    fun `pickup and run-out reminders are configured in days`() {
+        openTab(R.string.main_tab_reminders)
+        val pickup = string(R.string.reminders_pickup_title)
+        val runOut = string(R.string.reminders_run_out_title)
+        composeRule.onAllNodes(isToggleable())[1].performClick()
+        composeRule.onAllNodes(isToggleable())[2].performClick()
+
+        composeRule.onNodeWithContentDescription(string(R.string.reminders_more_days, pickup)).performClick()
+        composeRule.onNodeWithContentDescription(string(R.string.reminders_fewer_days, runOut)).performClick()
+
+        assertShown(plural(R.plurals.reminders_days, 4, 4))
+        assertShown(plural(R.plurals.reminders_days, 13, 13))
+        val settings = data.reminderSettings
+        assertTrue(settings.isPickupEnabled && settings.isRunOutEnabled)
+        assertEquals(4, settings.pickupDaysAfterOrder)
+        assertEquals(13, settings.runOutDaysBefore)
+    }
+
+    @Test
+    fun `reminders tab shows when medication runs out`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+
+        openTab(R.string.main_tab_reminders)
+
+        val runOutDate = LocalDate.now().plusDays(30).toString()
+        assertShown(string(R.string.reminders_run_out_date, runOutDate))
     }
 }

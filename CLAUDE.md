@@ -25,6 +25,9 @@ Detailed standards load automatically from `.claude/rules/` when you work on mat
 
 Keep this to what isn't obvious from the code; add an entry when a new file or constraint needs one.
 
-- `MainActivity`: hosts the Compose UI.
-- `ui/<feature>/`: a feature's screen and ViewModel (`ui/home/`). `ui/theme/`: Material 3 theme.
-- `data/`: repositories and data sources, when the app needs them.
+- `MainActivity`: hosts the Compose UI. `MedicationLoggerApplication`: holds the repository, clock and scheduler, and keeps alarms in step with the data.
+- `ui/<feature>/`: a feature's screen and ViewModel (`main/` is the tab frame; `reminders/`, `prescriptions/`, `boxes/`, `refills/` are the tabs, in that order). `ui/AppViewModelProvider`: creates the ViewModels. `ui/components/`: shared pieces. `ui/theme/`: the fixed dark salmon red theme, deliberately without dynamic color.
+- `data/MedicationData`: every table and action, as pure functions. `MedicationRepository` applies them with today's date and saves. `JsonFileMedicationStore`: one JSON file, no database.
+- `data/ReminderCalculator` + `reminders/`: alarms are one per reminder kind and derived from the data, with nothing stored about what has fired. So pickup and run-out reminders repeat daily until resolved, and everything is recomputed after a reboot.
+- A box's status is computed from `pillsLeft` and `isExtra`, not stored. `pendingRefillAmount` adds up the trailing partial refills across boxes.
+- Tests: `MainActivityTest` runs tablet-sized, because under Robolectric a Material text field in a dialog never goes idle at some window sizes, including 412x915 (it fails after a 60 s timeout, with `AppNotIdleException`).

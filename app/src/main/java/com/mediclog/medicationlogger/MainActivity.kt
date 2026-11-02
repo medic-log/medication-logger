@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.mediclog.medicationlogger.ui.home.HomeScreen
+import com.mediclog.medicationlogger.ui.main.MainRoute
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 
 /** Hosts the Compose UI. */
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MedicationLoggerTheme {
-                HomeScreen()
+                MainRoute()
             }
         }
     }

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A plain ring: placeholder, replace with the app's own icon -->
+<!-- A capsule, half filled -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
-        android:pathData="M54,32a22,22 0,1 1,0 44a22,22 0,1 1,0 -44z"
-        android:strokeWidth="6"
+        android:fillColor="#FFFFFF"
+        android:pathData="M45.51,45.51L57.51,33.51A12,12 0,0 1,74.49 50.49L62.49,62.49Z" />
+    <path
+        android:pathData="M33.51,57.51L57.51,33.51A12,12 0,0 1,74.49 50.49L50.49,74.49A12,12 0,0 1,33.51 57.51Z"
+        android:strokeWidth="4"
         android:strokeColor="#FFFFFF" />
 </vector>

@@ -1,0 +1,178 @@
+package com.mediclog.medicationlogger.ui.refills
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.MedicationMiss
+import com.mediclog.medicationlogger.data.Refill
+import com.mediclog.medicationlogger.ui.AppViewModelProvider
+import com.mediclog.medicationlogger.ui.components.LinkIconButton
+import com.mediclog.medicationlogger.ui.components.RecordCard
+import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+import java.time.LocalDate
+
+/** The refills tab with its ViewModel. */
+@Composable
+fun RefillsRoute(
+    onOpenPrescription: (Long) -> Unit,
+    onOpenBox: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: RefillsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    RefillsScreen(
+        state = state,
+        onLogMiss = viewModel::logMiss,
+        onOpenPrescription = onOpenPrescription,
+        onOpenBox = onOpenBox,
+        modifier = modifier,
+    )
+}
+
+/** The log of refills, misses and delays. */
+@Composable
+fun RefillsScreen(
+    state: RefillsUiState,
+    onLogMiss: (MedicationMiss.Kind) -> Unit,
+    onOpenPrescription: (Long) -> Unit,
+    onOpenBox: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item(key = "header") {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED) }) {
+                    Text(stringResource(R.string.refills_log_missed))
+                }
+                OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.DELAYED) }) {
+                    Text(stringResource(R.string.refills_log_delayed))
+                }
+            }
+        }
+        if (state.entries.isEmpty()) {
+            item(key = "empty") {
+                Text(text = stringResource(R.string.refills_empty), style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        items(state.entries, key = { it.key }) { entry ->
+            when (entry) {
+                is RefillLogEntry.RefillEntry -> RefillCard(
+                    entry = entry,
+                    onOpenPrescription = { onOpenPrescription(entry.refill.prescriptionId) },
+                    onOpenBox = { onOpenBox(entry.refill.boxId) },
+                )
+                is RefillLogEntry.MissEntry -> MissCard(entry.miss)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RefillCard(
+    entry: RefillLogEntry.RefillEntry,
+    onOpenPrescription: () -> Unit,
+    onOpenBox: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val refill = entry.refill
+    RecordCard(modifier = modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = refill.date.toString(), style = MaterialTheme.typography.titleMedium)
+                val amounts = pluralStringResource(
+                    R.plurals.refills_amount,
+                    refill.amount,
+                    refill.amount,
+                    refill.amountRemaining,
+                )
+                Text(
+                    text = if (refill.isPartial) stringResource(R.string.refills_partial_suffix, amounts) else amounts,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = stringResource(R.string.refills_box, entry.boxName),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            LinkIconButton(
+                iconRes = R.drawable.ic_prescription,
+                descriptionRes = R.string.link_open_prescription,
+                onClick = onOpenPrescription,
+            )
+            LinkIconButton(
+                iconRes = R.drawable.ic_box,
+                descriptionRes = R.string.link_open_box,
+                onClick = onOpenBox,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MissCard(miss: MedicationMiss, modifier: Modifier = Modifier) {
+    RecordCard(modifier = modifier) {
+        Text(text = miss.date.toString(), style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = stringResource(
+                when (miss.kind) {
+                    MedicationMiss.Kind.MISSED -> R.string.refills_missed
+                    MedicationMiss.Kind.DELAYED -> R.string.refills_delayed
+                },
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
+@Composable
+private fun RefillsPreviewContent(state: RefillsUiState) {
+    MedicationLoggerTheme {
+        Surface {
+            RefillsScreen(state = state, onLogMiss = {}, onOpenPrescription = {}, onOpenBox = {})
+        }
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun RefillsScreenPreview() {
+    val date = LocalDate.of(2026, 11, 2)
+    RefillsPreviewContent(
+        RefillsUiState(
+            listOf(
+                RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
+                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1"),
+            ),
+        ),
+    )
+}
+
+@PreviewLightDark
+@Composable
+private fun RefillsScreenEmptyPreview() {
+    RefillsPreviewContent(RefillsUiState())
+}
