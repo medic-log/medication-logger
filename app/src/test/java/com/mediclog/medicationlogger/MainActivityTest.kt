@@ -184,9 +184,8 @@ class MainActivityTest {
         openTab(R.string.main_tab_boxes)
 
         val weekly = string(R.string.boxes_refill_weekly)
-        val partial = string(R.string.boxes_refill_partial)
         val pending = plural(R.plurals.boxes_refill_partial_pending, 3, 3)
-        composeRule.onAllNodesWithText(partial).onFirst().assertIsNotEnabled()
+        assertNotShown(pending)
 
         repeat(4) { composeRule.onAllNodesWithText(weekly).onFirst().performClick() }
 
@@ -252,7 +251,7 @@ class MainActivityTest {
         tap(string(R.string.filter_all))
         // The filter and the status
         composeRule.onAllNodesWithText(string(R.string.boxes_status_extra)).assertCountEquals(2)
-        composeRule.onNodeWithText(string(R.string.boxes_refill_weekly)).assertIsNotEnabled()
+        assertNotShown(string(R.string.boxes_refill_weekly))
 
         tap(string(R.string.boxes_back_to_inventory))
         assertShown(string(R.string.boxes_status_not_started))

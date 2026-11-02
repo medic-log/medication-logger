@@ -211,12 +211,9 @@ private fun BoxCard(
                 CardButton(onClick = onRefillWeekly) {
                     Text(stringResource(R.string.boxes_refill_weekly))
                 }
-            } else {
-                CardButton(onClick = onRefillWeekly, enabled = box.canRefill, isFilled = true) {
+            } else if (box.canRefill) {
+                CardButton(onClick = onRefillWeekly, isFilled = true) {
                     Text(stringResource(R.string.boxes_refill_weekly))
-                }
-                CardButton(onClick = onRefillPartial, enabled = false) {
-                    Text(stringResource(R.string.boxes_refill_partial))
                 }
             }
             if (box.isExtra) {

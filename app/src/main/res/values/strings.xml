@@ -49,7 +49,6 @@
     <string name="boxes_pills_left">%1$d/%2$d pills</string>
     <string name="boxes_refills_title">Refills:</string>
     <string name="boxes_refill_weekly">Weekly refill</string>
-    <string name="boxes_refill_partial">Partial refill</string>
     <string name="boxes_save_as_extra">Save as extra</string>
     <string name="boxes_back_to_inventory">Back to inventory</string>
     <string name="boxes_status_not_started">Not started</string>
