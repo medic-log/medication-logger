@@ -13,6 +13,8 @@ The app opens on **Boxes**, and has four tabs:
 
 Prescriptions and boxes can be filtered to **Active** or **All**, and boxes also to **Extra**. The icons on boxes and refills open the prescription or box they belong to.
 
+Hold a prescription, box or refill card for a second to edit its fields by hand or delete it, after confirming.
+
 ## Build from source
 
 Requirements: JDK 17+ and the Android SDK (platform 37). Android Studio works too: open the project folder.

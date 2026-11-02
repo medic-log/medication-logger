@@ -65,6 +65,8 @@ fun PrescriptionsRoute(
         onAddPrescription = viewModel::addPrescription,
         onOrderRepetition = viewModel::orderRepetition,
         onBuyRepetition = viewModel::buyRepetition,
+        onEditPrescription = viewModel::editPrescription,
+        onDeletePrescription = viewModel::deletePrescription,
         onOpenBox = onOpenBox,
         modifier = modifier,
     )
@@ -79,10 +81,13 @@ fun PrescriptionsScreen(
     onAddPrescription: (PrescriptionDraft) -> Unit,
     onOrderRepetition: (Long) -> Unit,
     onBuyRepetition: (Long) -> Unit,
+    onEditPrescription: (Prescription) -> Unit,
+    onDeletePrescription: (Long) -> Unit,
     onOpenBox: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
+    var editingId by rememberSaveable { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
     val focusedIndex = state.items.indexOfFirst { it.prescription.id == focusedPrescriptionId }
     LaunchedEffect(focusedPrescriptionId, focusedIndex) {
@@ -124,6 +129,7 @@ fun PrescriptionsScreen(
                     isHighlighted = item.prescription.id == focusedPrescriptionId,
                     onOrderRepetition = { onOrderRepetition(item.prescription.id) },
                     onBuyRepetition = { onBuyRepetition(item.prescription.id) },
+                    onEdit = { editingId = item.prescription.id },
                     onOpenBox = onOpenBox,
                 )
             }
@@ -150,6 +156,20 @@ fun PrescriptionsScreen(
             onDismiss = { isDialogOpen = false },
         )
     }
+    state.items.find { it.prescription.id == editingId }?.let { item ->
+        EditPrescriptionDialog(
+            prescription = item.prescription,
+            onSave = { updated ->
+                onEditPrescription(updated)
+                editingId = null
+            },
+            onDelete = {
+                onDeletePrescription(item.prescription.id)
+                editingId = null
+            },
+            onDismiss = { editingId = null },
+        )
+    }
 }
 
 @Composable
@@ -158,12 +178,13 @@ private fun PrescriptionCard(
     isHighlighted: Boolean,
     onOrderRepetition: () -> Unit,
     onBuyRepetition: () -> Unit,
+    onEdit: () -> Unit,
     onOpenBox: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val prescription = item.prescription
     val statusColors = prescription.status.tone().colors
-    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors) {
+    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
             Text(
                 text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.toString()),
@@ -260,6 +281,8 @@ private fun PrescriptionsPreviewContent(state: PrescriptionsUiState) {
                 onAddPrescription = {},
                 onOrderRepetition = {},
                 onBuyRepetition = {},
+                onEditPrescription = {},
+                onDeletePrescription = {},
                 onOpenBox = {},
             )
         }

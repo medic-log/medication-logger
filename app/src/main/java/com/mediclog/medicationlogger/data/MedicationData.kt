@@ -94,6 +94,100 @@ data class MedicationData(
         misses = misses + MedicationMiss(id = (misses.maxOfOrNull { it.id } ?: 0) + 1, date = today, kind = kind),
     )
 
+    /** Replaces a prescription's fields. Its status follows from them, and its boxes stay as they are. */
+    fun editPrescription(updated: Prescription): MedicationData {
+        val isValid = prescriptions.any { it.id == updated.id } &&
+            updated.prescribedBy.isNotBlank() &&
+            updated.pharmacy.isNotBlank() &&
+            updated.pillsPerBox > 0 &&
+            updated.boxesPerRepetition > 0 &&
+            updated.repetitionsTotal > 0 &&
+            updated.repetitionsBought in 0..updated.repetitionsTotal
+        if (!isValid) return this
+        val isFinished = updated.repetitionsBought == updated.repetitionsTotal
+        val orderedDate = updated.orderedDate.takeUnless { isFinished }
+        return withPrescription(
+            updated.copy(
+                orderedDate = orderedDate,
+                status = when {
+                    isFinished -> Prescription.Status.FINISHED
+                    orderedDate != null -> Prescription.Status.ORDERED
+                    updated.repetitionsBought > 0 -> Prescription.Status.IN_PROGRESS
+                    else -> Prescription.Status.NOT_STARTED
+                },
+            ),
+        )
+    }
+
+    /** Deletes a prescription with its boxes and their refills. */
+    fun deletePrescription(prescriptionId: Long): MedicationData = copy(
+        prescriptions = prescriptions.filterNot { it.id == prescriptionId },
+        boxes = boxes.filterNot { it.prescriptionId == prescriptionId },
+        refills = refills.filterNot { it.prescriptionId == prescriptionId },
+    )
+
+    /** Replaces a box's fields. An empty box can't stay saved as extra. */
+    fun editBox(updated: Box): MedicationData {
+        val isValid = boxes.any { it.id == updated.id } &&
+            updated.boxNumber > 0 &&
+            updated.pharmacy.isNotBlank() &&
+            updated.pillsTotal > 0 &&
+            updated.pillsLeft in 0..updated.pillsTotal
+        if (!isValid) return this
+        return withBox(updated.copy(isExtra = updated.isExtra && updated.pillsLeft > 0))
+    }
+
+    /** Deletes a box with its refills. */
+    fun deleteBox(boxId: Long): MedicationData = copy(
+        boxes = boxes.filterNot { it.id == boxId },
+        refills = refills.filterNot { it.boxId == boxId },
+    )
+
+    /** Replaces a refill's date, amount and partial flag. A changed amount moves pills to or from its box. */
+    fun editRefill(updated: Refill): MedicationData {
+        val refill = refills.find { it.id == updated.id } ?: return this
+        val extraPills = updated.amount - refill.amount
+        val box = boxes.find { it.id == refill.boxId }
+        if (updated.amount < 1 || (box != null && extraPills > box.pillsLeft)) return this
+        val edited = refill.copy(
+            date = updated.date,
+            amount = updated.amount,
+            amountRemaining = refill.amountRemaining - extraPills,
+            isPartial = updated.isPartial,
+        )
+        return copy(refills = refills.map { if (it.id == refill.id) edited else it })
+            .takingPills(refill, extraPills)
+    }
+
+    /** Deletes a refill, and its pills go back to its box. */
+    fun deleteRefill(refillId: Long): MedicationData {
+        val refill = refills.find { it.id == refillId } ?: return this
+        return copy(refills = refills - refill).takingPills(refill, -refill.amount)
+    }
+
+    fun editMiss(updated: MedicationMiss): MedicationData =
+        copy(misses = misses.map { if (it.id == updated.id) updated else it })
+
+    fun deleteMiss(missId: Long): MedicationData = copy(misses = misses.filterNot { it.id == missId })
+
+    // Later refills recorded how many pills were left after them, so they change along with the box
+    private fun takingPills(refill: Refill, pills: Int) = copy(
+        boxes = boxes.map { box ->
+            if (box.id == refill.boxId) {
+                box.copy(pillsLeft = (box.pillsLeft - pills).coerceIn(0, box.pillsTotal))
+            } else {
+                box
+            }
+        },
+        refills = refills.map { later ->
+            if (later.boxId == refill.boxId && later.id > refill.id) {
+                later.copy(amountRemaining = (later.amountRemaining - pills).coerceAtLeast(0))
+            } else {
+                later
+            }
+        },
+    )
+
     private fun refill(box: Box, wanted: Int, isPartial: Boolean, today: LocalDate): MedicationData {
         val amount = minOf(wanted, box.pillsLeft)
         if (!box.canRefill || amount == 0) return this

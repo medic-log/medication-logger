@@ -46,6 +46,22 @@ class MedicationRepository(
 
     fun logMiss(kind: MedicationMiss.Kind) = change { it.logMiss(kind, today()) }
 
+    fun editPrescription(updated: Prescription) = change { it.editPrescription(updated) }
+
+    fun deletePrescription(prescriptionId: Long) = change { it.deletePrescription(prescriptionId) }
+
+    fun editBox(updated: Box) = change { it.editBox(updated) }
+
+    fun deleteBox(boxId: Long) = change { it.deleteBox(boxId) }
+
+    fun editRefill(updated: Refill) = change { it.editRefill(updated) }
+
+    fun deleteRefill(refillId: Long) = change { it.deleteRefill(refillId) }
+
+    fun editMiss(updated: MedicationMiss) = change { it.editMiss(updated) }
+
+    fun deleteMiss(missId: Long) = change { it.deleteMiss(missId) }
+
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
     private fun today() = LocalDate.now(clock)

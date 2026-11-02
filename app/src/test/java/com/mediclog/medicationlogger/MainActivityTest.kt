@@ -21,8 +21,11 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTouchInput
 import com.mediclog.medicationlogger.data.MedicationData
+import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -286,6 +289,124 @@ class MainActivityTest {
         assertShown(string(R.string.refills_delayed))
         composeRule.onAllNodesWithText(today).onFirst().assertIsDisplayed()
         assertEquals(2, data.misses.size)
+    }
+
+    private fun hold(text: String) {
+        composeRule.onNodeWithText(text).performTouchInput { longClick(durationMillis = 1000) }
+        tap(string(R.string.edit_action))
+    }
+
+    private fun addBox() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
+        tap(string(R.string.prescriptions_buy))
+        openTab(R.string.main_tab_boxes)
+    }
+
+    @Test
+    fun `a short press on a card doesn't open it for editing`() {
+        addBox()
+
+        // Longer than the system's long press, shorter than the hold that opens a card
+        composeRule.onNodeWithText("$today #1").performTouchInput {
+            down(center)
+            advanceEventTime(700)
+            up()
+        }
+
+        assertNotShown(string(R.string.edit_confirm_title))
+    }
+
+    @Test
+    fun `holding a card asks first, and cancelling doesn't open it for editing`() {
+        addBox()
+
+        composeRule.onNodeWithText("$today #1").performTouchInput { longClick(durationMillis = 1200) }
+        assertShown(string(R.string.edit_confirm_title))
+        assertNotShown(string(R.string.edit_box_title))
+        tap(string(R.string.edit_cancel))
+
+        assertNotShown(string(R.string.edit_confirm_title))
+        assertNotShown(string(R.string.edit_box_title))
+    }
+
+    @Test
+    fun `holding a box card edits its fields`() {
+        addBox()
+
+        hold("$today #1")
+        assertShown(string(R.string.edit_box_title))
+        fillField(R.string.edit_field_pills_left, "12")
+        tap(string(R.string.edit_save))
+
+        assertEquals(12, data.boxes.single().pillsLeft)
+        assertNotShown(string(R.string.edit_box_title))
+        assertShown(string(R.string.boxes_pills_left, 12, 30))
+    }
+
+    @Test
+    fun `an edit that isn't valid can't be saved`() {
+        addBox()
+
+        hold("$today #1")
+        fillField(R.string.edit_field_pills_left, "31")
+
+        composeRule.onNodeWithText(string(R.string.edit_save)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun `deleting from the edit dialog asks first`() {
+        addBox()
+
+        hold("$today #1")
+        tap(string(R.string.edit_delete))
+        assertShown(string(R.string.edit_box_delete_message))
+        tap(string(R.string.edit_cancel))
+        assertEquals(1, data.boxes.size)
+        assertShown(string(R.string.edit_box_title))
+
+        tap(string(R.string.edit_delete))
+        tap(string(R.string.edit_delete))
+        assertTrue(data.boxes.isEmpty())
+        assertNotShown("$today #1")
+    }
+
+    @Test
+    fun `holding a prescription card edits it`() {
+        openTab(R.string.main_tab_prescriptions)
+        addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 2)
+
+        hold(string(R.string.prescriptions_prescribed_date, today))
+        fillField(R.string.prescriptions_field_pharmacy, "Other Pharmacy")
+        tap(string(R.string.edit_save))
+
+        assertEquals("Other Pharmacy", data.prescriptions.single().pharmacy)
+    }
+
+    @Test
+    fun `holding a refill card deletes it, returning its pills`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+        openTab(R.string.main_tab_refills)
+
+        hold(refillAmount(7, 23))
+        tap(string(R.string.edit_delete))
+        tap(string(R.string.edit_delete))
+
+        assertTrue(data.refills.isEmpty())
+        assertEquals(30, data.boxes.single().pillsLeft)
+    }
+
+    @Test
+    fun `holding a missed dose card edits it`() {
+        openTab(R.string.main_tab_refills)
+        tap(string(R.string.refills_log_missed))
+
+        hold(string(R.string.refills_missed))
+        tap(string(R.string.refills_delayed))
+        tap(string(R.string.edit_save))
+
+        assertEquals(MedicationMiss.Kind.DELAYED, data.misses.single().kind)
     }
 
     @Test

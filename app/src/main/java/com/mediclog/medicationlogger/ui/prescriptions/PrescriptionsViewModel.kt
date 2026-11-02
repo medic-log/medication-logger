@@ -41,6 +41,10 @@ class PrescriptionsViewModel(private val repository: MedicationRepository) : Vie
 
     fun buyRepetition(prescriptionId: Long) = repository.buyRepetition(prescriptionId)
 
+    fun editPrescription(updated: Prescription) = repository.editPrescription(updated)
+
+    fun deletePrescription(prescriptionId: Long) = repository.deletePrescription(prescriptionId)
+
     private fun toUiState(data: MedicationData, filter: ListFilter) = PrescriptionsUiState(
         filter = filter,
         items = data.prescriptions

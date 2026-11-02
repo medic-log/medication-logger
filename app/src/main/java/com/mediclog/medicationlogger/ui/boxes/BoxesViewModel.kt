@@ -42,6 +42,10 @@ class BoxesViewModel(private val repository: MedicationRepository) : ViewModel()
 
     fun backToInventory(boxId: Long) = repository.backToInventory(boxId)
 
+    fun editBox(updated: Box) = repository.editBox(updated)
+
+    fun deleteBox(boxId: Long) = repository.deleteBox(boxId)
+
     private fun toUiState(data: MedicationData, filter: ListFilter) = BoxesUiState(
         filter = filter,
         items = data.boxes

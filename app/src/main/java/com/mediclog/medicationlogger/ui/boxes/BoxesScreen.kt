@@ -19,6 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -61,6 +64,8 @@ fun BoxesRoute(
         onRefillPartial = viewModel::refillPartial,
         onSaveAsExtra = viewModel::saveAsExtra,
         onBackToInventory = viewModel::backToInventory,
+        onEditBox = viewModel::editBox,
+        onDeleteBox = viewModel::deleteBox,
         onOpenPrescription = onOpenPrescription,
         modifier = modifier,
     )
@@ -76,9 +81,12 @@ fun BoxesScreen(
     onRefillPartial: (Long) -> Unit,
     onSaveAsExtra: (Long) -> Unit,
     onBackToInventory: (Long) -> Unit,
+    onEditBox: (Box) -> Unit,
+    onDeleteBox: (Long) -> Unit,
     onOpenPrescription: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var editingId by rememberSaveable { mutableStateOf<Long?>(null) }
     val listState = rememberLazyListState()
     val focusedIndex = state.items.indexOfFirst { it.box.id == focusedBoxId }
     LaunchedEffect(focusedBoxId, focusedIndex) {
@@ -124,9 +132,24 @@ fun BoxesScreen(
                 onRefillPartial = { onRefillPartial(item.box.id) },
                 onSaveAsExtra = { onSaveAsExtra(item.box.id) },
                 onBackToInventory = { onBackToInventory(item.box.id) },
+                onEdit = { editingId = item.box.id },
                 onOpenPrescription = { onOpenPrescription(item.box.prescriptionId) },
             )
         }
+    }
+    state.items.find { it.box.id == editingId }?.let { item ->
+        EditBoxDialog(
+            box = item.box,
+            onSave = { updated ->
+                onEditBox(updated)
+                editingId = null
+            },
+            onDelete = {
+                onDeleteBox(item.box.id)
+                editingId = null
+            },
+            onDismiss = { editingId = null },
+        )
     }
 }
 
@@ -155,12 +178,13 @@ private fun BoxCard(
     onRefillPartial: () -> Unit,
     onSaveAsExtra: () -> Unit,
     onBackToInventory: () -> Unit,
+    onEdit: () -> Unit,
     onOpenPrescription: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val box = item.box
     val statusColors = box.status.tone().colors
-    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors) {
+    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(text = box.name, style = MaterialTheme.typography.titleMedium)
@@ -273,6 +297,8 @@ private fun BoxesPreviewContent(state: BoxesUiState) {
                 onRefillPartial = {},
                 onSaveAsExtra = {},
                 onBackToInventory = {},
+                onEditBox = {},
+                onDeleteBox = {},
                 onOpenPrescription = {},
             )
         }

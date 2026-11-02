@@ -15,6 +15,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -44,6 +47,10 @@ fun RefillsRoute(
     RefillsScreen(
         state = state,
         onLogMiss = viewModel::logMiss,
+        onEditRefill = viewModel::editRefill,
+        onDeleteRefill = viewModel::deleteRefill,
+        onEditMiss = viewModel::editMiss,
+        onDeleteMiss = viewModel::deleteMiss,
         onOpenPrescription = onOpenPrescription,
         onOpenBox = onOpenBox,
         modifier = modifier,
@@ -55,10 +62,15 @@ fun RefillsRoute(
 fun RefillsScreen(
     state: RefillsUiState,
     onLogMiss: (MedicationMiss.Kind) -> Unit,
+    onEditRefill: (Refill) -> Unit,
+    onDeleteRefill: (Long) -> Unit,
+    onEditMiss: (MedicationMiss) -> Unit,
+    onDeleteMiss: (Long) -> Unit,
     onOpenPrescription: (Long) -> Unit,
     onOpenBox: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var editingKey by rememberSaveable { mutableStateOf<String?>(null) }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -85,10 +97,39 @@ fun RefillsScreen(
                     entry = entry,
                     onOpenPrescription = { onOpenPrescription(entry.refill.prescriptionId) },
                     onOpenBox = { onOpenBox(entry.refill.boxId) },
+                    onEdit = { editingKey = entry.key },
                 )
-                is RefillLogEntry.MissEntry -> MissCard(entry.miss)
+                is RefillLogEntry.MissEntry -> MissCard(entry.miss, onEdit = { editingKey = entry.key })
             }
         }
+    }
+    when (val entry = state.entries.find { it.key == editingKey }) {
+        is RefillLogEntry.RefillEntry -> EditRefillDialog(
+            refill = entry.refill,
+            maxAmount = entry.maxAmount,
+            onSave = { updated ->
+                onEditRefill(updated)
+                editingKey = null
+            },
+            onDelete = {
+                onDeleteRefill(entry.refill.id)
+                editingKey = null
+            },
+            onDismiss = { editingKey = null },
+        )
+        is RefillLogEntry.MissEntry -> EditMissDialog(
+            miss = entry.miss,
+            onSave = { updated ->
+                onEditMiss(updated)
+                editingKey = null
+            },
+            onDelete = {
+                onDeleteMiss(entry.miss.id)
+                editingKey = null
+            },
+            onDismiss = { editingKey = null },
+        )
+        null -> Unit
     }
 }
 
@@ -97,10 +138,11 @@ private fun RefillCard(
     entry: RefillLogEntry.RefillEntry,
     onOpenPrescription: () -> Unit,
     onOpenBox: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val refill = entry.refill
-    RecordCard(modifier = modifier) {
+    RecordCard(modifier = modifier, onEdit = onEdit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(text = refill.date.toString(), style = MaterialTheme.typography.titleMedium)
@@ -136,8 +178,8 @@ private fun RefillCard(
 }
 
 @Composable
-private fun MissCard(miss: MedicationMiss, modifier: Modifier = Modifier) {
-    RecordCard(modifier = modifier) {
+private fun MissCard(miss: MedicationMiss, onEdit: () -> Unit, modifier: Modifier = Modifier) {
+    RecordCard(modifier = modifier, onEdit = onEdit) {
         Text(text = miss.date.toString(), style = MaterialTheme.typography.titleMedium)
         Text(
             text = stringResource(
@@ -155,7 +197,16 @@ private fun MissCard(miss: MedicationMiss, modifier: Modifier = Modifier) {
 private fun RefillsPreviewContent(state: RefillsUiState) {
     MedicationLoggerTheme {
         Surface {
-            RefillsScreen(state = state, onLogMiss = {}, onOpenPrescription = {}, onOpenBox = {})
+            RefillsScreen(
+                state = state,
+                onLogMiss = {},
+                onEditRefill = {},
+                onDeleteRefill = {},
+                onEditMiss = {},
+                onDeleteMiss = {},
+                onOpenPrescription = {},
+                onOpenBox = {},
+            )
         }
     }
 }
@@ -168,7 +219,7 @@ private fun RefillsScreenPreview() {
         RefillsUiState(
             listOf(
                 RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
-                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1", 1),
+                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1", 1, 4),
             ),
         ),
     )

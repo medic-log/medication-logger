@@ -189,4 +189,131 @@ class MedicationDataTest {
             data.misses,
         )
     }
+
+    private val refilled = MedicationData()
+        .addPrescription(draft(), day1)
+        .buyRepetition(1, day1)
+        .refillWeekly(1, day1)
+        .refillWeekly(1, day2)
+
+    @Test
+    fun `editing a prescription replaces its fields and works out its status`() {
+        val prescription = prescribed.prescriptions.single()
+
+        val edited = prescribed
+            .editPrescription(prescription.copy(prescribedBy = "Dr Other", orderedDate = day2))
+            .prescriptions
+            .single()
+
+        assertEquals("Dr Other", edited.prescribedBy)
+        assertEquals(Prescription.Status.ORDERED, edited.status)
+    }
+
+    @Test
+    fun `a prescription with every repetition bought is finished and no longer ordered`() {
+        val prescription = prescribed.prescriptions.single()
+
+        val edited = prescribed.editPrescription(
+            prescription.copy(repetitionsBought = prescription.repetitionsTotal, orderedDate = day2),
+        ).prescriptions.single()
+
+        assertEquals(Prescription.Status.FINISHED, edited.status)
+        assertEquals(null, edited.orderedDate)
+    }
+
+    @Test
+    fun `an edit with more repetitions bought than in total changes nothing`() {
+        val prescription = prescribed.prescriptions.single()
+
+        val edited = prescribed.editPrescription(
+            prescription.copy(repetitionsBought = prescription.repetitionsTotal + 1),
+        )
+
+        assertEquals(prescribed, edited)
+    }
+
+    @Test
+    fun `deleting a prescription deletes its boxes and refills only`() {
+        val data = refilled
+            .addPrescription(draft(), day1)
+            .buyRepetition(2, day1)
+            .refillWeekly(refilled.boxes.size + 1L, day2)
+
+        val deleted = data.deletePrescription(1)
+
+        assertEquals(listOf(2L), deleted.prescriptions.map { it.id })
+        assertTrue(deleted.boxes.all { it.prescriptionId == 2L })
+        assertTrue(deleted.refills.all { it.prescriptionId == 2L } && deleted.refills.isNotEmpty())
+    }
+
+    @Test
+    fun `editing a box replaces its fields, and more pills left than in total changes nothing`() {
+        val box = refilled.boxes.first()
+
+        assertEquals(5, refilled.editBox(box.copy(pillsLeft = 5)).boxes.first().pillsLeft)
+        assertEquals(refilled, refilled.editBox(box.copy(pillsLeft = box.pillsTotal + 1)))
+    }
+
+    @Test
+    fun `an extra box edited down to empty is no longer extra`() {
+        val data = refilled.saveAsExtra(1)
+
+        val edited = data.editBox(data.boxes.first().copy(pillsLeft = 0)).boxes.first()
+
+        assertEquals(Box.Status.FINISHED, edited.status)
+    }
+
+    @Test
+    fun `deleting a box deletes its refills`() {
+        val deleted = refilled.deleteBox(1)
+
+        assertTrue(deleted.boxes.none { it.id == 1L })
+        assertTrue(deleted.refills.isEmpty())
+    }
+
+    @Test
+    fun `changing a refill's amount moves pills, and later refills follow`() {
+        val pillsBefore = refilled.boxes.first().pillsLeft
+        val first = refilled.refills.first()
+
+        val edited = refilled.editRefill(first.copy(amount = first.amount + 2))
+
+        assertEquals(pillsBefore - 2, edited.boxes.first().pillsLeft)
+        assertEquals(first.amountRemaining - 2, edited.refills.first().amountRemaining)
+        assertEquals(refilled.refills.last().amountRemaining - 2, edited.refills.last().amountRemaining)
+    }
+
+    @Test
+    fun `a refill can't be edited to more pills than its box has`() {
+        val first = refilled.refills.first()
+
+        val edited = refilled.editRefill(first.copy(amount = first.amount + refilled.boxes.first().pillsLeft + 1))
+
+        assertEquals(refilled, edited)
+    }
+
+    @Test
+    fun `deleting a refill puts its pills back, and later refills follow`() {
+        val pillsBefore = refilled.boxes.first().pillsLeft
+        val first = refilled.refills.first()
+
+        val deleted = refilled.deleteRefill(first.id)
+
+        assertEquals(pillsBefore + first.amount, deleted.boxes.first().pillsLeft)
+        assertEquals(
+            refilled.refills.last().amountRemaining + first.amount,
+            deleted.refills.single().amountRemaining,
+        )
+    }
+
+    @Test
+    fun `a miss can be edited and deleted`() {
+        val data = MedicationData().logMiss(MedicationMiss.Kind.MISSED, day1)
+        val miss = data.misses.single()
+
+        val edited = data.editMiss(miss.copy(date = day2, kind = MedicationMiss.Kind.DELAYED))
+
+        assertEquals(miss.copy(date = day2, kind = MedicationMiss.Kind.DELAYED), edited.misses.single())
+        assertTrue(edited.deleteMiss(miss.id).misses.isEmpty())
+    }
 }
