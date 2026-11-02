@@ -6,6 +6,7 @@ import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.data.PrescriptionDraft
+import com.mediclog.medicationlogger.data.Refill
 import com.mediclog.medicationlogger.data.ReminderSettings
 import com.mediclog.medicationlogger.ui.boxes.BoxesViewModel
 import com.mediclog.medicationlogger.ui.components.ListFilter
@@ -206,6 +207,52 @@ class ViewModelsTest {
         val refills = entries.filterIsInstance<RefillLogEntry.RefillEntry>()
         assertEquals(listOf(16, 23), refills.map { it.refill.amountRemaining })
         assertEquals("$today #1", refills.first().boxName)
+    }
+
+    private fun partial(id: Long, amount: Int, date: LocalDate = today) =
+        Refill(id, 1, 1, date, amount, 0, isPartial = true)
+
+    private fun logOf(vararg refills: Refill): List<RefillLogEntry> {
+        val data = MedicationData(refills = refills.toList())
+        val scope = CoroutineScope(UnconfinedTestDispatcher())
+        return RefillsViewModel(MedicationRepository(FakeMedicationStore(data), clock, scope)).uiState.value.entries
+    }
+
+    private fun List<RefillLogEntry>.ids() = map { entry ->
+        when (entry) {
+            is RefillLogEntry.RefillEntry -> listOf(entry.refill.id)
+            is RefillLogEntry.RefillGroupEntry -> entry.refills.map { it.refill.id }
+            is RefillLogEntry.MissEntry -> emptyList()
+        }
+    }
+
+    @Test
+    fun `partial refills on one day that add up to a week are grouped, newest first`() {
+        assertEquals(listOf(listOf(3L, 2L, 1L)), logOf(partial(1, 2), partial(2, 2), partial(3, 3)).ids())
+    }
+
+    @Test
+    fun `partial refills that don't add up to a week aren't grouped`() {
+        assertEquals(listOf(listOf(2L), listOf(1L)), logOf(partial(1, 3), partial(2, 3)).ids())
+    }
+
+    @Test
+    fun `partial refills on different days aren't grouped`() {
+        val log = logOf(partial(1, 4, today.minusDays(1)), partial(2, 3))
+
+        assertEquals(listOf(listOf(2L), listOf(1L)), log.ids())
+    }
+
+    @Test
+    fun `a full refill between partial ones keeps them apart`() {
+        val full = Refill(2, 1, 1, today, 7, 0)
+
+        assertEquals(listOf(listOf(3L), listOf(2L), listOf(1L)), logOf(partial(1, 4), full, partial(3, 3)).ids())
+    }
+
+    @Test
+    fun `a week is found after a partial refill that doesn't fit in it`() {
+        assertEquals(listOf(listOf(3L, 2L), listOf(1L)), logOf(partial(1, 5), partial(2, 3), partial(3, 4)).ids())
     }
 
     @Test

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.MedicationRepository
+import com.mediclog.medicationlogger.data.PILLS_PER_WEEK
 import com.mediclog.medicationlogger.data.Refill
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,12 @@ sealed interface RefillLogEntry {
     ) : RefillLogEntry {
         override val key get() = "refill-${refill.id}"
         override val date get() = refill.date
+    }
+
+    /** Partial refills made one after another on one day that add up to a full week, newest first. */
+    data class RefillGroupEntry(val refills: List<RefillEntry>) : RefillLogEntry {
+        override val key get() = "group-${refills.last().refill.id}"
+        override val date get() = refills.first().date
     }
 
     /** A missed or delayed dose. */
@@ -56,12 +63,43 @@ class RefillsViewModel(private val repository: MedicationRepository) : ViewModel
 
     private fun toUiState(data: MedicationData): RefillsUiState {
         val boxes = data.boxes.associateBy { it.id }
-        val refills = data.refills.asReversed().map { refill ->
+        val refills = data.refills.map { refill ->
             val box = boxes[refill.boxId]
             val maxAmount = refill.amount + (box?.pillsLeft ?: 0)
             RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount)
         }
         val misses = data.misses.asReversed().map { RefillLogEntry.MissEntry(it) }
-        return RefillsUiState((misses + refills).sortedByDescending { it.date })
+        return RefillsUiState((misses + groupingFullWeeks(refills).asReversed()).sortedByDescending { it.date })
+    }
+
+    private fun groupingFullWeeks(refills: List<RefillLogEntry.RefillEntry>): List<RefillLogEntry> {
+        val entries = mutableListOf<RefillLogEntry>()
+        var start = 0
+        while (start < refills.size) {
+            val week = fullWeekFrom(refills, start)
+            if (week == null) {
+                entries += refills[start]
+                start++
+            } else {
+                entries += RefillLogEntry.RefillGroupEntry(week.asReversed())
+                start += week.size
+            }
+        }
+        return entries
+    }
+
+    private fun fullWeekFrom(
+        refills: List<RefillLogEntry.RefillEntry>,
+        start: Int,
+    ): List<RefillLogEntry.RefillEntry>? {
+        var pills = 0
+        for (end in start until refills.size) {
+            val refill = refills[end].refill
+            if (!refill.isPartial || refill.date != refills[start].date) return null
+            pills += refill.amount
+            if (pills == PILLS_PER_WEEK) return refills.subList(start, end + 1).takeIf { it.size > 1 }
+            if (pills > PILLS_PER_WEEK) return null
+        }
+        return null
     }
 }

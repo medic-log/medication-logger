@@ -6,10 +6,14 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -21,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -96,15 +101,22 @@ fun RefillsScreen(
             when (entry) {
                 is RefillLogEntry.RefillEntry -> RefillCard(
                     entry = entry,
-                    onOpenPrescription = entry.refill.prescriptionId?.let { id -> { onOpenPrescription(id) } },
-                    onOpenBox = entry.refill.boxId?.let { id -> { onOpenBox(id) } },
+                    onOpenPrescription = onOpenPrescription,
+                    onOpenBox = onOpenBox,
                     onEdit = { editingKey = entry.key },
+                )
+                is RefillLogEntry.RefillGroupEntry -> RefillGroupCard(
+                    group = entry,
+                    onOpenPrescription = onOpenPrescription,
+                    onOpenBox = onOpenBox,
+                    onEdit = { editingKey = it },
                 )
                 is RefillLogEntry.MissEntry -> MissCard(entry.miss, onEdit = { editingKey = entry.key })
             }
         }
     }
-    when (val entry = state.entries.find { it.key == editingKey }) {
+    val allEntries = state.entries.flatMap { if (it is RefillLogEntry.RefillGroupEntry) it.refills else listOf(it) }
+    when (val entry = allEntries.find { it.key == editingKey }) {
         is RefillLogEntry.RefillEntry -> EditRefillDialog(
             refill = entry.refill,
             maxAmount = entry.maxAmount,
@@ -130,20 +142,52 @@ fun RefillsScreen(
             },
             onDismiss = { editingKey = null },
         )
-        null -> Unit
+        is RefillLogEntry.RefillGroupEntry, null -> Unit
+    }
+}
+
+// Pasted together, sandwich style: only the outer corners of the stack are round
+@Composable
+private fun RefillGroupCard(
+    group: RefillLogEntry.RefillGroupEntry,
+    onOpenPrescription: (Long) -> Unit,
+    onOpenBox: (Long) -> Unit,
+    onEdit: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val cornerShape = MaterialTheme.shapes.medium
+    Column(modifier = modifier.fillMaxWidth()) {
+        group.refills.forEachIndexed { index, entry ->
+            if (index > 0) HorizontalDivider()
+            RefillCard(
+                entry = entry,
+                onOpenPrescription = onOpenPrescription,
+                onOpenBox = onOpenBox,
+                onEdit = { onEdit(entry.key) },
+                shape = cornerShape.copy(
+                    topStart = if (index == 0) cornerShape.topStart else ZeroCornerSize,
+                    topEnd = if (index == 0) cornerShape.topEnd else ZeroCornerSize,
+                    bottomStart = if (index == group.refills.lastIndex) cornerShape.bottomStart else ZeroCornerSize,
+                    bottomEnd = if (index == group.refills.lastIndex) cornerShape.bottomEnd else ZeroCornerSize,
+                ),
+            )
+        }
     }
 }
 
 @Composable
 private fun RefillCard(
     entry: RefillLogEntry.RefillEntry,
-    onOpenPrescription: (() -> Unit)?,
-    onOpenBox: (() -> Unit)?,
+    onOpenPrescription: (Long) -> Unit,
+    onOpenBox: (Long) -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    shape: Shape = CardDefaults.shape,
 ) {
     val refill = entry.refill
-    RecordCard(modifier = modifier, onEdit = onEdit) {
+    val openPrescription = refill.prescriptionId?.let { id -> { onOpenPrescription(id) } }
+    val openBox = refill.boxId?.let { id -> { onOpenBox(id) } }
+    RecordCard(modifier = modifier, onEdit = onEdit, shape = shape) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = refill.date.toString(),
@@ -158,7 +202,7 @@ private fun RefillCard(
                     text = pluralStringResource(R.plurals.refills_pills, refill.amount, refill.amount),
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                if (onOpenBox != null) {
+                if (openBox != null) {
                     Text(
                         text = stringResource(R.string.refills_box, entry.boxName, refill.amountRemaining),
                         style = MaterialTheme.typography.bodySmall,
@@ -167,17 +211,17 @@ private fun RefillCard(
             }
             LinkIconButton(
                 iconRes = R.drawable.ic_prescription,
-                descriptionRes = if (onOpenPrescription != null) {
+                descriptionRes = if (openPrescription != null) {
                     R.string.link_open_prescription
                 } else {
                     R.string.link_prescription_deleted
                 },
-                onClick = onOpenPrescription,
+                onClick = openPrescription,
             )
             LinkIconButton(
                 iconRes = R.drawable.ic_box,
-                descriptionRes = if (onOpenBox != null) R.string.link_open_box else R.string.link_box_deleted,
-                onClick = onOpenBox,
+                descriptionRes = if (openBox != null) R.string.link_open_box else R.string.link_box_deleted,
+                onClick = openBox,
                 modifier = Modifier.padding(start = 4.dp),
                 label = entry.boxNumber?.let { stringResource(R.string.link_box_number, it) },
             )
@@ -243,7 +287,12 @@ private fun RefillsScreenPreview() {
         RefillsUiState(
             listOf(
                 RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
-                RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, isPartial = true), "2026-10-01 #1", 1, 4),
+                RefillLogEntry.RefillGroupEntry(
+                    listOf(
+                        RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3),
+                        RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), "2026-10-01 #1", 1, 4),
+                    ),
+                ),
             ),
         ),
     )

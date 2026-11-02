@@ -266,6 +266,8 @@ class MainActivityTest {
         openTab(R.string.main_tab_refills)
         listOf(18, 11, 4, 0, 27, 20).forEach { assertShown(refillBox(it)) }
         composeRule.onAllNodesWithText(string(R.string.refills_partial)).assertCountEquals(2)
+        hold(refillBox(0))
+        assertShown(string(R.string.edit_refill_title))
     }
 
     private fun fillSecondPrescriptionPillsPerBox(pills: Int) {

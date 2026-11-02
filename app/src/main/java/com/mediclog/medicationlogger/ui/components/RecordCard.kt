@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -48,6 +49,7 @@ fun RecordCard(
     isHighlighted: Boolean = false,
     statusColors: StatusColors? = null,
     onEdit: (() -> Unit)? = null,
+    shape: Shape = CardDefaults.shape,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -86,6 +88,7 @@ fun RecordCard(
                             }
                     },
                 ),
+            shape = shape,
             colors = when {
                 statusColors != null -> CardDefaults.cardColors(
                     containerColor = statusColors.cardTint,
