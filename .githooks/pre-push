@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs the CI checks before every push. Enable once per clone: git config core.hooksPath .githooks
+# Skip with: git push --no-verify (or untick "Run Git hooks" in Android Studio's push dialog)
+exec ./scripts/check.sh

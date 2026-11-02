@@ -1,0 +1,33 @@
+{
+  "respectGitignore": true,
+  "permissions": {
+    "allow": [
+      "Bash(.claude/skills/run/run.sh:*)",
+      "Bash(./scripts/check.sh:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(./gradlew lint:*)",
+      "Bash(./gradlew testDebugUnitTest:*)",
+      "Bash(./gradlew tasks:*)",
+      "Bash(./gradlew dependencies:*)",
+      "Bash(adb devices:*)",
+      "Bash(adb install:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb shell am force-stop com.mediclog.medicationlogger)",
+      "Bash(adb shell dumpsys activity activities:*)",
+      "Bash(adb shell getprop:*)",
+      "Bash(adb shell pm list packages:*)",
+      "Bash(adb exec-out screencap:*)"
+    ],
+    "deny": [
+      "Read(./signing.env)",
+      "Read(./**/*.jks)",
+      "Read(./**/*.keystore)"
+    ],
+    "ask": [
+      "Bash(adb uninstall:*)",
+      "Bash(adb shell pm uninstall:*)",
+      "Bash(adb shell pm clear:*)"
+    ]
+  }
+}

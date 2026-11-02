@@ -1,0 +1,30 @@
+# CLAUDE.md
+
+Logs your medication prescriptions, pill boxes, and weekly refills, with reminders for refills, pickups, and running out. Single-module Android app (`:app`, package `com.mediclog.medicationlogger`), Kotlin + Compose, minSdk 28, target SDK 37. README.md is the user-facing spec.
+
+Detailed standards load automatically from `.claude/rules/` when you work on matching files: Kotlin and architecture, UI and design, tests, Gradle.
+
+## Working efficiently
+
+- **Replies:** lead with the result, in as few words as it takes. Don't restate the request, narrate steps, recap the diff or offer more work. Report what failed plainly.
+- **Decisions:** take the conventional default and state it. Ask only when the answer would change the outcome and you can't find it out yourself.
+- **Scope:** do what was asked with the smallest change. Reuse existing helpers, remove what the change leaves unused, and mention other problems instead of fixing them.
+- **Reading:** open only the files the change touches (the map below says where things are). Don't explore the codebase, read README.md or re-read files you just edited.
+- **Running:** never install or launch the app unless asked; the user runs `/run`. Run `./scripts/check.sh` once when the change is done, not after every edit. On success it prints at most the lint report path.
+- **Docs:** update this file or README.md only when user-visible behavior or architecture changes.
+- **Git:** commit or push only when asked.
+- Machine-specific notes (SDK path, test device) go in the gitignored `CLAUDE.local.md`.
+
+## Commands
+
+- `./scripts/check.sh`: build, lint and unit tests, as CI and the pre-push hook do (`/check` runs it).
+- `./gradlew testDebugUnitTest --tests '*MainActivityTest'`: one test class.
+- Releases: `/release` (bumps the version, tags, pushes; `release.yml` signs and publishes).
+
+## Map and non-obvious constraints
+
+Keep this to what isn't obvious from the code; add an entry when a new file or constraint needs one.
+
+- `MainActivity`: hosts the Compose UI.
+- `ui/<feature>/`: a feature's screen and ViewModel (`ui/home/`). `ui/theme/`: Material 3 theme.
+- `data/`: repositories and data sources, when the app needs them.
