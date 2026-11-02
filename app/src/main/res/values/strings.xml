@@ -14,7 +14,6 @@
     <string name="link_open_prescription">Open prescription</string>
     <string name="link_open_box">Open box</string>
     <string name="link_box_number">#%1$d</string>
-    <string name="status_label">Status: %1$s</string>
     <string name="pharmacy_label">Pharmacy: %1$s</string>
 
     <string name="prescriptions_new">New prescription</string>
@@ -25,7 +24,7 @@
     <string name="prescriptions_ordered_date">Ordered: %1$s</string>
     <string name="prescriptions_bought_first">First bought: %1$s</string>
     <string name="prescriptions_bought_last">Last bought: %1$s</string>
-    <string name="prescriptions_repetitions">Repetitions: %1$d/%2$d</string>
+    <string name="prescriptions_repetitions">%1$d/%2$d reps</string>
     <string name="prescriptions_per_box">Pills per box: %1$d</string>
     <string name="prescriptions_per_repetition">Per repetition: boxes %1$d, pills %2$d</string>
     <string name="prescriptions_total">In total: boxes %1$d, pills %2$d</string>
@@ -47,7 +46,7 @@
     <string name="boxes_empty_active">No active boxes. Buy a repetition in Prescriptions, or choose All to see finished and extra boxes.</string>
     <string name="boxes_empty_all">No boxes yet. Buy a repetition in Prescriptions to add some.</string>
     <string name="boxes_empty_extra">No extra boxes. Use Save as extra on a box to set it aside.</string>
-    <string name="boxes_pills_left">Pills: %1$d/%2$d</string>
+    <string name="boxes_pills_left">%1$d/%2$d pills</string>
     <string name="boxes_refills_title">Refills:</string>
     <string name="boxes_refill_weekly">Weekly refill</string>
     <string name="boxes_refill_partial">Partial refill</string>

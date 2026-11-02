@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,7 +22,7 @@ fun LinkIconButton(
     modifier: Modifier = Modifier,
     label: String? = null,
 ) {
-    CardButton(onClick = onClick, modifier = modifier) {
+    CardButton(onClick = onClick, modifier = modifier, shape = MaterialTheme.shapes.small) {
         Icon(
             painter = painterResource(iconRes),
             contentDescription = stringResource(descriptionRes),

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +41,7 @@ import com.mediclog.medicationlogger.ui.components.FilterSelector
 import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
+import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
 
@@ -160,20 +162,24 @@ private fun PrescriptionCard(
 ) {
     val prescription = item.prescription
     RecordCard(modifier = modifier, isHighlighted = isHighlighted) {
-        Text(
-            text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.toString()),
-            style = MaterialTheme.typography.titleMedium,
-        )
+        Row {
+            Text(
+                text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.toString()),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f),
+            )
+            StatusBadge(
+                status = stringResource(prescription.status.labelRes()),
+                amount = stringResource(
+                    R.string.prescriptions_repetitions,
+                    prescription.repetitionsBought,
+                    prescription.repetitionsTotal,
+                ),
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
         Detail(stringResource(R.string.prescriptions_prescribed_by, prescription.prescribedBy))
-        Detail(stringResource(R.string.status_label, stringResource(prescription.status.labelRes())))
         Detail(stringResource(R.string.pharmacy_label, prescription.pharmacy))
-        Detail(
-            stringResource(
-                R.string.prescriptions_repetitions,
-                prescription.repetitionsBought,
-                prescription.repetitionsTotal,
-            ),
-        )
         Detail(stringResource(R.string.prescriptions_per_box, prescription.pillsPerBox))
         Detail(
             stringResource(

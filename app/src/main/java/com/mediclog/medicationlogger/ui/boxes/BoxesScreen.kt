@@ -35,6 +35,7 @@ import com.mediclog.medicationlogger.ui.components.FilterSelector
 import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
+import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
 
@@ -157,26 +158,25 @@ private fun BoxCard(
 ) {
     val box = item.box
     RecordCard(modifier = modifier, isHighlighted = isHighlighted) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = box.name,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            LinkIconButton(
-                iconRes = R.drawable.ic_prescription,
-                descriptionRes = R.string.link_open_prescription,
-                onClick = onOpenPrescription,
+        Row {
+            Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = box.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                LinkIconButton(
+                    iconRes = R.drawable.ic_prescription,
+                    descriptionRes = R.string.link_open_prescription,
+                    onClick = onOpenPrescription,
+                )
+            }
+            StatusBadge(
+                status = stringResource(box.status.labelRes()),
+                amount = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
-        Text(
-            text = stringResource(R.string.status_label, stringResource(box.status.labelRes())),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Text(
-            text = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
-            style = MaterialTheme.typography.bodyMedium,
-        )
         Text(
             text = stringResource(R.string.pharmacy_label, box.pharmacy),
             style = MaterialTheme.typography.bodyMedium,

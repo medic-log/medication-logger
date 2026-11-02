@@ -4,6 +4,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -112,15 +113,15 @@ class MainActivityTest {
         assertShown(string(R.string.prescriptions_per_repetition, 3, 90))
         assertShown(string(R.string.prescriptions_total, 6, 180))
         val notStarted = string(R.string.prescriptions_status_not_started)
-        assertShown(string(R.string.status_label, notStarted))
+        assertShown(notStarted)
 
         tap(string(R.string.prescriptions_order))
-        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_ordered)))
+        assertShown(string(R.string.prescriptions_status_ordered))
         assertShown(string(R.string.prescriptions_repetitions, 0, 2))
         composeRule.onNodeWithText(string(R.string.prescriptions_order)).assertIsNotEnabled()
 
         tap(string(R.string.prescriptions_buy))
-        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_in_progress)))
+        assertShown(string(R.string.prescriptions_status_in_progress))
         assertShown(string(R.string.prescriptions_repetitions, 1, 2))
         assertShown(string(R.string.prescriptions_bought_first, today))
         assertShown(string(R.string.prescriptions_bought_last, today))
@@ -245,11 +246,12 @@ class MainActivityTest {
         assertShown(string(R.string.boxes_empty_active))
 
         tap(string(R.string.filter_all))
-        assertShown(string(R.string.status_label, string(R.string.boxes_status_extra)))
+        // The filter and the status
+        composeRule.onAllNodesWithText(string(R.string.boxes_status_extra)).assertCountEquals(2)
         composeRule.onNodeWithText(string(R.string.boxes_refill_weekly)).assertIsNotEnabled()
 
         tap(string(R.string.boxes_back_to_inventory))
-        assertShown(string(R.string.status_label, string(R.string.boxes_status_not_started)))
+        assertShown(string(R.string.boxes_status_not_started))
         composeRule.onNodeWithText(string(R.string.boxes_refill_weekly)).assertIsEnabled()
     }
 
@@ -263,7 +265,7 @@ class MainActivityTest {
 
         tap(string(R.string.filter_all))
         assertShown(prescribedOn)
-        assertShown(string(R.string.status_label, string(R.string.prescriptions_status_finished)))
+        assertShown(string(R.string.prescriptions_status_finished))
 
         tap(string(R.string.filter_active))
         assertNotShown(prescribedOn)
