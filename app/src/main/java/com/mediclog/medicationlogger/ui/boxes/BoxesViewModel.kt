@@ -52,9 +52,16 @@ class BoxesViewModel(private val repository: MedicationRepository) : ViewModel()
                     ListFilter.EXTRA -> box.isExtra
                 }
             }
-            // Boxes in use come first, in the order they were bought, and empty ones last
-            .sortedWith(compareBy({ it.status == Box.Status.FINISHED }, { it.id }))
+            // Oldest first within a status, as that's the order boxes get used in
+            .sortedWith(compareBy({ it.status.sortRank() }, { it.boughtDate }, { it.boxNumber }, { it.id }))
             .map { box -> BoxItem(box, data.refills.filter { it.boxId == box.id }.asReversed()) },
         pendingRefillAmount = data.pendingRefillAmount,
     )
+
+    private fun Box.Status.sortRank() = when (this) {
+        Box.Status.IN_PROGRESS -> 0
+        Box.Status.EXTRA -> 1
+        Box.Status.NOT_STARTED -> 2
+        Box.Status.FINISHED -> 3
+    }
 }

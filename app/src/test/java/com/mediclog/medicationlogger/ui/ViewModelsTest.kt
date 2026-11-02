@@ -1,6 +1,8 @@
 package com.mediclog.medicationlogger.ui
 
+import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.FakeMedicationStore
+import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.data.PrescriptionDraft
@@ -108,6 +110,58 @@ class ViewModelsTest {
         viewModel.backToInventory(2)
         viewModel.setFilter(ListFilter.ACTIVE)
         assertEquals(listOf(2L, 3L), viewModel.uiState.value.items.map { it.box.id })
+    }
+
+    @Test
+    fun `prescriptions sort by status, then newest first`() {
+        val viewModel = PrescriptionsViewModel(repository)
+        viewModel.addPrescription(draft)
+        viewModel.addPrescription(draft.copy(repetitionsTotal = 2))
+        viewModel.addPrescription(draft)
+        viewModel.addPrescription(draft)
+        viewModel.addPrescription(draft)
+        viewModel.buyRepetition(1)
+        viewModel.buyRepetition(2)
+        viewModel.orderRepetition(3)
+
+        viewModel.setFilter(ListFilter.ALL)
+
+        assertEquals(listOf(3L, 2L, 5L, 4L, 1L), viewModel.uiState.value.items.map { it.prescription.id })
+    }
+
+    @Test
+    fun `boxes sort by status, then oldest date, then number`() {
+        val twoBoxes = draft.copy(boxesPerRepetition = 2)
+        val data = MedicationData()
+            .addPrescription(twoBoxes, today)
+            .addPrescription(twoBoxes.copy(pillsPerBox = 7), today)
+            .addPrescription(twoBoxes, today)
+            .buyRepetition(1, today)
+            .buyRepetition(2, today)
+            .buyRepetition(3, today.minusDays(1))
+            .refillWeekly(1, today)
+            .saveAsExtra(2)
+            .refillWeekly(3, today)
+        val dispatcher = UnconfinedTestDispatcher()
+        val viewModel = BoxesViewModel(
+            MedicationRepository(FakeMedicationStore(data), clock, CoroutineScope(dispatcher)),
+        )
+
+        viewModel.setFilter(ListFilter.ALL)
+
+        val boxes = viewModel.uiState.value.items.map { it.box }
+        assertEquals(
+            listOf(
+                Box.Status.IN_PROGRESS,
+                Box.Status.EXTRA,
+                Box.Status.NOT_STARTED,
+                Box.Status.NOT_STARTED,
+                Box.Status.NOT_STARTED,
+                Box.Status.FINISHED,
+            ),
+            boxes.map { it.status },
+        )
+        assertEquals(listOf(5L, 6L, 4L), boxes.subList(2, 5).map { it.id })
     }
 
     @Test

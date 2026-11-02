@@ -45,10 +45,22 @@ class PrescriptionsViewModel(private val repository: MedicationRepository) : Vie
         filter = filter,
         items = data.prescriptions
             .filter { filter == ListFilter.ALL || it.isActive }
-            .asReversed()
+            // Newest first within a status, as a new prescription is the one most likely to need attention
+            .sortedWith(
+                compareBy<Prescription> { it.status.sortRank() }
+                    .thenByDescending { it.prescribedDate }
+                    .thenByDescending { it.id },
+            )
             .map { prescription ->
                 PrescriptionItem(prescription, data.boxes.filter { it.prescriptionId == prescription.id })
             },
         previousPrescription = data.prescriptions.lastOrNull(),
     )
+
+    private fun Prescription.Status.sortRank() = when (this) {
+        Prescription.Status.ORDERED -> 0
+        Prescription.Status.IN_PROGRESS -> 1
+        Prescription.Status.NOT_STARTED -> 2
+        Prescription.Status.FINISHED -> 3
+    }
 }
