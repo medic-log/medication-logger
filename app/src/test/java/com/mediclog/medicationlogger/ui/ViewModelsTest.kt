@@ -111,6 +111,18 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `boxes extra filter shows only extra boxes`() {
+        val viewModel = BoxesViewModel(repository)
+        repository.addPrescription(draft.copy(pillsPerBox = 7, boxesPerRepetition = 3))
+        repository.buyRepetition(1)
+        viewModel.saveAsExtra(2)
+
+        viewModel.setFilter(ListFilter.EXTRA)
+
+        assertEquals(listOf(2L), viewModel.uiState.value.items.map { it.box.id })
+    }
+
+    @Test
     fun `box items hold their refills, and the pending amount follows the last refill`() {
         val viewModel = BoxesViewModel(repository)
         repository.addPrescription(draft.copy(pillsPerBox = 11, boxesPerRepetition = 2))

@@ -80,16 +80,36 @@ class ReminderDeliveryTest {
     }
 
     @Test
-    fun `a run-out notification says a new prescription is needed`() {
+    fun `a run-out notification says a new prescription is needed when no repetition is left`() {
         app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1))
+        app.repository.buyRepetition(app.repository.data.value.prescriptions.single().id)
         app.repository.updateReminderSettings(ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 365))
 
         // Due long ago, whatever time of day the test runs
         fire(ReminderKind.RUN_OUT)
 
+        val notification = shadowOf(notifications.allNotifications.single())
+        assertEquals(app.getString(R.string.reminders_notification_run_out_title), notification.contentTitle)
         assertEquals(
-            app.getString(R.string.reminders_notification_run_out_title),
-            shadowOf(notifications.allNotifications.single()).contentTitle,
+            app.getString(R.string.reminders_notification_run_out_text, LocalDate.now().plusDays(7).toString()),
+            notification.contentText,
+        )
+    }
+
+    @Test
+    fun `a run-out notification says to get a repetition when one is left`() {
+        app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 2))
+        app.repository.buyRepetition(app.repository.data.value.prescriptions.single().id)
+        app.repository.updateReminderSettings(ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 365))
+
+        fire(ReminderKind.RUN_OUT)
+
+        assertEquals(
+            app.getString(
+                R.string.reminders_notification_run_out_repetition_text,
+                LocalDate.now().plusDays(7).toString(),
+            ),
+            shadowOf(notifications.allNotifications.single()).contentText,
         )
     }
 

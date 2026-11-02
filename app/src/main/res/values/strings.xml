@@ -10,6 +10,7 @@
 
     <string name="filter_active">Active</string>
     <string name="filter_all">All</string>
+    <string name="filter_extra">Extra</string>
     <string name="link_open_prescription">Open prescription</string>
     <string name="link_open_box">Open box</string>
     <string name="status_label">Status: %1$s</string>
@@ -23,11 +24,12 @@
     <string name="prescriptions_ordered_date">Ordered: %1$s</string>
     <string name="prescriptions_bought_first">First bought: %1$s</string>
     <string name="prescriptions_bought_last">Last bought: %1$s</string>
-    <string name="prescriptions_repetitions">Repetitions bought: %1$d of %2$d</string>
+    <string name="prescriptions_repetitions">Repetitions: %1$d/%2$d</string>
     <string name="prescriptions_per_box">Pills per box: %1$d</string>
     <string name="prescriptions_per_repetition">Per repetition: boxes %1$d, pills %2$d</string>
     <string name="prescriptions_total">In total: boxes %1$d, pills %2$d</string>
     <string name="prescriptions_linked_boxes">Boxes:</string>
+    <string name="prescriptions_box_link">#%1$d</string>
     <string name="prescriptions_order">Order repetition</string>
     <string name="prescriptions_buy">Buy repetition</string>
     <string name="prescriptions_status_not_started">Not started</string>
@@ -44,7 +46,8 @@
 
     <string name="boxes_empty_active">No active boxes. Buy a repetition in Prescriptions, or choose All to see finished and extra boxes.</string>
     <string name="boxes_empty_all">No boxes yet. Buy a repetition in Prescriptions to add some.</string>
-    <string name="boxes_pills_left">Pills left: %1$d of %2$d</string>
+    <string name="boxes_empty_extra">No extra boxes. Use Save as extra on a box to set it aside.</string>
+    <string name="boxes_pills_left">Pills: %1$d/%2$d</string>
     <string name="boxes_refills_title">Refills:</string>
     <string name="boxes_refill_weekly">Weekly refill</string>
     <string name="boxes_refill_partial">Partial refill</string>
@@ -87,7 +90,7 @@
     <string name="reminders_pickup_next">Pick up from: %1$s</string>
     <string name="reminders_pickup_none">Nothing is ordered right now.</string>
     <string name="reminders_run_out_title">Running out</string>
-    <string name="reminders_run_out_summary">Days before your medication runs out, to get a new prescription. Repeated daily until you have more.</string>
+    <string name="reminders_run_out_summary">Days before the pills you\'ve bought run out, to get your next repetition or a new prescription. Repeated daily until you have more.</string>
     <string name="reminders_run_out_date">Runs out around %1$s</string>
     <string name="reminders_run_out_none">Add a prescription to estimate when you\'ll run out.</string>
     <string name="reminders_fewer_days">Fewer days: %1$s</string>
@@ -101,6 +104,7 @@
     <string name="reminders_notification_pickup_text">Your ordered repetition should be ready at the pharmacy.</string>
     <string name="reminders_notification_run_out_title">Running out of medication</string>
     <string name="reminders_notification_run_out_text">You need a new prescription: your medication runs out around %1$s.</string>
+    <string name="reminders_notification_run_out_repetition_text">Get your next repetition: your pills run out around %1$s.</string>
     <plurals name="reminders_days">
         <item quantity="one">%1$d day</item>
         <item quantity="other">%1$d days</item>

@@ -19,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -98,7 +97,11 @@ fun PrescriptionsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item(key = "header") {
-                FilterSelector(filter = state.filter, onFilterChange = onFilterChange)
+                FilterSelector(
+                    filter = state.filter,
+                    options = listOf(ListFilter.ACTIVE, ListFilter.ALL),
+                    onFilterChange = onFilterChange,
+                )
             }
             if (state.items.isEmpty()) {
                 item(key = "empty") {
@@ -198,14 +201,17 @@ private fun PrescriptionCard(
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item.boxes.forEach { box ->
-                    TextButton(onClick = { onOpenBox(box.id) }) {
+                    OutlinedButton(
+                        onClick = { onOpenBox(box.id) },
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_box),
                                 contentDescription = null,
-                                modifier = Modifier.padding(end = 8.dp).size(16.dp),
+                                modifier = Modifier.padding(end = 4.dp).size(16.dp),
                             )
-                            Text(box.name)
+                            Text(stringResource(R.string.prescriptions_box_link, box.boxNumber))
                         }
                     }
                 }

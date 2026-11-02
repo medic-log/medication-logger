@@ -106,10 +106,10 @@ class ReminderCalculatorTest {
     }
 
     @Test
-    fun `run-out reminder fires the chosen days before running out`() {
+    fun `run-out reminder fires the chosen days before the bought pills run out`() {
         val settings = ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 14)
-        val data = MedicationData(reminderSettings = settings).addPrescription(draft, today)
-        val dueDay = today.plusDays(60 - 14)
+        val data = MedicationData(reminderSettings = settings).addPrescription(draft, today).buyRepetition(1, today)
+        val dueDay = today.plusDays(30 - 14)
 
         assertEquals(
             dueDay.atTime(9, 0),

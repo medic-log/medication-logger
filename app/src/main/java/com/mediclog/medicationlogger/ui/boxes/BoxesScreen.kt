@@ -92,17 +92,21 @@ fun BoxesScreen(
     ) {
         item(key = "header") {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                FilterSelector(filter = state.filter, onFilterChange = onFilterChange)
+                FilterSelector(
+                    filter = state.filter,
+                    options = ListFilter.entries,
+                    onFilterChange = onFilterChange,
+                )
                 if (state.pendingRefillAmount > 0) {
                     PendingRefillNotice(state.pendingRefillAmount)
                 }
                 if (state.items.isEmpty()) {
                     Text(
                         text = stringResource(
-                            if (state.filter == ListFilter.ACTIVE) {
-                                R.string.boxes_empty_active
-                            } else {
-                                R.string.boxes_empty_all
+                            when (state.filter) {
+                                ListFilter.ACTIVE -> R.string.boxes_empty_active
+                                ListFilter.ALL -> R.string.boxes_empty_all
+                                ListFilter.EXTRA -> R.string.boxes_empty_extra
                             },
                         ),
                         style = MaterialTheme.typography.bodyLarge,

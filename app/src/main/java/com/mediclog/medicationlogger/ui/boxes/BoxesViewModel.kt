@@ -45,7 +45,13 @@ class BoxesViewModel(private val repository: MedicationRepository) : ViewModel()
     private fun toUiState(data: MedicationData, filter: ListFilter) = BoxesUiState(
         filter = filter,
         items = data.boxes
-            .filter { filter == ListFilter.ALL || it.isActive }
+            .filter { box ->
+                when (filter) {
+                    ListFilter.ACTIVE -> box.isActive
+                    ListFilter.ALL -> true
+                    ListFilter.EXTRA -> box.isExtra
+                }
+            }
             // Boxes in use come first, in the order they were bought, and empty ones last
             .sortedWith(compareBy({ it.status == Box.Status.FINISHED }, { it.id }))
             .map { box -> BoxItem(box, data.refills.filter { it.boxId == box.id }.asReversed()) },

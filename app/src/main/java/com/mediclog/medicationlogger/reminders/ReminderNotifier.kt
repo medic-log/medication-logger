@@ -56,8 +56,12 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
         ReminderKind.REFILL -> context.getString(R.string.reminders_notification_refill_text)
         ReminderKind.PICKUP -> context.getString(R.string.reminders_notification_pickup_text)
         ReminderKind.RUN_OUT -> context.getString(
-            R.string.reminders_notification_run_out_text,
-            ReminderCalculator.runOutDate(data, LocalDate.now(clock)).toString(),
+            if (data.prescriptions.any { it.canBuy }) {
+                R.string.reminders_notification_run_out_repetition_text
+            } else {
+                R.string.reminders_notification_run_out_text
+            },
+            ReminderCalculator.boughtPillsRunOutDate(data, LocalDate.now(clock)).toString(),
         )
     }
 }
