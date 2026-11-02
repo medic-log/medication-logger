@@ -13,7 +13,7 @@ The app opens on **Boxes**, and has four tabs:
 
 Prescriptions and boxes can be filtered to **Active** or **All**, and boxes also to **Extra**. The icons on boxes and refills open the prescription or box they belong to.
 
-Hold a prescription, box or refill card for a second to edit its fields by hand or delete it, after confirming.
+Hold a prescription, box or refill card for a second to edit its fields by hand or delete it, after confirming. Deleting a prescription or box can keep its boxes or refills; their link to it then shows crossed out and disabled.
 
 ## Build from source
 

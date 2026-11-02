@@ -82,7 +82,7 @@ fun BoxesScreen(
     onSaveAsExtra: (Long) -> Unit,
     onBackToInventory: (Long) -> Unit,
     onEditBox: (Box) -> Unit,
-    onDeleteBox: (Long) -> Unit,
+    onDeleteBox: (Long, Boolean) -> Unit,
     onOpenPrescription: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -133,19 +133,20 @@ fun BoxesScreen(
                 onSaveAsExtra = { onSaveAsExtra(item.box.id) },
                 onBackToInventory = { onBackToInventory(item.box.id) },
                 onEdit = { editingId = item.box.id },
-                onOpenPrescription = { onOpenPrescription(item.box.prescriptionId) },
+                onOpenPrescription = item.box.prescriptionId?.let { id -> { onOpenPrescription(id) } },
             )
         }
     }
     state.items.find { it.box.id == editingId }?.let { item ->
         EditBoxDialog(
             box = item.box,
+            hasRefills = item.refills.isNotEmpty(),
             onSave = { updated ->
                 onEditBox(updated)
                 editingId = null
             },
-            onDelete = {
-                onDeleteBox(item.box.id)
+            onDelete = { keepRefills ->
+                onDeleteBox(item.box.id, keepRefills)
                 editingId = null
             },
             onDismiss = { editingId = null },
@@ -179,7 +180,7 @@ private fun BoxCard(
     onSaveAsExtra: () -> Unit,
     onBackToInventory: () -> Unit,
     onEdit: () -> Unit,
-    onOpenPrescription: () -> Unit,
+    onOpenPrescription: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val box = item.box
@@ -213,7 +214,11 @@ private fun BoxCard(
             }
             LinkIconButton(
                 iconRes = R.drawable.ic_prescription,
-                descriptionRes = R.string.link_open_prescription,
+                descriptionRes = if (onOpenPrescription != null) {
+                    R.string.link_open_prescription
+                } else {
+                    R.string.link_prescription_deleted
+                },
                 onClick = onOpenPrescription,
             )
         }
@@ -295,7 +300,7 @@ private fun BoxesPreviewContent(state: BoxesUiState) {
                 onSaveAsExtra = {},
                 onBackToInventory = {},
                 onEditBox = {},
-                onDeleteBox = {},
+                onDeleteBox = { _, _ -> },
                 onOpenPrescription = {},
             )
         }

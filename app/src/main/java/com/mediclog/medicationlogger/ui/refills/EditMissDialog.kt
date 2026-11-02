@@ -37,7 +37,7 @@ fun EditMissDialog(
     RecordEditDialog(
         title = stringResource(R.string.edit_miss_title),
         canSave = parsedDate != null,
-        deleteMessage = stringResource(R.string.edit_miss_delete_message),
+        deleteMessage = stringResource(R.string.edit_delete_message),
         onSave = { parsedDate?.let { onSave(miss.copy(date = it, kind = kind)) } },
         onDelete = onDelete,
         onDismiss = onDismiss,

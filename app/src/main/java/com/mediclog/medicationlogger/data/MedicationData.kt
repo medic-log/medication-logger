@@ -118,12 +118,26 @@ data class MedicationData(
         )
     }
 
-    /** Deletes a prescription with its boxes and their refills. */
-    fun deletePrescription(prescriptionId: Long): MedicationData = copy(
-        prescriptions = prescriptions.filterNot { it.id == prescriptionId },
-        boxes = boxes.filterNot { it.prescriptionId == prescriptionId },
-        refills = refills.filterNot { it.prescriptionId == prescriptionId },
-    )
+    /**
+     * Deletes a prescription with its boxes and their refills, or with [keepBoxes] only the prescription.
+     * Whatever stays loses its link, as ids get reused and it would otherwise link to a later record.
+     */
+    fun deletePrescription(prescriptionId: Long, keepBoxes: Boolean = false): MedicationData {
+        val deletedBoxIds = if (keepBoxes) {
+            emptySet()
+        } else {
+            boxes.filter { it.prescriptionId == prescriptionId }.map { it.id }.toSet()
+        }
+        return copy(
+            prescriptions = prescriptions.filterNot { it.id == prescriptionId },
+            boxes = boxes
+                .filterNot { it.id in deletedBoxIds }
+                .map { if (it.prescriptionId == prescriptionId) it.copy(prescriptionId = null) else it },
+            refills = refills
+                .filterNot { it.boxId in deletedBoxIds }
+                .map { if (it.prescriptionId == prescriptionId) it.copy(prescriptionId = null) else it },
+        )
+    }
 
     /** Replaces a box's fields. An empty box can't stay saved as extra. */
     fun editBox(updated: Box): MedicationData {
@@ -135,10 +149,14 @@ data class MedicationData(
         return withBox(updated.copy(isExtra = updated.isExtra && updated.pillsLeft > 0))
     }
 
-    /** Deletes a box with its refills. */
-    fun deleteBox(boxId: Long): MedicationData = copy(
+    /** Deletes a box with its refills, or with [keepRefills] only the box, and the refills lose their link to it. */
+    fun deleteBox(boxId: Long, keepRefills: Boolean = false): MedicationData = copy(
         boxes = boxes.filterNot { it.id == boxId },
-        refills = refills.filterNot { it.boxId == boxId },
+        refills = if (keepRefills) {
+            refills.map { if (it.boxId == boxId) it.copy(boxId = null) else it }
+        } else {
+            refills.filterNot { it.boxId == boxId }
+        },
     )
 
     /** Replaces a refill's date, amount and partial flag. A changed amount moves pills to or from its box. */
@@ -178,7 +196,7 @@ data class MedicationData(
             }
         },
         refills = refills.map { later ->
-            if (later.boxId == refill.boxId && later.id > refill.id) {
+            if (refill.boxId != null && later.boxId == refill.boxId && later.id > refill.id) {
                 later.copy(amountRemaining = (later.amountRemaining - pills).coerceAtLeast(0))
             } else {
                 later

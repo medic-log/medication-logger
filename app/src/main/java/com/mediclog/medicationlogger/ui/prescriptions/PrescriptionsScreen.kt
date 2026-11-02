@@ -82,7 +82,7 @@ fun PrescriptionsScreen(
     onOrderRepetition: (Long) -> Unit,
     onBuyRepetition: (Long) -> Unit,
     onEditPrescription: (Prescription) -> Unit,
-    onDeletePrescription: (Long) -> Unit,
+    onDeletePrescription: (Long, Boolean) -> Unit,
     onOpenBox: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -159,12 +159,13 @@ fun PrescriptionsScreen(
     state.items.find { it.prescription.id == editingId }?.let { item ->
         EditPrescriptionDialog(
             prescription = item.prescription,
+            hasBoxes = item.boxes.isNotEmpty(),
             onSave = { updated ->
                 onEditPrescription(updated)
                 editingId = null
             },
-            onDelete = {
-                onDeletePrescription(item.prescription.id)
+            onDelete = { keepBoxes ->
+                onDeletePrescription(item.prescription.id, keepBoxes)
                 editingId = null
             },
             onDismiss = { editingId = null },
@@ -282,7 +283,7 @@ private fun PrescriptionsPreviewContent(state: PrescriptionsUiState) {
                 onOrderRepetition = {},
                 onBuyRepetition = {},
                 onEditPrescription = {},
-                onDeletePrescription = {},
+                onDeletePrescription = { _, _ -> },
                 onOpenBox = {},
             )
         }

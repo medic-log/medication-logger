@@ -95,8 +95,8 @@ fun RefillsScreen(
             when (entry) {
                 is RefillLogEntry.RefillEntry -> RefillCard(
                     entry = entry,
-                    onOpenPrescription = { onOpenPrescription(entry.refill.prescriptionId) },
-                    onOpenBox = { onOpenBox(entry.refill.boxId) },
+                    onOpenPrescription = entry.refill.prescriptionId?.let { id -> { onOpenPrescription(id) } },
+                    onOpenBox = entry.refill.boxId?.let { id -> { onOpenBox(id) } },
                     onEdit = { editingKey = entry.key },
                 )
                 is RefillLogEntry.MissEntry -> MissCard(entry.miss, onEdit = { editingKey = entry.key })
@@ -136,8 +136,8 @@ fun RefillsScreen(
 @Composable
 private fun RefillCard(
     entry: RefillLogEntry.RefillEntry,
-    onOpenPrescription: () -> Unit,
-    onOpenBox: () -> Unit,
+    onOpenPrescription: (() -> Unit)?,
+    onOpenBox: (() -> Unit)?,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -156,19 +156,25 @@ private fun RefillCard(
                     text = if (refill.isPartial) stringResource(R.string.refills_partial_suffix, amounts) else amounts,
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Text(
-                    text = stringResource(R.string.refills_box, entry.boxName),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                if (onOpenBox != null) {
+                    Text(
+                        text = stringResource(R.string.refills_box, entry.boxName),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
             LinkIconButton(
                 iconRes = R.drawable.ic_prescription,
-                descriptionRes = R.string.link_open_prescription,
+                descriptionRes = if (onOpenPrescription != null) {
+                    R.string.link_open_prescription
+                } else {
+                    R.string.link_prescription_deleted
+                },
                 onClick = onOpenPrescription,
             )
             LinkIconButton(
                 iconRes = R.drawable.ic_box,
-                descriptionRes = R.string.link_open_box,
+                descriptionRes = if (onOpenBox != null) R.string.link_open_box else R.string.link_box_deleted,
                 onClick = onOpenBox,
                 modifier = Modifier.padding(start = 4.dp),
                 label = entry.boxNumber?.let { stringResource(R.string.link_box_number, it) },

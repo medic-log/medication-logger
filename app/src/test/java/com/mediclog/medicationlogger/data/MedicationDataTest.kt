@@ -247,6 +247,33 @@ class MedicationDataTest {
     }
 
     @Test
+    fun `deleting only a prescription keeps its boxes and refills, without links to it`() {
+        val deleted = refilled.deletePrescription(1, keepBoxes = true)
+
+        assertTrue(deleted.prescriptions.isEmpty())
+        assertEquals(refilled.boxes.size, deleted.boxes.size)
+        assertTrue(deleted.boxes.all { it.prescriptionId == null })
+        assertEquals(refilled.refills.map { it.boxId }, deleted.refills.map { it.boxId })
+        assertTrue(deleted.refills.all { it.prescriptionId == null })
+    }
+
+    @Test
+    fun `a new prescription doesn't take over the boxes of a deleted one with the same id`() {
+        val data = refilled.deletePrescription(1, keepBoxes = true).addPrescription(draft(), day2)
+
+        assertEquals(1L, data.prescriptions.single().id)
+        assertTrue(data.boxes.none { it.prescriptionId == 1L })
+    }
+
+    @Test
+    fun `deleting a prescription keeps refills whose box was kept when it was deleted`() {
+        val data = refilled.deleteBox(1, keepRefills = true).deletePrescription(1)
+
+        assertEquals(refilled.refills.size, data.refills.size)
+        assertTrue(data.refills.all { it.boxId == null && it.prescriptionId == null })
+    }
+
+    @Test
     fun `editing a box replaces its fields, and more pills left than in total changes nothing`() {
         val box = refilled.boxes.first()
 
@@ -269,6 +296,25 @@ class MedicationDataTest {
 
         assertTrue(deleted.boxes.none { it.id == 1L })
         assertTrue(deleted.refills.isEmpty())
+    }
+
+    @Test
+    fun `deleting only a box keeps its refills, without a link to it`() {
+        val deleted = refilled.deleteBox(1, keepRefills = true)
+
+        assertTrue(deleted.boxes.none { it.id == 1L })
+        assertEquals(refilled.refills.size, deleted.refills.size)
+        assertTrue(deleted.refills.all { it.boxId == null && it.prescriptionId == 1L })
+    }
+
+    @Test
+    fun `refills without a box don't affect each other`() {
+        val data = refilled.refillWeekly(1, day2).deleteBox(1, keepRefills = true)
+        val first = data.refills.first()
+
+        val deleted = data.deleteRefill(first.id)
+
+        assertEquals(data.refills - first, deleted.refills)
     }
 
     @Test

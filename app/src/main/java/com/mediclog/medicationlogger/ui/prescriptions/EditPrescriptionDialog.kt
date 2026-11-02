@@ -22,8 +22,9 @@ import java.time.LocalDate
 @Composable
 fun EditPrescriptionDialog(
     prescription: Prescription,
+    hasBoxes: Boolean,
     onSave: (Prescription) -> Unit,
-    onDelete: () -> Unit,
+    onDelete: (keepBoxes: Boolean) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,11 +68,15 @@ fun EditPrescriptionDialog(
     RecordEditDialog(
         title = stringResource(R.string.edit_prescription_title),
         canSave = updated != null,
-        deleteMessage = stringResource(R.string.edit_prescription_delete_message),
+        deleteMessage = stringResource(
+            if (hasBoxes) R.string.edit_prescription_delete_message else R.string.edit_delete_message,
+        ),
         onSave = { updated?.let(onSave) },
-        onDelete = onDelete,
+        onDelete = { onDelete(false) },
         onDismiss = onDismiss,
         modifier = modifier,
+        keepChildrenLabel = if (hasBoxes) stringResource(R.string.edit_delete_keep_boxes) else null,
+        onDeleteKeepingChildren = { onDelete(true) },
     ) {
         DialogField(
             prescribedDate,
@@ -146,6 +151,7 @@ private fun EditPrescriptionDialogPreview() {
                 boxesPerRepetition = 3,
                 repetitionsTotal = 2,
             ),
+            hasBoxes = true,
             onSave = {},
             onDelete = {},
             onDismiss = {},

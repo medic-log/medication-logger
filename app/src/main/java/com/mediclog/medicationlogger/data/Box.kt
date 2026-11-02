@@ -2,10 +2,10 @@ package com.mediclog.medicationlogger.data
 
 import java.time.LocalDate
 
-/** A box of pills bought with a prescription. */
+/** A box of pills bought with a prescription; [prescriptionId] is null once that's deleted. */
 data class Box(
     val id: Long,
-    val prescriptionId: Long,
+    val prescriptionId: Long?,
     val boxNumber: Int,
     val boughtDate: LocalDate,
     val pillsLeft: Int,

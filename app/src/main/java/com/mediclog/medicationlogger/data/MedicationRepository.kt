@@ -48,11 +48,12 @@ class MedicationRepository(
 
     fun editPrescription(updated: Prescription) = change { it.editPrescription(updated) }
 
-    fun deletePrescription(prescriptionId: Long) = change { it.deletePrescription(prescriptionId) }
+    fun deletePrescription(prescriptionId: Long, keepBoxes: Boolean) =
+        change { it.deletePrescription(prescriptionId, keepBoxes) }
 
     fun editBox(updated: Box) = change { it.editBox(updated) }
 
-    fun deleteBox(boxId: Long) = change { it.deleteBox(boxId) }
+    fun deleteBox(boxId: Long, keepRefills: Boolean) = change { it.deleteBox(boxId, keepRefills) }
 
     fun editRefill(updated: Refill) = change { it.editRefill(updated) }
 

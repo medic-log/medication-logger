@@ -103,7 +103,7 @@ private fun Box.toJson() = JSONObject()
 
 private fun JSONObject.toBox() = Box(
     id = getLong("id"),
-    prescriptionId = getLong("prescriptionId"),
+    prescriptionId = longOrNull("prescriptionId"),
     boxNumber = getInt("boxNumber"),
     boughtDate = LocalDate.parse(getString("boughtDate")),
     pillsLeft = getInt("pillsLeft"),
@@ -122,13 +122,15 @@ private fun Refill.toJson() = JSONObject()
 
 private fun JSONObject.toRefill() = Refill(
     id = getLong("id"),
-    boxId = getLong("boxId"),
-    prescriptionId = getLong("prescriptionId"),
+    boxId = longOrNull("boxId"),
+    prescriptionId = longOrNull("prescriptionId"),
     date = LocalDate.parse(getString("date")),
     amount = getInt("amount"),
     amountRemaining = getInt("amountRemaining"),
     isPartial = getBoolean("isPartial"),
 )
+
+private fun JSONObject.longOrNull(name: String) = if (isNull(name)) null else getLong(name)
 
 private fun MedicationMiss.toJson() = JSONObject()
     .put("id", id)

@@ -360,7 +360,7 @@ class MainActivityTest {
 
         hold("$today #1")
         tap(string(R.string.edit_delete))
-        assertShown(string(R.string.edit_box_delete_message))
+        assertShown(string(R.string.edit_delete_message))
         tap(string(R.string.edit_cancel))
         assertEquals(1, data.boxes.size)
         assertShown(string(R.string.edit_box_title))
@@ -369,6 +369,56 @@ class MainActivityTest {
         tap(string(R.string.edit_delete))
         assertTrue(data.boxes.isEmpty())
         assertNotShown("$today #1")
+    }
+
+    @Test
+    fun `deleting a box can keep its refills`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+
+        hold("$today #1")
+        tap(string(R.string.edit_delete))
+        assertShown(string(R.string.edit_box_delete_message))
+        tap(string(R.string.edit_delete_keep_refills))
+
+        assertTrue(data.boxes.isEmpty())
+        assertEquals(null, data.refills.single().boxId)
+        openTab(R.string.main_tab_refills)
+        assertShown(refillAmount(7, 23))
+        assertNotShown(string(R.string.refills_box, "$today #1"))
+        composeRule.onNodeWithContentDescription(string(R.string.link_box_deleted)).assertIsNotEnabled()
+        composeRule.onNodeWithContentDescription(string(R.string.link_open_prescription)).assertIsEnabled()
+    }
+
+    @Test
+    fun `deleting a box can delete its refills too`() {
+        addBox()
+        tap(string(R.string.boxes_refill_weekly))
+
+        hold("$today #1")
+        tap(string(R.string.edit_delete))
+        tap(string(R.string.edit_delete_all))
+
+        assertTrue(data.boxes.isEmpty())
+        assertTrue(data.refills.isEmpty())
+    }
+
+    @Test
+    fun `deleting a prescription can keep its boxes`() {
+        addBox()
+        openTab(R.string.main_tab_prescriptions)
+        tap(string(R.string.filter_all))
+
+        hold(string(R.string.prescriptions_prescribed_date, today))
+        tap(string(R.string.edit_delete))
+        assertShown(string(R.string.edit_prescription_delete_message))
+        tap(string(R.string.edit_delete_keep_boxes))
+
+        assertTrue(data.prescriptions.isEmpty())
+        assertEquals(null, data.boxes.single().prescriptionId)
+        openTab(R.string.main_tab_boxes)
+        assertShown("$today #1")
+        composeRule.onNodeWithContentDescription(string(R.string.link_prescription_deleted)).assertIsNotEnabled()
     }
 
     @Test

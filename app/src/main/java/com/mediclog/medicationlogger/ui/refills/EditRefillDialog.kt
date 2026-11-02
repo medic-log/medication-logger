@@ -47,7 +47,9 @@ fun EditRefillDialog(
     RecordEditDialog(
         title = stringResource(R.string.edit_refill_title),
         canSave = updated != null,
-        deleteMessage = stringResource(R.string.edit_refill_delete_message),
+        deleteMessage = stringResource(
+            if (refill.boxId != null) R.string.edit_refill_delete_message else R.string.edit_delete_message,
+        ),
         onSave = { updated?.let(onSave) },
         onDelete = onDelete,
         onDismiss = onDismiss,

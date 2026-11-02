@@ -22,8 +22,9 @@ import java.time.LocalDate
 @Composable
 fun EditBoxDialog(
     box: Box,
+    hasRefills: Boolean,
     onSave: (Box) -> Unit,
-    onDelete: () -> Unit,
+    onDelete: (keepRefills: Boolean) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -50,11 +51,15 @@ fun EditBoxDialog(
     RecordEditDialog(
         title = stringResource(R.string.edit_box_title),
         canSave = updated != null,
-        deleteMessage = stringResource(R.string.edit_box_delete_message),
+        deleteMessage = stringResource(
+            if (hasRefills) R.string.edit_box_delete_message else R.string.edit_delete_message,
+        ),
         onSave = { updated?.let(onSave) },
-        onDelete = onDelete,
+        onDelete = { onDelete(false) },
         onDismiss = onDismiss,
         modifier = modifier,
+        keepChildrenLabel = if (hasRefills) stringResource(R.string.edit_delete_keep_refills) else null,
+        onDeleteKeepingChildren = { onDelete(true) },
     ) {
         DialogField(
             boxNumber,
@@ -94,6 +99,7 @@ private fun EditBoxDialogPreview() {
                 pillsLeft = 23,
                 pillsTotal = 30,
             ),
+            hasRefills = true,
             onSave = {},
             onDelete = {},
             onDismiss = {},

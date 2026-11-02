@@ -3,6 +3,7 @@ package com.mediclog.medicationlogger.ui.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -20,7 +21,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mediclog.medicationlogger.R
 
-/** Edits a record's [fields], with a delete button that asks for confirmation, saying [deleteMessage]. */
+/**
+ * Edits a record's [fields], with a delete button that asks for confirmation, saying [deleteMessage].
+ * With [keepChildrenLabel], the confirmation also offers deleting only the record.
+ */
 @Composable
 fun RecordEditDialog(
     title: String,
@@ -30,6 +34,8 @@ fun RecordEditDialog(
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    keepChildrenLabel: String? = null,
+    onDeleteKeepingChildren: () -> Unit = {},
     fields: @Composable ColumnScope.() -> Unit,
 ) {
     var isConfirmingDelete by rememberSaveable { mutableStateOf(false) }
@@ -41,8 +47,19 @@ fun RecordEditDialog(
             title = { Text(stringResource(R.string.edit_delete_title)) },
             text = { Text(deleteMessage) },
             confirmButton = {
-                TextButton(onClick = onDelete, colors = deleteColors) {
-                    Text(stringResource(R.string.edit_delete))
+                FlowRow(horizontalArrangement = Arrangement.End) {
+                    if (keepChildrenLabel != null) {
+                        TextButton(onClick = onDeleteKeepingChildren) {
+                            Text(keepChildrenLabel)
+                        }
+                    }
+                    TextButton(onClick = onDelete, colors = deleteColors) {
+                        Text(
+                            stringResource(
+                                if (keepChildrenLabel != null) R.string.edit_delete_all else R.string.edit_delete,
+                            ),
+                        )
+                    }
                 }
             },
             dismissButton = {

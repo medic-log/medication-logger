@@ -56,6 +56,21 @@ class JsonFileMedicationStoreTest {
     }
 
     @Test
+    fun `boxes and refills that lost their links load back without them`() {
+        val data = MedicationData()
+            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
+            .buyRepetition(1, day)
+            .refillWeekly(1, day)
+            .refillWeekly(2, day)
+            .deleteBox(1, keepRefills = true)
+            .deletePrescription(1, keepBoxes = true)
+
+        JsonFileMedicationStore(file).save(data)
+
+        assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
     fun `a file saved before the pill reminder existed still loads`() {
         val data = MedicationData().addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1), day)
         JsonFileMedicationStore(file).save(data)
