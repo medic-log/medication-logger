@@ -43,6 +43,7 @@ import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
 
 /** The prescriptions tab with its ViewModel. */
@@ -161,7 +162,8 @@ private fun PrescriptionCard(
     modifier: Modifier = Modifier,
 ) {
     val prescription = item.prescription
-    RecordCard(modifier = modifier, isHighlighted = isHighlighted) {
+    val statusColors = prescription.status.tone().colors
+    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors) {
         Row {
             Text(
                 text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.toString()),
@@ -175,6 +177,8 @@ private fun PrescriptionCard(
                     prescription.repetitionsBought,
                     prescription.repetitionsTotal,
                 ),
+                currentAmount = prescription.repetitionsBought,
+                colors = statusColors,
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
@@ -236,6 +240,13 @@ private fun Prescription.Status.labelRes() = when (this) {
     Prescription.Status.ORDERED -> R.string.prescriptions_status_ordered
     Prescription.Status.IN_PROGRESS -> R.string.prescriptions_status_in_progress
     Prescription.Status.FINISHED -> R.string.prescriptions_status_finished
+}
+
+private fun Prescription.Status.tone() = when (this) {
+    Prescription.Status.NOT_STARTED -> StatusTone.NOT_STARTED
+    Prescription.Status.ORDERED -> StatusTone.ORDERED
+    Prescription.Status.IN_PROGRESS -> StatusTone.IN_PROGRESS
+    Prescription.Status.FINISHED -> StatusTone.FINISHED
 }
 
 @Composable

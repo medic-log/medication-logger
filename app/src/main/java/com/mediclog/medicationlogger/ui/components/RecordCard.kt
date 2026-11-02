@@ -14,12 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.mediclog.medicationlogger.ui.theme.StatusColors
 
-/** A card for one record; highlighted when the user arrived by following a link to it. */
+/**
+ * A card for one record; highlighted when the user arrived by following a link to it.
+ * With [statusColors], the card and everything in it take on the colors of the record's status.
+ */
 @Composable
 fun RecordCard(
     modifier: Modifier = Modifier,
     isHighlighted: Boolean = false,
+    statusColors: StatusColors? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -27,20 +32,40 @@ fun RecordCard(
         modifier = modifier
             .fillMaxWidth()
             .then(if (isHighlighted) Modifier.semantics { selected = true } else Modifier),
-        colors = if (isHighlighted) {
-            CardDefaults.cardColors(
+        colors = when {
+            statusColors != null -> CardDefaults.cardColors(
+                containerColor = statusColors.cardTint,
+                contentColor = colorScheme.onSurface,
+            )
+            isHighlighted -> CardDefaults.cardColors(
                 containerColor = colorScheme.primaryContainer,
                 contentColor = colorScheme.onPrimaryContainer,
             )
-        } else {
-            CardDefaults.cardColors()
+            else -> CardDefaults.cardColors()
         },
-        border = if (isHighlighted) BorderStroke(2.dp, colorScheme.primary) else null,
+        border = when {
+            isHighlighted -> BorderStroke(3.dp, statusColors?.accent ?: colorScheme.primary)
+            statusColors != null -> BorderStroke(1.dp, statusColors.accent)
+            else -> null
+        },
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            content = content,
-        )
+        // Buttons in the card read these roles, so they follow the status too
+        val cardColorScheme = if (statusColors == null) {
+            colorScheme
+        } else {
+            colorScheme.copy(
+                primary = statusColors.accent,
+                onPrimary = statusColors.onAccent,
+                outline = statusColors.accent,
+                outlineVariant = statusColors.accent,
+            )
+        }
+        MaterialTheme(colorScheme = cardColorScheme) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                content = content,
+            )
+        }
     }
 }

@@ -37,6 +37,7 @@ import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.StatusBadge
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
 
 /** The boxes tab with its ViewModel. */
@@ -157,7 +158,8 @@ private fun BoxCard(
     modifier: Modifier = Modifier,
 ) {
     val box = item.box
-    RecordCard(modifier = modifier, isHighlighted = isHighlighted) {
+    val statusColors = box.status.tone().colors
+    RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors) {
         Row {
             Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -174,6 +176,8 @@ private fun BoxCard(
             StatusBadge(
                 status = stringResource(box.status.labelRes()),
                 amount = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
+                currentAmount = box.pillsLeft,
+                colors = statusColors,
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
@@ -235,6 +239,13 @@ private fun Box.Status.labelRes() = when (this) {
     Box.Status.IN_PROGRESS -> R.string.boxes_status_in_progress
     Box.Status.FINISHED -> R.string.boxes_status_finished
     Box.Status.EXTRA -> R.string.boxes_status_extra
+}
+
+private fun Box.Status.tone() = when (this) {
+    Box.Status.NOT_STARTED -> StatusTone.NOT_STARTED
+    Box.Status.IN_PROGRESS -> StatusTone.IN_PROGRESS
+    Box.Status.FINISHED -> StatusTone.FINISHED
+    Box.Status.EXTRA -> StatusTone.EXTRA
 }
 
 private val previewBox = Box(
