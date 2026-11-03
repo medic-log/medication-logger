@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A gear with a bell in front of it, cut out of the gear so the two read apart -->
+<!-- A gear with a bell in front of it, with a gap around the bell's outline so the two read apart -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
     <group>
-        <clip-path android:pathData="M0,0h24v24h-24zM19,10.8a7,7 0,1 0,0 14a7,7 0,1 0,0 -14z" />
+        <!-- The bell's body, enlarged around its centre so a gap follows its outline; wound against the frame to cut a hole -->
+        <clip-path android:pathData="M0,0h24v24h-24zM24.0,21.0v-4.83c0,-2.97 -1.58,-5.45 -4.35,-6.11V9.4c0,-0.8 -0.65,-1.45 -1.45,-1.45s-1.45,0.65 -1.45,1.45v0.66C13.98,10.72 12.4,13.19 12.4,16.17v4.83l-1.93,1.93v0.97h15.46v-0.97l-1.93,-1.93z" />
         <group
-            android:scaleX="0.8"
-            android:scaleY="0.8">
+            android:scaleX="0.88"
+            android:scaleY="0.88"
+            android:translateX="-0.4"
+            android:translateY="-0.4">
             <path
                 android:fillColor="#FF000000"
                 android:pathData="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z" />
         </group>
     </group>
     <group
-        android:scaleX="0.6"
-        android:scaleY="0.6"
-        android:translateX="11.8"
-        android:translateY="10.6">
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:translateX="9.8"
+        android:translateY="8.4">
         <path
             android:fillColor="#FF000000"
             android:pathData="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.89,2 2,2zM18,16v-5c0,-3.07 -1.64,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.63,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z" />

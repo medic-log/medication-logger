@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -47,6 +48,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
@@ -57,6 +59,7 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.ReminderSettings
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.RecordCard
+import com.mediclog.medicationlogger.ui.components.SquircleShape
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -104,6 +107,8 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
+        // None of the settings actions does anything yet
+        onSettingsAction = {},
         modifier = modifier,
     )
 }
@@ -115,6 +120,7 @@ fun RemindersScreen(
     areNotificationsAllowed: Boolean,
     onSettingsChange: (ReminderSettings) -> Unit,
     onOpenNotificationSettings: () -> Unit,
+    onSettingsAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val settings = state.settings
@@ -242,6 +248,36 @@ fun RemindersScreen(
             )
         }
         SectionTitle(stringResource(R.string.settings_section_settings))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            SettingsAction.entries.forEach { action ->
+                SettingsActionButton(action = action, onClick = { onSettingsAction(action) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsActionButton(action: SettingsAction, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.size(72.dp),
+        shape = SquircleShape,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+        ) {
+            // The label names the button, so the icon is decorative
+            Icon(painter = painterResource(action.iconRes), contentDescription = null)
+            Text(
+                text = stringResource(action.labelRes),
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }
 
@@ -409,6 +445,7 @@ private fun RemindersPreviewContent(state: RemindersUiState, areNotificationsAll
                 areNotificationsAllowed = areNotificationsAllowed,
                 onSettingsChange = {},
                 onOpenNotificationSettings = {},
+                onSettingsAction = {},
             )
         }
     }
