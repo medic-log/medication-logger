@@ -42,6 +42,8 @@ import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.StatusBadge
+import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
@@ -145,6 +147,7 @@ fun PrescriptionsScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
+                .tutorialTarget(TutorialTarget.NEW_PRESCRIPTION)
                 .semantics { contentDescription = newPrescription },
         )
     }

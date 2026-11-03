@@ -16,8 +16,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +34,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.boxes.BoxesRoute
+import com.mediclog.medicationlogger.ui.components.LocalTutorialTargets
+import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.TutorialTargets
+import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsRoute
 import com.mediclog.medicationlogger.ui.refills.RefillsRoute
 import com.mediclog.medicationlogger.ui.reminders.RemindersRoute
@@ -41,44 +50,61 @@ fun MainRoute(
     viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    MainScreen(
-        state = state,
-        onSelectTab = viewModel::selectTab,
-        modifier = modifier,
-        tutorial = {
-            state.tutorialStep?.let { step ->
-                TutorialCard(
-                    step = step,
-                    settings = state.reminderSettings,
-                    onSettingsChange = viewModel::updateReminderSettings,
-                    onBack = viewModel::previousTutorialStep,
-                    onNext = viewModel::nextTutorialStep,
-                    onSkip = viewModel::finishTutorial,
-                )
-            }
-        },
-    ) { tab ->
-        when (tab) {
-            AppTab.SETTINGS -> RemindersRoute(onHelp = viewModel::startTutorial)
-            AppTab.PRESCRIPTIONS -> PrescriptionsRoute(
-                focusedPrescriptionId = state.focusedPrescriptionId,
-                onOpenBox = viewModel::openBox,
-            )
-            AppTab.BOXES -> BoxesRoute(
-                focusedBoxId = state.focusedBoxId,
-                onOpenPrescription = viewModel::openPrescription,
-            )
-            AppTab.REFILLS -> RefillsRoute(
-                onOpenPrescription = viewModel::openPrescription,
-                onOpenBox = viewModel::openBox,
-            )
-        }
+    val tutorialTargets = remember { TutorialTargets() }
+    CompositionLocalProvider(LocalTutorialTargets provides tutorialTargets) {
+        MainScreen(
+            state = state,
+            onSelectTab = viewModel::selectTab,
+            modifier = modifier,
+            tutorial = {
+                state.tutorialStep?.let { step ->
+                    TutorialCard(
+                        step = step,
+                        settings = state.reminderSettings,
+                        onSettingsChange = viewModel::updateReminderSettings,
+                        onBack = viewModel::previousTutorialStep,
+                        onNext = viewModel::nextTutorialStep,
+                        onSkip = viewModel::finishTutorial,
+                        modifier = Modifier.tutorialTarget(TutorialTarget.TUTORIAL_CARD),
+                    )
+                }
+            },
+            tutorialOverlay = {
+                state.tutorialStep?.let { step ->
+                    TutorialOverlay(
+                        highlight = step.target?.let {
+                            tutorialTargets.boundsOf(it) ?: tutorialTargets.boundsOf(step.tab.tutorialTarget)
+                        },
+                        card = tutorialTargets.boundsOf(TutorialTarget.TUTORIAL_CARD),
+                    )
+                }
+            },
+        ) { tab -> TabContent(tab, state, viewModel) }
+    }
+}
+
+@Composable
+private fun TabContent(tab: AppTab, state: MainUiState, viewModel: MainViewModel) {
+    when (tab) {
+        AppTab.SETTINGS -> RemindersRoute(onHelp = viewModel::startTutorial)
+        AppTab.PRESCRIPTIONS -> PrescriptionsRoute(
+            focusedPrescriptionId = state.focusedPrescriptionId,
+            onOpenBox = viewModel::openBox,
+        )
+        AppTab.BOXES -> BoxesRoute(
+            focusedBoxId = state.focusedBoxId,
+            onOpenPrescription = viewModel::openPrescription,
+        )
+        AppTab.REFILLS -> RefillsRoute(
+            onOpenPrescription = viewModel::openPrescription,
+            onOpenBox = viewModel::openBox,
+        )
     }
 }
 
 /**
- * The tab bar, with the selected tab's content above it and [tutorial] between the two.
- * Boxes stands out as the main tab.
+ * The tab bar, with the selected tab's content above it and [tutorial] between the two, and [tutorialOverlay] over
+ * it all. A tutorial step that points at nothing blurs the app behind it. Boxes stands out as the main tab.
  */
 @Composable
 fun MainScreen(
@@ -86,18 +112,38 @@ fun MainScreen(
     onSelectTab: (AppTab) -> Unit,
     modifier: Modifier = Modifier,
     tutorial: @Composable () -> Unit = {},
+    tutorialOverlay: @Composable () -> Unit = {},
+    tabContent: @Composable (AppTab) -> Unit,
+) {
+    // Blur only works from Android 12; before that the overlay's dimming does it alone
+    val blur = if (state.tutorialStep != null && state.tutorialStep.target == null) Modifier.blur(8.dp) else Modifier
+    // During the tutorial only its card responds, so the app behind can't be changed by accident
+    val background = if (state.tutorialStep != null) blur.ignoringTouches() else blur
+    Box(modifier = modifier.fillMaxSize()) {
+        MainScaffold(state, onSelectTab, background, tutorial, tabContent)
+        tutorialOverlay()
+    }
+}
+
+@Composable
+private fun MainScaffold(
+    state: MainUiState,
+    onSelectTab: (AppTab) -> Unit,
+    background: Modifier,
+    tutorial: @Composable () -> Unit,
     tabContent: @Composable (AppTab) -> Unit,
 ) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            NavigationBar {
+            NavigationBar(modifier = background) {
                 AppTab.entries.forEach { tab ->
                     val isMain = tab == AppTab.BOXES
                     NavigationBarItem(
                         selected = tab == state.selectedTab,
                         onClick = { onSelectTab(tab) },
+                        modifier = Modifier.tutorialTarget(tab.tutorialTarget),
                         icon = { Icon(painter = painterResource(tab.iconRes), contentDescription = null) },
                         label = {
                             Text(
@@ -134,10 +180,19 @@ fun MainScreen(
                     )
                 }
             }
-            Box(modifier = Modifier.weight(1f)) {
+            Box(modifier = Modifier.weight(1f).then(background)) {
                 tabContent(state.selectedTab)
             }
             tutorial()
+        }
+    }
+}
+
+// Taken before the content sees them, and marked used, so its buttons and lists ignore them
+private fun Modifier.ignoringTouches() = pointerInput(Unit) {
+    awaitPointerEventScope {
+        while (true) {
+            awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
         }
     }
 }

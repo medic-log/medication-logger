@@ -51,6 +51,8 @@ import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.SquircleShape
 import com.mediclog.medicationlogger.ui.components.TimeSelector
+import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
@@ -130,6 +132,7 @@ fun RemindersScreen(
             summary = stringResource(R.string.reminders_pill_summary),
             isEnabled = settings.isPillEnabled,
             onEnabledChange = { onSettingsChange(settings.copy(isPillEnabled = it)) },
+            modifier = Modifier.tutorialTarget(TutorialTarget.PILL_REMINDER),
         ) {
             TimeSelector(
                 time = settings.pillTime,
@@ -152,6 +155,7 @@ fun RemindersScreen(
             summary = stringResource(R.string.reminders_refill_summary),
             isEnabled = settings.isRefillEnabled,
             onEnabledChange = { onSettingsChange(settings.copy(isRefillEnabled = it)) },
+            modifier = Modifier.tutorialTarget(TutorialTarget.REFILL_REMINDER),
         ) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 WeekdaySelector(settings.refillDay, onDayChange = { onSettingsChange(settings.copy(refillDay = it)) })

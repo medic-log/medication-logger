@@ -676,6 +676,9 @@ class MainActivityTest {
         composeRule.onNodeWithText(string(R.string.settings_help)).performScrollTo().performClick()
 
         assertShown(string(R.string.tutorial_welcome_title))
+        // The app behind the tutorial ignores taps
+        openTab(R.string.main_tab_refills)
+        composeRule.onNode(hasText(string(R.string.main_tab_boxes)) and isSelected()).assertExists()
         tap(string(R.string.tutorial_next))
         assertShown(string(R.string.tutorial_prescriptions_text))
         composeRule.onNode(hasText(string(R.string.main_tab_prescriptions)) and isSelected()).assertExists()

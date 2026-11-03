@@ -40,6 +40,8 @@ import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.StatusBadge
+import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import com.mediclog.medicationlogger.ui.theme.StatusTone
 import java.time.LocalDate
@@ -135,6 +137,11 @@ fun BoxesScreen(
                 onBackToInventory = { onBackToInventory(item.box.id) },
                 onEdit = { editingId = item.box.id },
                 onOpenPrescription = item.box.prescriptionId?.let { id -> { onOpenPrescription(id) } },
+                modifier = if (item == state.items.first()) {
+                    Modifier.tutorialTarget(TutorialTarget.FIRST_BOX)
+                } else {
+                    Modifier
+                },
             )
         }
     }
