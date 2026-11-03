@@ -28,6 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -83,12 +86,30 @@ fun RefillsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item(key = "header") {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED) }) {
-                    Text(stringResource(R.string.refills_log_missed))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
+                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED) }) {
+                        Text(stringResource(R.string.refills_log_missed))
+                    }
+                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.DELAYED) }) {
+                        Text(stringResource(R.string.refills_log_delayed))
+                    }
                 }
-                OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.DELAYED) }) {
-                    Text(stringResource(R.string.refills_log_delayed))
+                if (state.lotPills != null) {
+                    val message = pluralStringResource(R.plurals.refills_lot_pills, state.lotPills, state.lotPills)
+                    Text(
+                        text = buildAnnotatedString {
+                            append(message)
+                            val pills = state.lotPills.toString()
+                            val start = message.indexOf(pills)
+                            if (start >= 0) addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, start + pills.length)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }

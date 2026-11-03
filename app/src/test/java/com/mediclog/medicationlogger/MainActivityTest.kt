@@ -266,16 +266,15 @@ class MainActivityTest {
 
         composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
-        assertShown(plural(R.plurals.boxes_lot_pills, 4, 4))
         assertShown(plural(R.plurals.boxes_pending_notice, 3, 3))
         tap(pending)
         assertNotShown(pending)
         assertNotShown(plural(R.plurals.boxes_pending_notice, 3, 3))
-        assertShown(plural(R.plurals.boxes_lot_pills, 7, 7))
         assertShown(string(R.string.boxes_pills_left, 27, 30))
 
         openTab(R.string.main_tab_refills)
         listOf(0, 27).forEach { assertShown(refillBox(it)) }
+        assertShown(plural(R.plurals.refills_lot_pills, 7, 7))
         composeRule.onAllNodesWithText(string(R.string.refills_partial)).assertCountEquals(2)
         hold(refillBox(0))
         assertShown(string(R.string.edit_refill_title))

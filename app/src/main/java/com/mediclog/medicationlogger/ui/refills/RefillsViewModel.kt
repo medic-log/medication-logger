@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /** One line of the medication log. */
 sealed interface RefillLogEntry {
@@ -53,11 +55,11 @@ sealed interface RefillLogEntry {
     }
 }
 
-/** The medication log, newest first. */
-data class RefillsUiState(val entries: List<RefillLogEntry> = emptyList())
+/** The medication log, newest first, and the pills in the weekly lot (null before any refill). */
+data class RefillsUiState(val entries: List<RefillLogEntry> = emptyList(), val lotPills: Int? = null)
 
 /** Lists refills, misses and delays, and registers misses and delays. */
-class RefillsViewModel(private val repository: MedicationRepository) : ViewModel() {
+class RefillsViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
     val uiState: StateFlow<RefillsUiState> = repository.data
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.data.value))
@@ -98,7 +100,10 @@ class RefillsViewModel(private val repository: MedicationRepository) : ViewModel
             }
         }
         val alone = (others + missedByRefill[-1].orEmpty()).sortedByDescending { it.miss.id }
-        return RefillsUiState((alone + stacked.asReversed()).sortedByDescending { it.date })
+        return RefillsUiState(
+            entries = (alone + stacked.asReversed()).sortedByDescending { it.date },
+            lotPills = data.weeklyLot.countedAt?.let { data.lotPills(LocalDateTime.now(clock)) },
+        )
     }
 
     private fun groupingFullWeeks(refills: List<RefillLogEntry.RefillEntry>): List<RefillLogEntry> {

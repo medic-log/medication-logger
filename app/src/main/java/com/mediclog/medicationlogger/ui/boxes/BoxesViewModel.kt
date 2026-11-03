@@ -18,11 +18,10 @@ import java.time.LocalDateTime
 /** A box with its refills, newest first. */
 data class BoxItem(val box: Box, val refills: List<Refill>)
 
-/** The boxes to show, the pills in the weekly lot (null before any refill) and how many it still needs. */
+/** The boxes to show, and how many pills the weekly lot still needs. */
 data class BoxesUiState(
     val filter: ListFilter = ListFilter.ACTIVE,
     val items: List<BoxItem> = emptyList(),
-    val lotPills: Int? = null,
     val pendingRefillAmount: Int = 0,
 )
 
@@ -50,7 +49,6 @@ class BoxesViewModel(private val repository: MedicationRepository, private val c
     fun deleteBox(boxId: Long, keepRefills: Boolean) = repository.deleteBox(boxId, keepRefills)
 
     private fun toUiState(data: MedicationData, filter: ListFilter): BoxesUiState {
-        val now = LocalDateTime.now(clock)
         return BoxesUiState(
             filter = filter,
             items = data.boxes
@@ -64,8 +62,7 @@ class BoxesViewModel(private val repository: MedicationRepository, private val c
                 // Oldest first within a status, as that's the order boxes get used in
                 .sortedWith(compareBy({ it.status.sortRank() }, { it.boughtDate }, { it.boxNumber }, { it.id }))
                 .map { box -> BoxItem(box, data.refills.filter { it.boxId == box.id }.asReversed()) },
-            lotPills = data.weeklyLot.countedAt?.let { data.lotPills(now) },
-            pendingRefillAmount = data.pendingRefillAmount(now),
+            pendingRefillAmount = data.pendingRefillAmount(LocalDateTime.now(clock)),
         )
     }
 

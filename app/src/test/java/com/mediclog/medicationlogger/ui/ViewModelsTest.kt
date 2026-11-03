@@ -186,19 +186,17 @@ class ViewModelsTest {
 
         // Monday noon, so six doses are left before Sunday's refill
         viewModel.refillWeekly(1)
-        assertEquals(4, viewModel.uiState.value.lotPills)
         assertEquals(2, viewModel.uiState.value.pendingRefillAmount)
 
         viewModel.refillPartial(2)
         val state = viewModel.uiState.value
-        assertEquals(6, state.lotPills)
         assertEquals(0, state.pendingRefillAmount)
         assertEquals(listOf(2), state.items.single().refills.map { it.amountRemaining })
     }
 
     @Test
-    fun `refills log lists entries newest first, with box names and misses`() {
-        val viewModel = RefillsViewModel(repository)
+    fun `refills log lists entries newest first, with box names, misses and the weekly lot`() {
+        val viewModel = RefillsViewModel(repository, clock)
         repository.addPrescription(draft)
         repository.buyRepetition(1)
         repository.refillWeekly(1)
@@ -210,6 +208,7 @@ class ViewModelsTest {
         val refills = entries.filterIsInstance<RefillLogEntry.RefillEntry>()
         assertEquals(listOf(16, 23), refills.map { it.refill.amountRemaining })
         assertEquals("$today #1", refills.first().boxName)
+        assertEquals(14, viewModel.uiState.value.lotPills)
     }
 
     private fun partial(id: Long, amount: Int, date: LocalDate = today) =
@@ -218,7 +217,7 @@ class ViewModelsTest {
     private fun logOf(vararg refills: Refill, misses: List<MedicationMiss> = emptyList()): List<RefillLogEntry> {
         val data = MedicationData(refills = refills.toList(), misses = misses)
         val scope = CoroutineScope(UnconfinedTestDispatcher())
-        return RefillsViewModel(MedicationRepository(FakeMedicationStore(data), clock, scope)).uiState.value.entries
+        return RefillsViewModel(MedicationRepository(FakeMedicationStore(data), clock, scope), clock).uiState.value.entries
     }
 
     private fun List<RefillLogEntry>.ids() = map { entry ->

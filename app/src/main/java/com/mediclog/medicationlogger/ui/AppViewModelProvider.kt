@@ -19,7 +19,7 @@ object AppViewModelProvider {
         initializer { RemindersViewModel(application().repository, application().clock) }
         initializer { PrescriptionsViewModel(application().repository) }
         initializer { BoxesViewModel(application().repository, application().clock) }
-        initializer { RefillsViewModel(application().repository) }
+        initializer { RefillsViewModel(application().repository, application().clock) }
     }
 
     private fun CreationExtras.application() = this[APPLICATION_KEY] as MedicationLoggerApplication
