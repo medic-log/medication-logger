@@ -45,6 +45,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
@@ -66,7 +68,7 @@ import java.util.Locale
 private const val MIN_DAYS = 1
 private const val MAX_DAYS = 365
 
-/** The reminders tab with its ViewModel, and the notification permission it depends on. */
+/** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
 fun RemindersRoute(
     modifier: Modifier = Modifier,
@@ -106,7 +108,7 @@ fun RemindersRoute(
     )
 }
 
-/** The configuration of the five reminders. */
+/** The settings tab: the configuration of the five reminders, then the app settings, none yet. */
 @Composable
 fun RemindersScreen(
     state: RemindersUiState,
@@ -126,6 +128,7 @@ fun RemindersScreen(
         if (settings.hasAnyEnabled && !areNotificationsAllowed) {
             NotificationsOffNotice(onOpenNotificationSettings)
         }
+        SectionTitle(stringResource(R.string.settings_section_reminders))
         ReminderCard(
             title = stringResource(R.string.reminders_pill_title),
             summary = stringResource(R.string.reminders_pill_summary),
@@ -238,7 +241,17 @@ fun RemindersScreen(
                 style = MaterialTheme.typography.bodyMedium,
             )
         }
+        SectionTitle(stringResource(R.string.settings_section_settings))
     }
+}
+
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleLarge,
+        modifier = modifier.semantics { heading() },
+    )
 }
 
 @Composable

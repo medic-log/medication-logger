@@ -111,12 +111,12 @@ class MainActivityTest {
     }
 
     @Test
-    fun `tabs are in the order reminders, prescriptions, boxes, refills`() {
+    fun `tabs are in the order settings, prescriptions, boxes, refills`() {
         val tabs = composeRule.onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
             .fetchSemanticsNodes()
             .map { it.config.getOrNull(SemanticsProperties.Text)?.joinToString() }
         val expected = listOf(
-            R.string.main_tab_reminders,
+            R.string.main_tab_settings,
             R.string.main_tab_prescriptions,
             R.string.main_tab_boxes,
             R.string.main_tab_refills,
@@ -591,7 +591,7 @@ class MainActivityTest {
 
     @Test
     fun `every reminder starts on and can be turned off`() {
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
         assertEquals(ReminderSettings(), data.reminderSettings)
 
         repeat(5) { composeRule.onAllNodes(isToggleable())[it].performClick() }
@@ -609,7 +609,7 @@ class MainActivityTest {
 
     @Test
     fun `refill reminder is configured with a weekday and time`() {
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
         tap(DayOfWeek.SUNDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
         tap(DayOfWeek.MONDAY.getDisplayName(TextStyle.FULL, Locale.getDefault()))
         assertEquals(DayOfWeek.MONDAY, data.reminderSettings.refillDay)
@@ -624,7 +624,7 @@ class MainActivityTest {
 
     @Test
     fun `daily pill reminder is configured with a time`() {
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
         tap(string(R.string.reminders_choose_time, "08:00"))
         assertShown(string(R.string.reminders_pill_time_dialog_title))
         composeRule.onAllNodes(hasSetTextAction())[0].performTextReplacement("07")
@@ -636,7 +636,7 @@ class MainActivityTest {
 
     @Test
     fun `the expiry reminder starts on at 60 days, and is configured in days`() {
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
         val expiry = string(R.string.reminders_expiry_title)
         assertTrue(data.reminderSettings.isExpiryEnabled)
         assertEquals(60, data.reminderSettings.expiryDaysBefore)
@@ -648,7 +648,7 @@ class MainActivityTest {
 
     @Test
     fun `pickup and run-out reminders are configured in days`() {
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
         val pickup = string(R.string.reminders_pickup_title)
         val runOut = string(R.string.reminders_run_out_title)
         composeRule.onNodeWithContentDescription(string(R.string.reminders_more_days, pickup)).performClick()
@@ -667,7 +667,7 @@ class MainActivityTest {
         openTab(R.string.main_tab_prescriptions)
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
 
-        openTab(R.string.main_tab_reminders)
+        openTab(R.string.main_tab_settings)
 
         // Today's pill counts only if its time is still to come
         val firstDose = ReminderCalculator.nextPill(ReminderSettings(), LocalDateTime.now()).toLocalDate()

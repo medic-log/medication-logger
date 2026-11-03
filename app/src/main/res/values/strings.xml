@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Medication logger</string>
 
-    <string name="main_tab_reminders">Reminders</string>
+    <string name="main_tab_settings">Settings</string>
     <string name="main_tab_prescriptions">Prescriptions</string>
     <string name="main_tab_boxes">Boxes</string>
     <string name="main_tab_refills">Refills</string>
@@ -130,6 +130,8 @@
         <item quantity="other">%1$d pills, %2$d left</item>
     </plurals>
 
+    <string name="settings_section_reminders">Reminders</string>
+    <string name="settings_section_settings">Settings</string>
     <string name="reminders_pill_title">Daily pill</string>
     <string name="reminders_pill_summary">Every day at the time you choose, to take your pill.</string>
     <string name="reminders_pill_next">Next reminder: %1$s at %2$s</string>

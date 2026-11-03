@@ -43,7 +43,7 @@ fun MainRoute(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     MainScreen(state = state, onSelectTab = viewModel::selectTab, modifier = modifier) { tab ->
         when (tab) {
-            AppTab.REMINDERS -> RemindersRoute()
+            AppTab.SETTINGS -> RemindersRoute()
             AppTab.PRESCRIPTIONS -> PrescriptionsRoute(
                 focusedPrescriptionId = state.focusedPrescriptionId,
                 onOpenBox = viewModel::openBox,
