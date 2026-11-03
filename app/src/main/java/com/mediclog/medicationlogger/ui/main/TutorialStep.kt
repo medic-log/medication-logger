@@ -5,8 +5,8 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
 
 /**
- * The tutorial's steps in order, each shown over the tab it explains and spotlighting its [target],
- * or its tab when that isn't on screen. Steps without a target blur the app instead.
+ * The tutorial's steps in order, each shown over the tab it explains and spotlighting its [target]
+ * along with that tab. Steps without a target blur the app instead.
  */
 enum class TutorialStep(
     val tab: AppTab,
@@ -44,7 +44,7 @@ enum class TutorialStep(
         R.string.tutorial_refill_time_title,
         R.string.tutorial_refill_time_text,
     ),
-    DONE(AppTab.BOXES, null, R.string.tutorial_done_title, R.string.tutorial_done_text),
+    DONE(AppTab.SETTINGS, null, R.string.tutorial_done_title, R.string.tutorial_done_text),
     ;
 
     val previous: TutorialStep? get() = entries.getOrNull(ordinal - 1)

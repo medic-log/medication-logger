@@ -28,15 +28,14 @@ private const val SCRIM_ALPHA = 0.6f
 private const val MOVE_MILLIS = 250
 
 /**
- * Dims the screen around the tutorial: a spotlight on [highlight] with an outline, and the [card] left clear.
- * It only draws; the main screen stops touches reaching the app behind. Bounds are in window coordinates.
+ * Dims the screen around the tutorial: spotlights on [highlight] and on the current [tab], each with an outline,
+ * and the [card] left clear. It only draws; the main screen stops touches reaching the app behind.
+ * Bounds are in window coordinates.
  */
 @Composable
-fun TutorialOverlay(highlight: Rect?, card: Rect?, modifier: Modifier = Modifier) {
+fun TutorialOverlay(highlight: Rect?, tab: Rect?, card: Rect?, modifier: Modifier = Modifier) {
     var origin by remember { mutableStateOf(Offset.Zero) }
-    // Without a highlight, the spotlight closes to the middle of the card, so the next one grows from there
-    val target = highlight ?: card?.let { Rect(it.center, 0f) } ?: Rect.Zero
-    val spotlight by animateValueAsState(target, Rect.VectorConverter, tween(MOVE_MILLIS), label = "spotlight")
+    val spotlights = listOf(animateSpotlight(highlight, card, "spotlight"), animateSpotlight(tab, card, "tab"))
     val scrim = MaterialTheme.colorScheme.scrim.copy(alpha = SCRIM_ALPHA)
     val outline = MaterialTheme.colorScheme.primary
     Canvas(
@@ -48,12 +47,20 @@ fun TutorialOverlay(highlight: Rect?, card: Rect?, modifier: Modifier = Modifier
     ) {
         drawRect(scrim)
         card?.let { drawRect(Color.Black, it.topLeft - origin, it.size, blendMode = BlendMode.Clear) }
-        if (highlight != null || spotlight.width > 0f) {
-            val padding = 8.dp.toPx()
+        val padding = 8.dp.toPx()
+        val corner = CornerRadius(16.dp.toPx())
+        spotlights.filter { it.width > 0f }.forEach { spotlight ->
             val hole = spotlight.translate(-origin).inflate(padding)
-            val corner = CornerRadius(16.dp.toPx())
             drawRoundRect(Color.Black, hole.topLeft, hole.size, corner, blendMode = BlendMode.Clear)
             drawRoundRect(outline, hole.topLeft, hole.size, corner, style = Stroke(width = 2.dp.toPx()))
         }
     }
+}
+
+/** Moves a spotlight to [target]; without one, it closes to the middle of the [card], so the next grows from there. */
+@Composable
+private fun animateSpotlight(target: Rect?, card: Rect?, label: String): Rect {
+    val bounds = target ?: card?.let { Rect(it.center, 0f) } ?: Rect.Zero
+    val spotlight by animateValueAsState(bounds, Rect.VectorConverter, tween(MOVE_MILLIS), label = label)
+    return spotlight
 }

@@ -72,9 +72,10 @@ fun MainRoute(
             tutorialOverlay = {
                 state.tutorialStep?.let { step ->
                     TutorialOverlay(
-                        highlight = step.target?.let {
-                            tutorialTargets.boundsOf(it) ?: tutorialTargets.boundsOf(step.tab.tutorialTarget)
-                        },
+                        highlight = step.target?.let { tutorialTargets.boundsOf(it) },
+                        // The tab bar already holds the tab
+                        tab = step.target?.takeUnless { it == TutorialTarget.TAB_BAR }
+                            ?.let { tutorialTargets.boundsOf(step.tab.tutorialTarget) },
                         card = tutorialTargets.boundsOf(TutorialTarget.TUTORIAL_CARD),
                     )
                 }
