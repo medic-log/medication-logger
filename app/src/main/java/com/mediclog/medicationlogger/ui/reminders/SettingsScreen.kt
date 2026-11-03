@@ -45,6 +45,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.ReminderSettings
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
@@ -71,7 +72,7 @@ fun RemindersRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val shareText = stringResource(R.string.settings_share_text)
+    val shareText = stringResource(R.string.settings_share_text, BuildConfig.SITE_URL)
     var areNotificationsAllowed by remember { mutableStateOf(true) }
     val checkNotifications = {
         areNotificationsAllowed = NotificationManagerCompat.from(context).areNotificationsEnabled()

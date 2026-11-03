@@ -17,6 +17,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+        // The public download site; empty until the app is published, which hides Update and Share
+        buildConfigField("String", "SITE_URL", "\"\"")
     }
 
     // Release signing comes from the environment (set by the release workflow); without it the release APK is unsigned
@@ -48,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions.unitTests {
         // Robolectric runs the unit tests against real Android resources
