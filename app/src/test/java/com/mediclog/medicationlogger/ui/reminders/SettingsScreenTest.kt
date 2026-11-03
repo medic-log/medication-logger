@@ -64,12 +64,13 @@ class SettingsScreenTest {
         val tapped = mutableListOf<SettingsAction>()
         showScreen(ReminderSettings(), areNotificationsAllowed = true, onSettingsAction = { tapped += it })
 
-        SettingsAction.entries.forEach { action ->
+        val shown = SettingsAction.rows.flatten()
+        shown.forEach { action ->
             composeRule.onNodeWithText(composeRule.activity.getString(action.labelRes))
                 .performScrollTo()
                 .performClick()
         }
 
-        assertEquals(SettingsAction.entries, tapped)
+        assertEquals(shown, tapped)
     }
 }

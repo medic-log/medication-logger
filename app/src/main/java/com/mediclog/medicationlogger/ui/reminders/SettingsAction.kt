@@ -14,7 +14,14 @@ enum class SettingsAction(@param:StringRes val labelRes: Int, @param:DrawableRes
     ;
 
     companion object {
+        /** Whether the app is published; until then there is nothing to update to or share a link to. */
+        private const val IS_PUBLISHED = false
+
         /** The buttons as laid out, row by row. */
-        val rows = listOf(listOf(HELP, UPDATE, SHARE), listOf(IMPORT, EXPORT))
+        val rows = if (IS_PUBLISHED) {
+            listOf(listOf(HELP, UPDATE, SHARE), listOf(IMPORT, EXPORT))
+        } else {
+            listOf(listOf(HELP, IMPORT, EXPORT))
+        }
     }
 }
