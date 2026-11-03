@@ -679,11 +679,13 @@ class MainActivityTest {
         // The app behind the tutorial ignores taps
         openTab(R.string.main_tab_refills)
         composeRule.onNode(hasText(string(R.string.main_tab_boxes)) and isSelected()).assertExists()
-        tap(string(R.string.tutorial_next))
-        assertShown(string(R.string.tutorial_prescriptions_text))
+        repeat(2) { tap(string(R.string.tutorial_next)) }
+        assertShown(string(R.string.tutorial_prescription_text))
         composeRule.onNode(hasText(string(R.string.main_tab_prescriptions)) and isSelected()).assertExists()
+        // Sample records fill the tabs during the tour
+        composeRule.onNode(hasText(string(R.string.tutorial_sample_doctor), substring = true)).assertIsDisplayed()
 
-        repeat(4) { tap(string(R.string.tutorial_next)) }
+        repeat(6) { tap(string(R.string.tutorial_next)) }
         assertShown(string(R.string.tutorial_pill_time_text))
         // One on the tutorial card, one on the Settings tab behind it
         composeRule.onAllNodesWithText(string(R.string.reminders_choose_time, ReminderSettings().pillTime.toString()))
@@ -691,6 +693,8 @@ class MainActivityTest {
 
         tap(string(R.string.tutorial_skip))
         assertNotShown(string(R.string.tutorial_pill_time_text))
+        openTab(R.string.main_tab_prescriptions)
+        composeRule.onNode(hasText(string(R.string.tutorial_sample_doctor), substring = true)).assertDoesNotExist()
     }
 
     @Test

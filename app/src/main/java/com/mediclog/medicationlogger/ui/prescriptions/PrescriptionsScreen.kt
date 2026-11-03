@@ -135,6 +135,11 @@ fun PrescriptionsScreen(
                     onBuyRepetition = { buyingId = item.prescription.id },
                     onEdit = { editingId = item.prescription.id },
                     onOpenBox = onOpenBox,
+                    modifier = if (item == state.items.first()) {
+                        Modifier.tutorialTarget(TutorialTarget.FIRST_PRESCRIPTION)
+                    } else {
+                        Modifier
+                    },
                 )
             }
         }

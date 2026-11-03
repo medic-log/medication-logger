@@ -14,8 +14,11 @@ import androidx.compose.ui.node.currentValueOf
 
 /** What the tutorial can point at, across the tabs. */
 enum class TutorialTarget {
+    TAB_BAR,
+    FIRST_PRESCRIPTION,
     NEW_PRESCRIPTION,
     FIRST_BOX,
+    FIRST_REFILL,
     DOSE_LOG,
     PILL_REMINDER,
     REFILL_REMINDER,

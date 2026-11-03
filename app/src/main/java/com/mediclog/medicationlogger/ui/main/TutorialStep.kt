@@ -15,20 +15,23 @@ enum class TutorialStep(
     @param:StringRes val textRes: Int,
 ) {
     WELCOME(AppTab.BOXES, null, R.string.tutorial_welcome_title, R.string.tutorial_welcome_text),
-    PRESCRIPTIONS(
+    TABS(AppTab.BOXES, TutorialTarget.TAB_BAR, R.string.tutorial_tabs_title, R.string.tutorial_tabs_text),
+    PRESCRIPTION(
         AppTab.PRESCRIPTIONS,
-        TutorialTarget.NEW_PRESCRIPTION,
-        R.string.tutorial_prescriptions_title,
-        R.string.tutorial_prescriptions_text,
+        TutorialTarget.FIRST_PRESCRIPTION,
+        R.string.tutorial_prescription_title,
+        R.string.tutorial_prescription_text,
     ),
-    BOXES(AppTab.BOXES, TutorialTarget.FIRST_BOX, R.string.tutorial_boxes_title, R.string.tutorial_boxes_text),
-    REFILLS(AppTab.REFILLS, TutorialTarget.DOSE_LOG, R.string.tutorial_refills_title, R.string.tutorial_refills_text),
-    SETTINGS(
-        AppTab.SETTINGS,
-        TutorialTarget.TAB_SETTINGS,
-        R.string.tutorial_settings_title,
-        R.string.tutorial_settings_text,
+    ADD(AppTab.PRESCRIPTIONS, TutorialTarget.NEW_PRESCRIPTION, R.string.tutorial_add_title, R.string.tutorial_add_text),
+    BOX(AppTab.BOXES, TutorialTarget.FIRST_BOX, R.string.tutorial_box_title, R.string.tutorial_box_text),
+    EDIT(AppTab.BOXES, TutorialTarget.FIRST_BOX, R.string.tutorial_edit_title, R.string.tutorial_edit_text),
+    REFILLS(
+        AppTab.REFILLS,
+        TutorialTarget.FIRST_REFILL,
+        R.string.tutorial_refills_title,
+        R.string.tutorial_refills_text,
     ),
+    DOSES(AppTab.REFILLS, TutorialTarget.DOSE_LOG, R.string.tutorial_doses_title, R.string.tutorial_doses_text),
     PILL_TIME(
         AppTab.SETTINGS,
         TutorialTarget.PILL_REMINDER,

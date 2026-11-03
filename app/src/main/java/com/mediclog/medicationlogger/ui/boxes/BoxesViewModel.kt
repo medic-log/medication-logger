@@ -29,8 +29,8 @@ data class BoxesUiState(
 class BoxesViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
     private val filter = MutableStateFlow(ListFilter.ACTIVE)
 
-    val uiState: StateFlow<BoxesUiState> = combine(repository.data, filter, ::toUiState)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.data.value, filter.value))
+    val uiState: StateFlow<BoxesUiState> = combine(repository.shownData, filter, ::toUiState)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value, filter.value))
 
     fun setFilter(newFilter: ListFilter) {
         filter.value = newFilter

@@ -60,9 +60,9 @@ data class RefillsUiState(val entries: List<RefillLogEntry> = emptyList(), val l
 
 /** Lists refills, misses and delays, and registers misses and delays. */
 class RefillsViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
-    val uiState: StateFlow<RefillsUiState> = repository.data
+    val uiState: StateFlow<RefillsUiState> = repository.shownData
         .map(::toUiState)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.data.value))
+        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value))
 
     fun logMiss(kind: MedicationMiss.Kind) = repository.logMiss(kind)
 

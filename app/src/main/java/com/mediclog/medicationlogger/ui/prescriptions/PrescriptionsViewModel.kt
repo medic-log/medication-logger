@@ -29,8 +29,8 @@ data class PrescriptionsUiState(
 class PrescriptionsViewModel(private val repository: MedicationRepository) : ViewModel() {
     private val filter = MutableStateFlow(ListFilter.ACTIVE)
 
-    val uiState: StateFlow<PrescriptionsUiState> = combine(repository.data, filter, ::toUiState)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.data.value, filter.value))
+    val uiState: StateFlow<PrescriptionsUiState> = combine(repository.shownData, filter, ::toUiState)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value, filter.value))
 
     fun setFilter(newFilter: ListFilter) {
         filter.value = newFilter

@@ -28,9 +28,9 @@ data class RemindersUiState(
 
 /** Shows and changes the reminder configuration. */
 class RemindersViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
-    val uiState: StateFlow<RemindersUiState> = repository.data
+    val uiState: StateFlow<RemindersUiState> = repository.shownData
         .map(::toUiState)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.data.value))
+        .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value))
 
     fun updateSettings(settings: ReminderSettings) = repository.updateReminderSettings(settings)
 

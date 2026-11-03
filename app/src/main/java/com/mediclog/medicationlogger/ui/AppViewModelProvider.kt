@@ -6,6 +6,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mediclog.medicationlogger.MedicationLoggerApplication
+import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.ui.boxes.BoxesViewModel
 import com.mediclog.medicationlogger.ui.main.MainViewModel
 import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsViewModel
@@ -15,7 +17,17 @@ import com.mediclog.medicationlogger.ui.reminders.RemindersViewModel
 /** Creates the app's ViewModels with what they need from the application. */
 object AppViewModelProvider {
     val Factory: ViewModelProvider.Factory = viewModelFactory {
-        initializer { MainViewModel(application().repository) }
+        initializer {
+            val application = application()
+            val sampleDraft = PrescriptionDraft(
+                prescribedBy = application.getString(R.string.tutorial_sample_doctor),
+                pharmacy = application.getString(R.string.tutorial_sample_pharmacy),
+                pillsPerBox = 30,
+                boxesPerRepetition = 2,
+                repetitionsTotal = 3,
+            )
+            MainViewModel(application.repository, application.clock, sampleDraft)
+        }
         initializer { RemindersViewModel(application().repository, application().clock) }
         initializer { PrescriptionsViewModel(application().repository) }
         initializer { BoxesViewModel(application().repository, application().clock) }

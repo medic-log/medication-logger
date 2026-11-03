@@ -137,7 +137,7 @@ private fun MainScaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            NavigationBar(modifier = background) {
+            NavigationBar(modifier = background.tutorialTarget(TutorialTarget.TAB_BAR)) {
                 AppTab.entries.forEach { tab ->
                     val isMain = tab == AppTab.BOXES
                     NavigationBarItem(

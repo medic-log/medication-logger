@@ -27,7 +27,14 @@ class MedicationRepository(
     private val mutableData = MutableStateFlow(store.load())
     private val mutableIsSaveFailed = MutableStateFlow(false)
 
+    private val sample = MutableStateFlow<MedicationData?>(null)
+    private val mutableShownData = MutableStateFlow(mutableData.value)
+
+    /** The saved data, which reminders follow. */
     val data: StateFlow<MedicationData> = mutableData.asStateFlow()
+
+    /** What the screens show: the saved data, or sample records in its place, with the saved reminder settings. */
+    val shownData: StateFlow<MedicationData> = mutableShownData.asStateFlow()
 
     /** Whether the latest change couldn't be written to storage. */
     val isSaveFailed: StateFlow<Boolean> = mutableIsSaveFailed.asStateFlow()
@@ -70,12 +77,24 @@ class MedicationRepository(
 
     fun finishTutorial() = change { it.finishTutorial() }
 
+    /** Shows [sample] on the screens instead of the saved data, which stays as it is, or the saved data again. */
+    fun showSample(sample: MedicationData?) {
+        this.sample.value = sample
+        refreshShownData()
+    }
+
+    private fun refreshShownData() {
+        mutableShownData.value = sample.value?.copy(reminderSettings = mutableData.value.reminderSettings)
+            ?: mutableData.value
+    }
+
     private fun today() = LocalDate.now(clock)
 
     private fun now() = LocalDateTime.now(clock)
 
     private fun change(action: (MedicationData) -> MedicationData) {
         mutableData.update(action)
+        refreshShownData()
         saveScope.launch {
             // Saves run one at a time and each writes the latest data, so the last one always wins
             saveLock.withLock {

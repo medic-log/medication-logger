@@ -3,12 +3,15 @@ package com.mediclog.medicationlogger.ui.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mediclog.medicationlogger.data.MedicationRepository
+import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.data.ReminderSettings
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import java.time.Clock
+import java.time.LocalDateTime
 
 /**
  * What the app's frame shows: the current tab, the record a link pointed to, any save problem,
@@ -23,8 +26,15 @@ data class MainUiState(
     val reminderSettings: ReminderSettings = ReminderSettings(),
 )
 
-/** Tracks the selected tab, follows links between records, and leads the tutorial, which opens until it's done. */
-class MainViewModel(private val repository: MedicationRepository) : ViewModel() {
+/**
+ * Tracks the selected tab, follows links between records, and leads the tutorial, which opens until it's done.
+ * The tutorial shows sample records made from [sampleDraft] in place of the saved data.
+ */
+class MainViewModel(
+    private val repository: MedicationRepository,
+    private val clock: Clock,
+    private val sampleDraft: PrescriptionDraft,
+) : ViewModel() {
     private val tutorialStep = MutableStateFlow(
         TutorialStep.entries.first().takeUnless { repository.data.value.isTutorialDone },
     )
@@ -47,6 +57,10 @@ class MainViewModel(private val repository: MedicationRepository) : ViewModel() 
         ),
     )
 
+    init {
+        if (tutorialStep.value != null) showSample()
+    }
+
     fun selectTab(tab: AppTab) {
         navigation.value = MainUiState(selectedTab = tab)
     }
@@ -59,7 +73,10 @@ class MainViewModel(private val repository: MedicationRepository) : ViewModel() 
         navigation.value = MainUiState(selectedTab = AppTab.BOXES, focusedBoxId = boxId)
     }
 
-    fun startTutorial() = showTutorialStep(TutorialStep.entries.first())
+    fun startTutorial() {
+        showSample()
+        showTutorialStep(TutorialStep.entries.first())
+    }
 
     fun nextTutorialStep() {
         val next = tutorialStep.value?.next
@@ -73,10 +90,20 @@ class MainViewModel(private val repository: MedicationRepository) : ViewModel() 
     /** Closes the tutorial, from its last step or by skipping it, so it no longer opens on its own. */
     fun finishTutorial() {
         tutorialStep.value = null
+        repository.showSample(null)
         repository.finishTutorial()
     }
 
     fun updateReminderSettings(settings: ReminderSettings) = repository.updateReminderSettings(settings)
+
+    override fun onCleared() {
+        repository.showSample(null)
+    }
+
+    private fun showSample() {
+        val settings = repository.data.value.reminderSettings
+        repository.showSample(tutorialSample(sampleDraft, settings, LocalDateTime.now(clock)))
+    }
 
     private fun showTutorialStep(step: TutorialStep) {
         tutorialStep.value = step

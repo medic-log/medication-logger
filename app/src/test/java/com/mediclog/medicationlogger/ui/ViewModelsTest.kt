@@ -56,7 +56,7 @@ class ViewModelsTest {
 
     @Test
     fun `app opens on boxes, and links open the record's tab`() {
-        val viewModel = MainViewModel(repository)
+        val viewModel = MainViewModel(repository, clock, draft)
         assertEquals(AppTab.BOXES, viewModel.uiState.value.selectedTab)
 
         viewModel.openPrescription(4)
@@ -74,23 +74,43 @@ class ViewModelsTest {
 
     @Test
     fun `the tutorial opens on first launch, leads through the tabs and stays closed once done`() {
-        val viewModel = MainViewModel(repository)
+        val viewModel = MainViewModel(repository, clock, draft)
         assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
 
         viewModel.nextTutorialStep()
-        assertEquals(TutorialStep.PRESCRIPTIONS, viewModel.uiState.value.tutorialStep)
+        assertEquals(TutorialStep.TABS, viewModel.uiState.value.tutorialStep)
+        viewModel.nextTutorialStep()
         assertEquals(AppTab.PRESCRIPTIONS, viewModel.uiState.value.selectedTab)
+        viewModel.previousTutorialStep()
         viewModel.previousTutorialStep()
         assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
 
         repeat(TutorialStep.entries.size) { viewModel.nextTutorialStep() }
         assertNull(viewModel.uiState.value.tutorialStep)
-        assertNull(MainViewModel(repository).uiState.value.tutorialStep)
+        assertTrue(repository.shownData.value.prescriptions.isEmpty())
+        assertNull(MainViewModel(repository, clock, draft).uiState.value.tutorialStep)
+    }
+
+    @Test
+    fun `the tutorial shows sample records without saving them`() {
+        val viewModel = MainViewModel(repository, clock, draft)
+        val sample = repository.shownData.value
+
+        assertEquals("Dr Test", sample.prescriptions.single().prescribedBy)
+        assertTrue(sample.refills.isNotEmpty())
+        assertTrue(sample.misses.isNotEmpty())
+        assertTrue(repository.data.value.prescriptions.isEmpty())
+
+        viewModel.updateReminderSettings(ReminderSettings(pillTime = LocalTime.of(9, 30)))
+        assertEquals(LocalTime.of(9, 30), repository.shownData.value.reminderSettings.pillTime)
+
+        viewModel.finishTutorial()
+        assertEquals(repository.data.value, repository.shownData.value)
     }
 
     @Test
     fun `skipping closes the tutorial for good, and help opens it again`() {
-        val viewModel = MainViewModel(repository)
+        val viewModel = MainViewModel(repository, clock, draft)
 
         viewModel.finishTutorial()
         assertNull(viewModel.uiState.value.tutorialStep)
@@ -102,7 +122,7 @@ class ViewModelsTest {
 
     @Test
     fun `the tutorial's settings steps change the reminder settings`() {
-        val viewModel = MainViewModel(repository)
+        val viewModel = MainViewModel(repository, clock, draft)
         val settings = viewModel.uiState.value.reminderSettings.copy(pillTime = LocalTime.of(9, 30))
 
         viewModel.updateReminderSettings(settings)
@@ -112,7 +132,7 @@ class ViewModelsTest {
 
     @Test
     fun `save failures reach the main state`() {
-        val viewModel = MainViewModel(repository)
+        val viewModel = MainViewModel(repository, clock, draft)
 
         store.isFailing = true
         repository.addPrescription(draft)

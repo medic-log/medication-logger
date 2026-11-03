@@ -119,20 +119,31 @@ fun RefillsScreen(
             }
         }
         items(state.entries, key = { it.key }) { entry ->
+            val target = if (entry == state.entries.first()) {
+                Modifier.tutorialTarget(TutorialTarget.FIRST_REFILL)
+            } else {
+                Modifier
+            }
             when (entry) {
                 is RefillLogEntry.RefillEntry -> RefillCard(
                     entry = entry,
                     onOpenPrescription = onOpenPrescription,
                     onOpenBox = onOpenBox,
                     onEdit = { editingKey = entry.key },
+                    modifier = target,
                 )
                 is RefillLogEntry.RefillGroupEntry -> RefillGroupCard(
                     group = entry,
                     onOpenPrescription = onOpenPrescription,
                     onOpenBox = onOpenBox,
                     onEdit = { editingKey = it },
+                    modifier = target,
                 )
-                is RefillLogEntry.MissEntry -> MissCard(entry.miss, onEdit = { editingKey = entry.key })
+                is RefillLogEntry.MissEntry -> MissCard(
+                    miss = entry.miss,
+                    onEdit = { editingKey = entry.key },
+                    modifier = target,
+                )
             }
         }
     }
