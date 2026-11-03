@@ -14,6 +14,9 @@ import java.time.YearMonth
 class ReminderCalculatorTest {
     // A Monday
     private val today = LocalDate.of(2026, 11, 2)
+
+    // Before the pill time, so today's dose is still to come
+    private val morning = today.atTime(7, 0)
     private val draft = PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 2)
 
     @Test
@@ -105,25 +108,26 @@ class ReminderCalculatorTest {
 
     @Test
     fun `a missed dose after a refill makes the medication last a day longer`() {
-        val refilled = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, today)
-        val before = ReminderCalculator.runOutDate(refilled, today)
+        val refilled = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, morning)
+        val before = ReminderCalculator.runOutDate(refilled, morning)
 
-        val missed = refilled.logMiss(MedicationMiss.Kind.MISSED, today)
+        val missed = refilled.logMiss(MedicationMiss.Kind.MISSED, morning)
 
-        assertEquals(before?.plusDays(1), ReminderCalculator.runOutDate(missed, today))
+        assertEquals(before?.plusDays(1), ReminderCalculator.runOutDate(missed, morning))
         assertEquals(refilled.boxes, missed.boxes)
     }
 
     @Test
     fun `a delayed dose, or one missed before any refill, changes no dates`() {
         val bought = MedicationData().addPrescription(draft, today).buyRepetition(1, today)
-        val before = ReminderCalculator.runOutDate(bought, today)
-        val refilled = bought.refillWeekly(1, today)
+        val before = ReminderCalculator.runOutDate(bought, morning)
+        val refilled = bought.refillWeekly(1, morning)
 
-        assertEquals(before, ReminderCalculator.runOutDate(bought.logMiss(MedicationMiss.Kind.MISSED, today), today))
+        val missed = bought.logMiss(MedicationMiss.Kind.MISSED, morning)
+        assertEquals(before, ReminderCalculator.runOutDate(missed, morning))
         assertEquals(
-            ReminderCalculator.runOutDate(refilled, today),
-            ReminderCalculator.runOutDate(refilled.logMiss(MedicationMiss.Kind.DELAYED, today), today),
+            ReminderCalculator.runOutDate(refilled, morning),
+            ReminderCalculator.runOutDate(refilled.logMiss(MedicationMiss.Kind.DELAYED, morning), morning),
         )
     }
 
@@ -151,7 +155,7 @@ class ReminderCalculatorTest {
 
     @Test
     fun `nothing logged has no run-out date`() {
-        assertNull(ReminderCalculator.runOutDate(MedicationData(), today))
+        assertNull(ReminderCalculator.runOutDate(MedicationData(), morning))
     }
 
     @Test
@@ -159,23 +163,23 @@ class ReminderCalculatorTest {
         val data = MedicationData().addPrescription(draft, today).buyRepetition(1, today)
 
         assertEquals(60, ReminderCalculator.pillsRemaining(data))
-        assertEquals(today.plusDays(60), ReminderCalculator.runOutDate(data, today))
+        assertEquals(today.plusDays(60), ReminderCalculator.runOutDate(data, morning))
     }
 
     @Test
     fun `run-out date starts after the days the last refill covers`() {
-        val data = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, today)
+        val data = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, morning)
 
         assertEquals(53, ReminderCalculator.pillsRemaining(data))
-        assertEquals(today.plusDays(7 + 53), ReminderCalculator.runOutDate(data, today))
+        assertEquals(today.plusDays(7 + 53), ReminderCalculator.runOutDate(data, morning))
     }
 
     @Test
     fun `an old refill no longer covers any days`() {
-        val data = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, today)
+        val data = MedicationData().addPrescription(draft, today).buyRepetition(1, today).refillWeekly(1, morning)
         val later = today.plusDays(10)
 
-        assertEquals(later.plusDays(53), ReminderCalculator.runOutDate(data, later))
+        assertEquals(later.plusDays(53), ReminderCalculator.runOutDate(data, later.atTime(7, 0)))
     }
 
     @Test
@@ -189,7 +193,8 @@ class ReminderCalculatorTest {
     fun `run-out reminder fires the chosen days before the bought pills run out`() {
         val settings = ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 14)
         val data = MedicationData(reminderSettings = settings).addPrescription(draft, today).buyRepetition(1, today)
-        val dueDay = today.plusDays(30 - 14)
+        // Noon is after today's pill time, so the pills start tomorrow
+        val dueDay = today.plusDays(1 + 30 - 14)
 
         assertEquals(
             dueDay.atTime(9, 0),

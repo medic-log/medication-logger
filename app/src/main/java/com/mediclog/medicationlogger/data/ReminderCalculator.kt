@@ -16,24 +16,22 @@ object ReminderCalculator {
         pillsBought(data) + data.prescriptions.sumOf { it.repetitionsLeft * it.pillsPerRepetition }
 
     /** The day the medication runs out at one pill a day, or null when nothing has been logged yet. */
-    fun runOutDate(data: MedicationData, today: LocalDate): LocalDate? =
-        coveredUntil(data, today)?.plusDays(pillsRemaining(data).toLong())
+    fun runOutDate(data: MedicationData, now: LocalDateTime): LocalDate? =
+        coveredUntil(data, now)?.plusDays(pillsRemaining(data).toLong())
 
     /**
      * The day the pills already bought run out, or null when nothing has been logged yet. The run-out reminder
      * follows this date, as repetitions not bought can't be taken until someone fetches them.
      */
-    fun boughtPillsRunOutDate(data: MedicationData, today: LocalDate): LocalDate? =
-        coveredUntil(data, today)?.plusDays(pillsBought(data).toLong())
+    fun boughtPillsRunOutDate(data: MedicationData, now: LocalDateTime): LocalDate? =
+        coveredUntil(data, now)?.plusDays(pillsBought(data).toLong())
 
     private fun pillsBought(data: MedicationData): Int = data.boxes.filterNot { it.isExtra }.sumOf { it.pillsLeft }
 
-    private fun coveredUntil(data: MedicationData, today: LocalDate): LocalDate? {
-        val lastRefill = data.refills.lastOrNull()
-        if (lastRefill == null && pillsRemaining(data) == 0) return null
-        val refillEnd = lastRefill?.date?.plusDays((PILLS_PER_WEEK - data.pendingRefillAmount).toLong())
-        val start = if (refillEnd != null && refillEnd.isAfter(today)) refillEnd else today
-        return start.plusDays(data.missedPills.toLong())
+    // The first day with no pill left in the weekly lot
+    private fun coveredUntil(data: MedicationData, now: LocalDateTime): LocalDate? {
+        if (data.weeklyLot.countedAt == null && pillsRemaining(data) == 0) return null
+        return nextPill(data.reminderSettings, now).toLocalDate().plusDays(data.lotPills(now).toLong())
     }
 
     /** The next weekly refill reminder after [now]. */
@@ -67,7 +65,7 @@ object ReminderCalculator {
             ReminderKind.REFILL -> if (settings.isRefillEnabled) nextRefill(settings, now) else null
             ReminderKind.PILL -> if (settings.isPillEnabled) nextPill(settings, now) else null
             ReminderKind.PICKUP, ReminderKind.RUN_OUT, ReminderKind.EXPIRY ->
-                dailyReminderDate(kind, data, now.toLocalDate())?.let { nextDailyTrigger(it, now) }
+                dailyReminderDate(kind, data, now)?.let { nextDailyTrigger(it, now) }
         }
     }
 
@@ -76,15 +74,15 @@ object ReminderCalculator {
         ReminderKind.REFILL -> data.reminderSettings.isRefillEnabled
         ReminderKind.PILL -> data.reminderSettings.isPillEnabled
         ReminderKind.PICKUP, ReminderKind.RUN_OUT, ReminderKind.EXPIRY ->
-            dailyReminderDate(kind, data, now.toLocalDate())?.atTime(DAILY_REMINDER_TIME)?.isAfter(now) == false
+            dailyReminderDate(kind, data, now)?.atTime(DAILY_REMINDER_TIME)?.isAfter(now) == false
     }
 
-    private fun dailyReminderDate(kind: ReminderKind, data: MedicationData, today: LocalDate): LocalDate? {
+    private fun dailyReminderDate(kind: ReminderKind, data: MedicationData, now: LocalDateTime): LocalDate? {
         val settings = data.reminderSettings
         return when {
             kind == ReminderKind.PICKUP && settings.isPickupEnabled -> pickupDate(data)
             kind == ReminderKind.RUN_OUT && settings.isRunOutEnabled ->
-                boughtPillsRunOutDate(data, today)?.minusDays(settings.runOutDaysBefore.toLong())
+                boughtPillsRunOutDate(data, now)?.minusDays(settings.runOutDaysBefore.toLong())
             // A month on the box means usable until that month ends
             kind == ReminderKind.EXPIRY && settings.isExpiryEnabled ->
                 expiringBox(data)?.expiryDate?.atEndOfMonth()?.minusDays(settings.expiryDaysBefore.toLong())

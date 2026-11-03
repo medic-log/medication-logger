@@ -18,7 +18,7 @@ object AppViewModelProvider {
         initializer { MainViewModel(application().repository) }
         initializer { RemindersViewModel(application().repository, application().clock) }
         initializer { PrescriptionsViewModel(application().repository) }
-        initializer { BoxesViewModel(application().repository) }
+        initializer { BoxesViewModel(application().repository, application().clock) }
         initializer { RefillsViewModel(application().repository) }
     }
 

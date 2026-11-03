@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import java.io.IOException
 import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.YearMonth
 
 /**
@@ -38,15 +39,15 @@ class MedicationRepository(
     fun buyRepetition(prescriptionId: Long, expiryDates: List<YearMonth> = emptyList()) =
         change { it.buyRepetition(prescriptionId, today(), expiryDates) }
 
-    fun refillWeekly(boxId: Long) = change { it.refillWeekly(boxId, today()) }
+    fun refillWeekly(boxId: Long) = change { it.refillWeekly(boxId, now()) }
 
-    fun refillPartial(boxId: Long) = change { it.refillPartial(boxId, today()) }
+    fun refillPartial(boxId: Long) = change { it.refillPartial(boxId, now()) }
 
     fun saveAsExtra(boxId: Long) = change { it.saveAsExtra(boxId) }
 
     fun backToInventory(boxId: Long) = change { it.backToInventory(boxId) }
 
-    fun logMiss(kind: MedicationMiss.Kind) = change { it.logMiss(kind, today()) }
+    fun logMiss(kind: MedicationMiss.Kind) = change { it.logMiss(kind, now()) }
 
     fun editPrescription(updated: Prescription) = change { it.editPrescription(updated) }
 
@@ -68,6 +69,8 @@ class MedicationRepository(
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
     private fun today() = LocalDate.now(clock)
+
+    private fun now() = LocalDateTime.now(clock)
 
     private fun change(action: (MedicationData) -> MedicationData) {
         mutableData.update(action)

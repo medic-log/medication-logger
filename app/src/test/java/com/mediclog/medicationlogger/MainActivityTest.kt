@@ -27,6 +27,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
+import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -39,6 +40,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.YearMonth
@@ -209,7 +211,7 @@ class MainActivityTest {
         addBox()
         assertNotShown(string(R.string.boxes_opened, today))
 
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
         assertShown(string(R.string.boxes_opened, today))
     }
@@ -239,39 +241,44 @@ class MainActivityTest {
     }
 
     @Test
-    fun `refills follow the concept's example, with partial refill highlighted when incomplete`() {
+    fun `partial refill is highlighted while the weekly lot won't last until the next refill`() {
+        // Seven pill times until the next refill, unless the test runs in the day's last minute
+        val now = LocalDateTime.now()
+        (composeRule.activity.application as MedicationLoggerApplication).repository.updateReminderSettings(
+            ReminderSettings(
+                refillDay = now.plusDays(6).dayOfWeek,
+                refillTime = LocalTime.MAX,
+                pillTime = LocalTime.of(23, 59),
+            ),
+        )
         openTab(R.string.main_tab_prescriptions)
-        addPrescription(pillsPerBox = 25, boxesPerRepetition = 1, repetitions = 1)
+        addPrescription(pillsPerBox = 4, boxesPerRepetition = 1, repetitions = 1)
         buyRepetition()
         // The filter hides the finished prescription
         composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
-        fillSecondPrescriptionPillsPerBox(30)
+        composeRule.onNodeWithText("4").performTextReplacement("30")
         tap(string(R.string.prescriptions_save))
         buyRepetition()
         openTab(R.string.main_tab_boxes)
 
-        val weekly = string(R.string.boxes_refill_weekly)
         val pending = plural(R.plurals.boxes_refill_partial_pending, 3, 3)
         assertNotShown(pending)
 
-        repeat(4) { composeRule.onAllNodesWithText(weekly).onFirst().performClick() }
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
+        assertShown(plural(R.plurals.boxes_lot_pills, 4, 4))
         assertShown(plural(R.plurals.boxes_pending_notice, 3, 3))
         tap(pending)
         assertNotShown(pending)
         assertNotShown(plural(R.plurals.boxes_pending_notice, 3, 3))
-        tap(weekly)
-        assertShown(string(R.string.boxes_pills_left, 20, 30))
+        assertShown(plural(R.plurals.boxes_lot_pills, 7, 7))
+        assertShown(string(R.string.boxes_pills_left, 27, 30))
 
         openTab(R.string.main_tab_refills)
-        listOf(18, 11, 4, 0, 27, 20).forEach { assertShown(refillBox(it)) }
+        listOf(0, 27).forEach { assertShown(refillBox(it)) }
         composeRule.onAllNodesWithText(string(R.string.refills_partial)).assertCountEquals(2)
         hold(refillBox(0))
         assertShown(string(R.string.edit_refill_title))
-    }
-
-    private fun fillSecondPrescriptionPillsPerBox(pills: Int) {
-        composeRule.onNodeWithText("25").performTextReplacement(pills.toString())
     }
 
     @Test
@@ -280,7 +287,7 @@ class MainActivityTest {
         addPrescription(pillsPerBox = 30, boxesPerRepetition = 1, repetitions = 1)
         buyRepetition()
         openTab(R.string.main_tab_boxes)
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
         openTab(R.string.main_tab_refills)
         composeRule.onNodeWithContentDescription(string(R.string.link_open_box)).performClick()
@@ -452,7 +459,7 @@ class MainActivityTest {
     @Test
     fun `deleting a box can keep its refills`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
         hold("$today #1")
         tap(string(R.string.edit_delete))
@@ -471,7 +478,7 @@ class MainActivityTest {
     @Test
     fun `deleting a box can delete its refills too`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
 
         hold("$today #1")
         tap(string(R.string.edit_delete))
@@ -514,7 +521,7 @@ class MainActivityTest {
     @Test
     fun `a refill's pills left can be edited, and its box follows`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
         openTab(R.string.main_tab_refills)
 
         hold(refillBox(23))
@@ -530,7 +537,7 @@ class MainActivityTest {
     @Test
     fun `changing a refill's amount updates its pills left in the dialog`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
         openTab(R.string.main_tab_refills)
 
         hold(refillBox(23))
@@ -545,7 +552,7 @@ class MainActivityTest {
     @Test
     fun `holding a refill card deletes it, returning its pills`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
         openTab(R.string.main_tab_refills)
 
         hold(refillBox(23))
@@ -559,7 +566,7 @@ class MainActivityTest {
     @Test
     fun `a missed dose after a refill shows as one pill less, and is still edited on its own`() {
         addBox()
-        tap(string(R.string.boxes_refill_weekly))
+        composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
         openTab(R.string.main_tab_refills)
 
         tap(string(R.string.refills_log_missed))
@@ -663,7 +670,9 @@ class MainActivityTest {
 
         openTab(R.string.main_tab_reminders)
 
-        val runOutDate = LocalDate.now().plusDays(30).toString()
+        // Today's pill counts only if its time is still to come
+        val firstDose = ReminderCalculator.nextPill(ReminderSettings(), LocalDateTime.now()).toLocalDate()
+        val runOutDate = firstDose.plusDays(30).toString()
         assertShown(string(R.string.reminders_run_out_date, runOutDate))
     }
 }

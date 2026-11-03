@@ -49,9 +49,9 @@ class JsonFileMedicationStoreTest {
             .buyRepetition(1, day)
             .orderRepetition(1, day)
             .buyRepetition(2, day)
-            .refillWeekly(1, day)
+            .refillWeekly(1, day.atTime(21, 0))
             .saveAsExtra(3)
-            .logMiss(MedicationMiss.Kind.MISSED, day)
+            .logMiss(MedicationMiss.Kind.MISSED, day.atTime(21, 0))
 
         JsonFileMedicationStore(file).save(data)
 
@@ -76,7 +76,7 @@ class JsonFileMedicationStoreTest {
         val data = MedicationData()
             .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
             .buyRepetition(1, day, listOf(YearMonth.of(2030, 1), YearMonth.of(2031, 6)))
-            .refillWeekly(1, day)
+            .refillWeekly(1, day.atTime(21, 0))
 
         JsonFileMedicationStore(file).save(data)
 
@@ -101,8 +101,8 @@ class JsonFileMedicationStoreTest {
         val data = MedicationData()
             .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
             .buyRepetition(1, day)
-            .refillWeekly(1, day)
-            .refillWeekly(2, day)
+            .refillWeekly(1, day.atTime(21, 0))
+            .refillWeekly(2, day.atTime(21, 0))
             .deleteBox(1, keepRefills = true)
             .deletePrescription(1, keepBoxes = true)
 
@@ -123,6 +123,21 @@ class JsonFileMedicationStoreTest {
         file.writeText(json.toString())
 
         assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `a file saved before the weekly lot existed counts it from the last refills`() {
+        val data = MedicationData()
+            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 10, 2, 1), day)
+            .buyRepetition(1, day)
+            .refillWeekly(1, day.atTime(21, 0))
+            .refillWeekly(1, day.atTime(21, 0))
+        JsonFileMedicationStore(file).save(data)
+        val json = JSONObject(file.readText())
+        json.remove("weeklyLot")
+        file.writeText(json.toString())
+
+        assertEquals(WeeklyLot(3, day.atTime(LocalTime.MAX)), JsonFileMedicationStore(file).load().weeklyLot)
     }
 
     @Test

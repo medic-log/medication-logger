@@ -39,7 +39,7 @@ class RemindersViewModel(private val repository: MedicationRepository, private v
         nextRefill = ReminderCalculator.nextRefill(data.reminderSettings, LocalDateTime.now(clock)),
         nextPill = ReminderCalculator.nextPill(data.reminderSettings, LocalDateTime.now(clock)),
         pickupDate = ReminderCalculator.pickupDate(data),
-        runOutDate = ReminderCalculator.runOutDate(data, LocalDate.now(clock)),
+        runOutDate = ReminderCalculator.runOutDate(data, LocalDateTime.now(clock)),
         pillsRemaining = ReminderCalculator.pillsRemaining(data),
         expiringBox = ReminderCalculator.expiringBox(data),
     )

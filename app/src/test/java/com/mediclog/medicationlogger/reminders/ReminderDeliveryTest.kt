@@ -10,6 +10,7 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.AllRemindersOff
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.PrescriptionDraft
+import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
 import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
@@ -22,6 +23,7 @@ import org.robolectric.Shadows.shadowOf
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneOffset
@@ -81,6 +83,10 @@ class ReminderDeliveryTest {
         assertTrue(alarms.peekNextScheduledAlarm() != null)
     }
 
+    // Today's pill counts only if its time is still to come
+    private fun runOutDate(pills: Long) =
+        ReminderCalculator.nextPill(ReminderSettings(), LocalDateTime.now()).toLocalDate().plusDays(pills).toString()
+
     @Test
     fun `a run-out notification says a new prescription is needed when no repetition is left`() {
         app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1))
@@ -93,7 +99,7 @@ class ReminderDeliveryTest {
         val notification = shadowOf(notifications.allNotifications.single())
         assertEquals(app.getString(R.string.reminders_notification_run_out_title), notification.contentTitle)
         assertEquals(
-            app.getString(R.string.reminders_notification_run_out_text, LocalDate.now().plusDays(7).toString()),
+            app.getString(R.string.reminders_notification_run_out_text, runOutDate(pills = 7)),
             notification.contentText,
         )
     }
@@ -109,7 +115,7 @@ class ReminderDeliveryTest {
         assertEquals(
             app.getString(
                 R.string.reminders_notification_run_out_repetition_text,
-                LocalDate.now().plusDays(7).toString(),
+                runOutDate(pills = 7),
             ),
             shadowOf(notifications.allNotifications.single()).contentText,
         )

@@ -12,19 +12,22 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import java.time.Clock
+import java.time.LocalDateTime
 
 /** A box with its refills, newest first. */
 data class BoxItem(val box: Box, val refills: List<Refill>)
 
-/** The boxes to show, and how many pills the last refill still needs. */
+/** The boxes to show, the pills in the weekly lot (null before any refill) and how many it still needs. */
 data class BoxesUiState(
     val filter: ListFilter = ListFilter.ACTIVE,
     val items: List<BoxItem> = emptyList(),
+    val lotPills: Int? = null,
     val pendingRefillAmount: Int = 0,
 )
 
 /** Lists boxes and refills from them. */
-class BoxesViewModel(private val repository: MedicationRepository) : ViewModel() {
+class BoxesViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
     private val filter = MutableStateFlow(ListFilter.ACTIVE)
 
     val uiState: StateFlow<BoxesUiState> = combine(repository.data, filter, ::toUiState)
@@ -46,21 +49,25 @@ class BoxesViewModel(private val repository: MedicationRepository) : ViewModel()
 
     fun deleteBox(boxId: Long, keepRefills: Boolean) = repository.deleteBox(boxId, keepRefills)
 
-    private fun toUiState(data: MedicationData, filter: ListFilter) = BoxesUiState(
-        filter = filter,
-        items = data.boxes
-            .filter { box ->
-                when (filter) {
-                    ListFilter.ACTIVE -> box.isActive
-                    ListFilter.ALL -> true
-                    ListFilter.EXTRA -> box.isExtra
+    private fun toUiState(data: MedicationData, filter: ListFilter): BoxesUiState {
+        val now = LocalDateTime.now(clock)
+        return BoxesUiState(
+            filter = filter,
+            items = data.boxes
+                .filter { box ->
+                    when (filter) {
+                        ListFilter.ACTIVE -> box.isActive
+                        ListFilter.ALL -> true
+                        ListFilter.EXTRA -> box.isExtra
+                    }
                 }
-            }
-            // Oldest first within a status, as that's the order boxes get used in
-            .sortedWith(compareBy({ it.status.sortRank() }, { it.boughtDate }, { it.boxNumber }, { it.id }))
-            .map { box -> BoxItem(box, data.refills.filter { it.boxId == box.id }.asReversed()) },
-        pendingRefillAmount = data.pendingRefillAmount,
-    )
+                // Oldest first within a status, as that's the order boxes get used in
+                .sortedWith(compareBy({ it.status.sortRank() }, { it.boughtDate }, { it.boxNumber }, { it.id }))
+                .map { box -> BoxItem(box, data.refills.filter { it.boxId == box.id }.asReversed()) },
+            lotPills = data.weeklyLot.countedAt?.let { data.lotPills(now) },
+            pendingRefillAmount = data.pendingRefillAmount(now),
+        )
+    }
 
     private fun Box.Status.sortRank() = when (this) {
         Box.Status.IN_PROGRESS -> 0

@@ -107,6 +107,12 @@ fun BoxesScreen(
                     options = ListFilter.entries,
                     onFilterChange = onFilterChange,
                 )
+                if (state.lotPills != null) {
+                    Text(
+                        text = pluralStringResource(R.plurals.boxes_lot_pills, state.lotPills, state.lotPills),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 if (state.pendingRefillAmount > 0) {
                     PendingRefillNotice(state.pendingRefillAmount)
                 }

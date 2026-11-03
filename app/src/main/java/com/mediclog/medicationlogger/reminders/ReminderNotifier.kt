@@ -13,7 +13,7 @@ import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
 import java.time.Clock
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 private const val CHANNEL_ID = "reminders"
 
@@ -64,7 +64,7 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
             } else {
                 R.string.reminders_notification_run_out_text
             },
-            ReminderCalculator.boughtPillsRunOutDate(data, LocalDate.now(clock)).toString(),
+            ReminderCalculator.boughtPillsRunOutDate(data, LocalDateTime.now(clock)).toString(),
         )
         ReminderKind.EXPIRY -> ReminderCalculator.expiringBox(data).let { box ->
             context.getString(

@@ -103,9 +103,13 @@
         <item quantity="one">Partial refill (%1$d pill)</item>
         <item quantity="other">Partial refill (%1$d pills)</item>
     </plurals>
+    <plurals name="boxes_lot_pills">
+        <item quantity="one">%1$d pill in your weekly lot</item>
+        <item quantity="other">%1$d pills in your weekly lot</item>
+    </plurals>
     <plurals name="boxes_pending_notice">
-        <item quantity="one">Your last refill is incomplete: %1$d more pill makes a full week. Use Partial refill.</item>
-        <item quantity="other">Your last refill is incomplete: %1$d more pills make a full week. Use Partial refill.</item>
+        <item quantity="one">Your weekly lot is short: %1$d more pill lasts until the next weekly refill. Use Partial refill.</item>
+        <item quantity="other">Your weekly lot is short: %1$d more pills last until the next weekly refill. Use Partial refill.</item>
     </plurals>
 
     <string name="refills_empty">No refills yet. Refill from a box in Boxes.</string>

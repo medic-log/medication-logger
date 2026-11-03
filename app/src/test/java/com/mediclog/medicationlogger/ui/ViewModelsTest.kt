@@ -97,7 +97,7 @@ class ViewModelsTest {
 
     @Test
     fun `boxes filter shows only those in use, and all lists finished ones last`() {
-        val viewModel = BoxesViewModel(repository)
+        val viewModel = BoxesViewModel(repository, clock)
         repository.addPrescription(draft.copy(pillsPerBox = 7, boxesPerRepetition = 3))
         repository.buyRepetition(1)
         viewModel.refillWeekly(1)
@@ -140,12 +140,13 @@ class ViewModelsTest {
             .buyRepetition(1, today)
             .buyRepetition(2, today)
             .buyRepetition(3, today.minusDays(1))
-            .refillWeekly(1, today)
+            .refillWeekly(1, today.atTime(21, 0))
             .saveAsExtra(2)
-            .refillWeekly(3, today)
+            .refillWeekly(3, today.atTime(21, 0))
         val dispatcher = UnconfinedTestDispatcher()
         val viewModel = BoxesViewModel(
             MedicationRepository(FakeMedicationStore(data), clock, CoroutineScope(dispatcher)),
+            clock,
         )
 
         viewModel.setFilter(ListFilter.ALL)
@@ -167,7 +168,7 @@ class ViewModelsTest {
 
     @Test
     fun `boxes extra filter shows only extra boxes`() {
-        val viewModel = BoxesViewModel(repository)
+        val viewModel = BoxesViewModel(repository, clock)
         repository.addPrescription(draft.copy(pillsPerBox = 7, boxesPerRepetition = 3))
         repository.buyRepetition(1)
         viewModel.saveAsExtra(2)
@@ -178,19 +179,21 @@ class ViewModelsTest {
     }
 
     @Test
-    fun `box items hold their refills, and the pending amount follows the last refill`() {
-        val viewModel = BoxesViewModel(repository)
-        repository.addPrescription(draft.copy(pillsPerBox = 11, boxesPerRepetition = 2))
+    fun `box items hold their refills, and the pending amount lasts the lot until the next refill`() {
+        val viewModel = BoxesViewModel(repository, clock)
+        repository.addPrescription(draft.copy(pillsPerBox = 4, boxesPerRepetition = 2))
         repository.buyRepetition(1)
 
+        // Monday noon, so six doses are left before Sunday's refill
         viewModel.refillWeekly(1)
-        viewModel.refillWeekly(1)
-        assertEquals(3, viewModel.uiState.value.pendingRefillAmount)
+        assertEquals(4, viewModel.uiState.value.lotPills)
+        assertEquals(2, viewModel.uiState.value.pendingRefillAmount)
 
         viewModel.refillPartial(2)
         val state = viewModel.uiState.value
+        assertEquals(6, state.lotPills)
         assertEquals(0, state.pendingRefillAmount)
-        assertEquals(listOf(8), state.items.single().refills.map { it.amountRemaining })
+        assertEquals(listOf(2), state.items.single().refills.map { it.amountRemaining })
     }
 
     @Test
@@ -308,7 +311,8 @@ class ViewModelsTest {
         val state = viewModel.uiState.value
         assertTrue(state.settings.isPickupEnabled)
         assertEquals(today.plusDays(2), state.pickupDate)
-        assertEquals(today.plusDays(30), state.runOutDate)
+        // Noon is after today's pill time, so the pills start tomorrow
+        assertEquals(today.plusDays(31), state.runOutDate)
         assertEquals(30, state.pillsRemaining)
     }
 }
