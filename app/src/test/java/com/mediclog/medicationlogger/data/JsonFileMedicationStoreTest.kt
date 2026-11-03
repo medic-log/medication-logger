@@ -51,6 +51,7 @@ class JsonFileMedicationStoreTest {
             .buyRepetition(2, day)
             .refillWeekly(1, day.atTime(21, 0))
             .saveAsExtra(3)
+            .setBoxNotes(3, "For travel, \"spare\"")
             .logMiss(MedicationMiss.Kind.MISSED, day.atTime(21, 0))
             .finishTutorial()
 

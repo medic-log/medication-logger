@@ -387,6 +387,21 @@ class MedicationDataTest {
     }
 
     @Test
+    fun `an extra box keeps its notes until it goes back to the inventory`() {
+        val data = refilled.saveAsExtra(1)
+
+        val noted = data.setBoxNotes(1, " For travel ")
+        assertEquals("For travel", noted.boxes.first().notes)
+
+        assertEquals("", noted.backToInventory(1).boxes.first().notes)
+    }
+
+    @Test
+    fun `a box that isn't extra can't have notes`() {
+        assertEquals(refilled, refilled.setBoxNotes(1, "For travel"))
+    }
+
+    @Test
     fun `deleting a box deletes its refills`() {
         val deleted = refilled.deleteBox(1)
 

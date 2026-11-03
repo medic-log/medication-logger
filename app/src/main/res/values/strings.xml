@@ -92,6 +92,7 @@
     <string name="boxes_refills_title">Refills:</string>
     <string name="boxes_opened">Opened: %1$s</string>
     <string name="boxes_expires">Expires: %1$s</string>
+    <string name="boxes_notes_label">Notes</string>
     <string name="boxes_refill_weekly">Weekly refill</string>
     <string name="boxes_save_as_extra">Save as extra</string>
     <string name="boxes_back_to_inventory">Back to inventory</string>

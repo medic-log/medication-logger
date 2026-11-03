@@ -53,6 +53,8 @@ class MedicationRepository(
 
     fun saveAsExtra(boxId: Long) = change { it.saveAsExtra(boxId) }
 
+    fun setBoxNotes(boxId: Long, notes: String) = change { it.setBoxNotes(boxId, notes) }
+
     fun backToInventory(boxId: Long) = change { it.backToInventory(boxId) }
 
     fun logMiss(kind: MedicationMiss.Kind, time: LocalTime? = null) = change { it.logMiss(kind, now(), time) }

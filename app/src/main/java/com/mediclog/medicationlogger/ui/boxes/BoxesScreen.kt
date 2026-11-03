@@ -13,7 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,8 +29,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,6 +76,7 @@ fun BoxesRoute(
         onRefillPartial = viewModel::refillPartial,
         onSaveAsExtra = viewModel::saveAsExtra,
         onBackToInventory = viewModel::backToInventory,
+        onNotesChange = viewModel::setBoxNotes,
         onEditBox = viewModel::editBox,
         onDeleteBox = viewModel::deleteBox,
         onOpenPrescription = onOpenPrescription,
@@ -84,6 +94,7 @@ fun BoxesScreen(
     onRefillPartial: (Long) -> Unit,
     onSaveAsExtra: (Long) -> Unit,
     onBackToInventory: (Long) -> Unit,
+    onNotesChange: (Long, String) -> Unit,
     onEditBox: (Box) -> Unit,
     onDeleteBox: (Long, Boolean) -> Unit,
     onOpenPrescription: (Long) -> Unit,
@@ -135,6 +146,7 @@ fun BoxesScreen(
                 onRefillPartial = { onRefillPartial(item.box.id) },
                 onSaveAsExtra = { onSaveAsExtra(item.box.id) },
                 onBackToInventory = { onBackToInventory(item.box.id) },
+                onNotesChange = { onNotesChange(item.box.id, it) },
                 onEdit = { editingId = item.box.id },
                 onOpenPrescription = item.box.prescriptionId?.let { id -> { onOpenPrescription(id) } },
                 modifier = if (item == state.items.first()) {
@@ -187,6 +199,7 @@ private fun BoxCard(
     onRefillPartial: () -> Unit,
     onSaveAsExtra: () -> Unit,
     onBackToInventory: () -> Unit,
+    onNotesChange: (String) -> Unit,
     onEdit: () -> Unit,
     onOpenPrescription: (() -> Unit)?,
     modifier: Modifier = Modifier,
@@ -218,12 +231,17 @@ private fun BoxCard(
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
+        if (box.isExtra) {
+            BoxNotesField(notes = box.notes, onNotesChange = onNotesChange)
+        }
         Row(verticalAlignment = Alignment.Bottom) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (item.refills.isNotEmpty()) {
                     Text(
                         text = stringResource(R.string.boxes_refills_title),
                         style = MaterialTheme.typography.labelLarge,
+                        // Sets the title apart from the notes field above it
+                        modifier = if (box.isExtra) Modifier.padding(top = 4.dp) else Modifier,
                     )
                     item.refills.forEach { refill ->
                         Text(refill.summary(), style = MaterialTheme.typography.bodySmall)
@@ -274,6 +292,36 @@ private fun BoxCard(
     }
 }
 
+/** Notes typed on the card, saved when the field loses focus or the keyboard's done key is pressed. */
+@Composable
+private fun BoxNotesField(notes: String, onNotesChange: (String) -> Unit, modifier: Modifier = Modifier) {
+    // Keyed by the saved notes, so that changes from elsewhere, such as an import, replace what's shown
+    var text by rememberSaveable(notes) { mutableStateOf(notes) }
+    val focusManager = LocalFocusManager.current
+    val contentColor = LocalContentColor.current
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it },
+        label = { Text(stringResource(R.string.boxes_notes_label)) },
+        textStyle = MaterialTheme.typography.bodyMedium,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+        // The card takes the box's status colors, so the field follows them
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = contentColor,
+            unfocusedTextColor = contentColor,
+            focusedBorderColor = contentColor,
+            unfocusedBorderColor = contentColor,
+            focusedLabelColor = contentColor,
+            unfocusedLabelColor = contentColor,
+            cursorColor = contentColor,
+        ),
+        modifier = modifier
+            .fillMaxWidth()
+            .onFocusChanged { if (!it.isFocused && text.trim() != notes) onNotesChange(text) },
+    )
+}
+
 @Composable
 private fun Refill.summary(): String {
     val amounts = pluralStringResource(R.plurals.refills_amount, amount, amount, amountRemaining)
@@ -319,6 +367,7 @@ private fun BoxesPreviewContent(state: BoxesUiState) {
                 onRefillPartial = {},
                 onSaveAsExtra = {},
                 onBackToInventory = {},
+                onNotesChange = { _, _ -> },
                 onEditBox = {},
                 onDeleteBox = { _, _ -> },
                 onOpenPrescription = {},
@@ -343,4 +392,13 @@ private fun BoxesScreenPendingPreview() {
 @Composable
 private fun BoxesScreenEmptyPreview() {
     BoxesPreviewContent(BoxesUiState())
+}
+
+@PreviewLightDark
+@Composable
+private fun BoxesScreenExtraPreview() {
+    BoxesPreviewContent(
+        BoxesUiState(items = listOf(
+            BoxItem(previewBox.copy(isExtra = true), emptyList())
+        )))
 }

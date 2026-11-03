@@ -115,6 +115,7 @@ private fun Box.toJson() = JSONObject()
     .put("isExtra", isExtra)
     .put("openDate", openDate?.toString())
     .put("expiryDate", expiryDate?.toString())
+    .put("notes", notes)
 
 private fun JSONObject.toBox() = Box(
     id = getLong("id"),
@@ -126,6 +127,8 @@ private fun JSONObject.toBox() = Box(
     isExtra = getBoolean("isExtra"),
     openDate = dateOrNull("openDate"),
     expiryDate = yearMonthOrNull("expiryDate"),
+    // Files saved before notes existed don't have them
+    notes = optString("notes", ""),
 )
 
 private fun Refill.toJson() = JSONObject()

@@ -117,9 +117,15 @@ data class MedicationData(
         return if (box.canSaveAsExtra) withBox(box.copy(isExtra = true)) else this
     }
 
+    /** Sets the notes of an extra box; other boxes can't have notes. */
+    fun setBoxNotes(boxId: Long, notes: String): MedicationData {
+        val box = boxes.find { it.id == boxId } ?: return this
+        return if (box.isExtra) withBox(box.copy(notes = notes.trim())) else this
+    }
+
     fun backToInventory(boxId: Long): MedicationData {
         val box = boxes.find { it.id == boxId } ?: return this
-        return withBox(box.copy(isExtra = false))
+        return withBox(box.copy(isExtra = false, notes = ""))
     }
 
     /**
@@ -188,7 +194,8 @@ data class MedicationData(
             updated.pillsTotal > 0 &&
             updated.pillsLeft in 0..updated.pillsTotal
         if (!isValid) return this
-        return withBox(updated.copy(isExtra = updated.isExtra && updated.pillsLeft > 0))
+        val isExtra = updated.isExtra && updated.pillsLeft > 0
+        return withBox(updated.copy(isExtra = isExtra, notes = if (isExtra) updated.notes.trim() else ""))
     }
 
     /** Deletes a box with its refills, or with [keepRefills] only the box, and the refills lose their link to it. */

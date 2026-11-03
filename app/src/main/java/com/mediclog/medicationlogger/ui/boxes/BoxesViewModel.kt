@@ -42,6 +42,8 @@ class BoxesViewModel(private val repository: MedicationRepository, private val c
 
     fun saveAsExtra(boxId: Long) = repository.saveAsExtra(boxId)
 
+    fun setBoxNotes(boxId: Long, notes: String) = repository.setBoxNotes(boxId, notes)
+
     fun backToInventory(boxId: Long) = repository.backToInventory(boxId)
 
     fun editBox(updated: Box) = repository.editBox(updated)
