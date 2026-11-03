@@ -68,6 +68,8 @@ class MedicationRepository(
 
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
+    fun finishTutorial() = change { it.finishTutorial() }
+
     private fun today() = LocalDate.now(clock)
 
     private fun now() = LocalDateTime.now(clock)

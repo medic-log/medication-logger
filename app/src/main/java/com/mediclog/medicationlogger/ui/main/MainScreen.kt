@@ -41,9 +41,25 @@ fun MainRoute(
     viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    MainScreen(state = state, onSelectTab = viewModel::selectTab, modifier = modifier) { tab ->
+    MainScreen(
+        state = state,
+        onSelectTab = viewModel::selectTab,
+        modifier = modifier,
+        tutorial = {
+            state.tutorialStep?.let { step ->
+                TutorialCard(
+                    step = step,
+                    settings = state.reminderSettings,
+                    onSettingsChange = viewModel::updateReminderSettings,
+                    onBack = viewModel::previousTutorialStep,
+                    onNext = viewModel::nextTutorialStep,
+                    onSkip = viewModel::finishTutorial,
+                )
+            }
+        },
+    ) { tab ->
         when (tab) {
-            AppTab.SETTINGS -> RemindersRoute()
+            AppTab.SETTINGS -> RemindersRoute(onHelp = viewModel::startTutorial)
             AppTab.PRESCRIPTIONS -> PrescriptionsRoute(
                 focusedPrescriptionId = state.focusedPrescriptionId,
                 onOpenBox = viewModel::openBox,
@@ -60,12 +76,16 @@ fun MainRoute(
     }
 }
 
-/** The tab bar, with the selected tab's content above it. Boxes stands out as the main tab. */
+/**
+ * The tab bar, with the selected tab's content above it and [tutorial] between the two.
+ * Boxes stands out as the main tab.
+ */
 @Composable
 fun MainScreen(
     state: MainUiState,
     onSelectTab: (AppTab) -> Unit,
     modifier: Modifier = Modifier,
+    tutorial: @Composable () -> Unit = {},
     tabContent: @Composable (AppTab) -> Unit,
 ) {
     Scaffold(
@@ -117,6 +137,7 @@ fun MainScreen(
             Box(modifier = Modifier.weight(1f)) {
                 tabContent(state.selectedTab)
             }
+            tutorial()
         }
     }
 }

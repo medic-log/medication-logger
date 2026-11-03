@@ -55,6 +55,7 @@ private fun MedicationData.toJson() = JSONObject()
     .put("refills", refills.toJsonArray { it.toJson() })
     .put("misses", misses.toJsonArray { it.toJson() })
     .put("reminderSettings", reminderSettings.toJson())
+    .put("isTutorialDone", isTutorialDone)
 
 private fun JSONObject.toMedicationData() = MedicationData(
     prescriptions = getJSONArray("prescriptions").map { it.toPrescription() },
@@ -62,6 +63,8 @@ private fun JSONObject.toMedicationData() = MedicationData(
     refills = getJSONArray("refills").map { it.toRefill() },
     misses = getJSONArray("misses").map { it.toMiss() },
     reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
+    // Files saved before the tutorial existed show it once too
+    isTutorialDone = optBoolean("isTutorialDone", false),
 )
 
 private const val YEAR_MONTH_LENGTH = 7

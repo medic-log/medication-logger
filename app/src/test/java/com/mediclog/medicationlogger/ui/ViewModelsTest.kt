@@ -12,6 +12,7 @@ import com.mediclog.medicationlogger.ui.boxes.BoxesViewModel
 import com.mediclog.medicationlogger.ui.components.ListFilter
 import com.mediclog.medicationlogger.ui.main.AppTab
 import com.mediclog.medicationlogger.ui.main.MainViewModel
+import com.mediclog.medicationlogger.ui.main.TutorialStep
 import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsViewModel
 import com.mediclog.medicationlogger.ui.refills.RefillLogEntry
 import com.mediclog.medicationlogger.ui.refills.RefillsViewModel
@@ -30,6 +31,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Clock
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -68,6 +70,44 @@ class ViewModelsTest {
 
         viewModel.selectTab(AppTab.REFILLS)
         assertNull(viewModel.uiState.value.focusedBoxId)
+    }
+
+    @Test
+    fun `the tutorial opens on first launch, leads through the tabs and stays closed once done`() {
+        val viewModel = MainViewModel(repository)
+        assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
+
+        viewModel.nextTutorialStep()
+        assertEquals(TutorialStep.PRESCRIPTIONS, viewModel.uiState.value.tutorialStep)
+        assertEquals(AppTab.PRESCRIPTIONS, viewModel.uiState.value.selectedTab)
+        viewModel.previousTutorialStep()
+        assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
+
+        repeat(TutorialStep.entries.size) { viewModel.nextTutorialStep() }
+        assertNull(viewModel.uiState.value.tutorialStep)
+        assertNull(MainViewModel(repository).uiState.value.tutorialStep)
+    }
+
+    @Test
+    fun `skipping closes the tutorial for good, and help opens it again`() {
+        val viewModel = MainViewModel(repository)
+
+        viewModel.finishTutorial()
+        assertNull(viewModel.uiState.value.tutorialStep)
+        assertTrue(repository.data.value.isTutorialDone)
+
+        viewModel.startTutorial()
+        assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
+    }
+
+    @Test
+    fun `the tutorial's settings steps change the reminder settings`() {
+        val viewModel = MainViewModel(repository)
+        val settings = viewModel.uiState.value.reminderSettings.copy(pillTime = LocalTime.of(9, 30))
+
+        viewModel.updateReminderSettings(settings)
+
+        assertEquals(settings, viewModel.uiState.value.reminderSettings)
     }
 
     @Test

@@ -4,12 +4,10 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
@@ -20,10 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,14 +25,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimeInput
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,13 +50,12 @@ import com.mediclog.medicationlogger.data.ReminderSettings
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.SquircleShape
+import com.mediclog.medicationlogger.ui.components.TimeSelector
+import com.mediclog.medicationlogger.ui.components.WeekdaySelector
+import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
-import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.format.TextStyle
-import java.util.Locale
 
 private const val MIN_DAYS = 1
 private const val MAX_DAYS = 365
@@ -74,6 +63,7 @@ private const val MAX_DAYS = 365
 /** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
 fun RemindersRoute(
+    onHelp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RemindersViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
@@ -107,8 +97,8 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
-        // None of the settings actions does anything yet
-        onSettingsAction = {},
+        // Only help does something so far
+        onSettingsAction = { if (it == SettingsAction.HELP) onHelp() },
         modifier = modifier,
     )
 }
@@ -332,68 +322,6 @@ private fun ReminderCard(
 }
 
 @Composable
-private fun WeekdaySelector(day: DayOfWeek, onDayChange: (DayOfWeek) -> Unit, modifier: Modifier = Modifier) {
-    var isExpanded by remember { mutableStateOf(false) }
-    Box(modifier = modifier) {
-        OutlinedButton(onClick = { isExpanded = true }) {
-            Text(day.displayName())
-        }
-        DropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
-            DayOfWeek.entries.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.displayName()) },
-                    onClick = {
-                        onDayChange(option)
-                        isExpanded = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class) // TimeInput has no stable alternative in Material 3
-@Composable
-private fun TimeSelector(
-    time: LocalTime,
-    dialogTitle: String,
-    onTimeChange: (LocalTime) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var isDialogOpen by rememberSaveable { mutableStateOf(false) }
-    OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier) {
-        Text(stringResource(R.string.reminders_choose_time, time.toString()))
-    }
-    if (isDialogOpen) {
-        val pickerState = rememberTimePickerState(
-            initialHour = time.hour,
-            initialMinute = time.minute,
-            is24Hour = DateFormat.is24HourFormat(LocalContext.current),
-        )
-        AlertDialog(
-            onDismissRequest = { isDialogOpen = false },
-            title = { Text(dialogTitle) },
-            text = { TimeInput(state = pickerState) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onTimeChange(LocalTime.of(pickerState.hour, pickerState.minute))
-                        isDialogOpen = false
-                    },
-                ) {
-                    Text(stringResource(R.string.reminders_time_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { isDialogOpen = false }) {
-                    Text(stringResource(R.string.reminders_time_cancel))
-                }
-            },
-        )
-    }
-}
-
-@Composable
 private fun DaysStepper(
     reminderName: String,
     days: Int,
@@ -433,8 +361,6 @@ private fun StepperButton(
         Icon(painter = painterResource(iconRes), contentDescription = description)
     }
 }
-
-private fun DayOfWeek.displayName() = getDisplayName(TextStyle.FULL, Locale.getDefault())
 
 @Composable
 private fun RemindersPreviewContent(state: RemindersUiState, areNotificationsAllowed: Boolean = true) {

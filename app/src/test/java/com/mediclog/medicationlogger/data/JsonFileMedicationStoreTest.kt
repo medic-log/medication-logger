@@ -52,6 +52,7 @@ class JsonFileMedicationStoreTest {
             .refillWeekly(1, day.atTime(21, 0))
             .saveAsExtra(3)
             .logMiss(MedicationMiss.Kind.MISSED, day.atTime(21, 0))
+            .finishTutorial()
 
         JsonFileMedicationStore(file).save(data)
 

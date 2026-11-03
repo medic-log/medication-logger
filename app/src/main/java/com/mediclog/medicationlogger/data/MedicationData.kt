@@ -19,6 +19,7 @@ data class MedicationData(
     val refills: List<Refill> = emptyList(),
     val misses: List<MedicationMiss> = emptyList(),
     val reminderSettings: ReminderSettings = ReminderSettings(),
+    val isTutorialDone: Boolean = false,
 ) {
     /**
      * Pills in the weekly lot at [now], counted from the first refill: refills add their pills and missed doses one,
@@ -228,6 +229,9 @@ data class MedicationData(
         copy(misses = misses.map { if (it.id == updated.id) updated else it })
 
     fun deleteMiss(missId: Long): MedicationData = copy(misses = misses.filterNot { it.id == missId })
+
+    /** Marks the tutorial as seen, so it no longer opens on its own. */
+    fun finishTutorial(): MedicationData = copy(isTutorialDone = true)
 
     // Later refills recorded how many pills were left after them, so they change along with the box
     private fun takingPills(refill: Refill, pills: Int) = copy(

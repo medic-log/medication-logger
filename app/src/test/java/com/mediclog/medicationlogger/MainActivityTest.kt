@@ -22,6 +22,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
@@ -32,6 +33,7 @@ import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -56,6 +58,12 @@ class MainActivityTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     private val today get() = LocalDate.now().toString()
+
+    // The tutorial opens on first launch, which every test is
+    @Before
+    fun skipTutorial() {
+        tap(string(R.string.tutorial_skip))
+    }
 
     private fun string(id: Int, vararg args: Any) = composeRule.activity.getString(id, *args)
 
@@ -660,6 +668,26 @@ class MainActivityTest {
         assertTrue(settings.isPickupEnabled && settings.isRunOutEnabled)
         assertEquals(5, settings.pickupDaysAfterOrder)
         assertEquals(13, settings.runOutDaysBefore)
+    }
+
+    @Test
+    fun `help opens the tutorial, which moves through the tabs and asks for the pill time`() {
+        openTab(R.string.main_tab_settings)
+        composeRule.onNodeWithText(string(R.string.settings_help)).performScrollTo().performClick()
+
+        assertShown(string(R.string.tutorial_welcome_title))
+        tap(string(R.string.tutorial_next))
+        assertShown(string(R.string.tutorial_prescriptions_text))
+        composeRule.onNode(hasText(string(R.string.main_tab_prescriptions)) and isSelected()).assertExists()
+
+        repeat(4) { tap(string(R.string.tutorial_next)) }
+        assertShown(string(R.string.tutorial_pill_time_text))
+        // One on the tutorial card, one on the Settings tab behind it
+        composeRule.onAllNodesWithText(string(R.string.reminders_choose_time, ReminderSettings().pillTime.toString()))
+            .assertCountEquals(2)
+
+        tap(string(R.string.tutorial_skip))
+        assertNotShown(string(R.string.tutorial_pill_time_text))
     }
 
     @Test
