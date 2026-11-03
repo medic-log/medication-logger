@@ -32,8 +32,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,9 +58,9 @@ import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.SquircleShape
 import com.mediclog.medicationlogger.ui.components.TimeSelector
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
-import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
+import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
