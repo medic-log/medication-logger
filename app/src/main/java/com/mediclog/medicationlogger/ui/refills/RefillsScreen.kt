@@ -225,7 +225,7 @@ private fun RefillGroupCard(
                     miss = member.miss,
                     onEdit = { onEdit(member.key) },
                     shape = shape,
-                    isCounted = true,
+                    isCounted = member.miss.isMissed,
                 )
                 is RefillLogEntry.RefillGroupEntry -> Unit
             }

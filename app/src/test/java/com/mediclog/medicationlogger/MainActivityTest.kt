@@ -574,18 +574,21 @@ class MainActivityTest {
     }
 
     @Test
-    fun `a missed dose after a refill shows as one pill less, and is still edited on its own`() {
+    fun `a missed dose the day after a refill joins it as one pill less, and is still edited on its own`() {
         addBox()
         composeRule.onAllNodesWithText(string(R.string.boxes_refill_weekly)).onFirst().performClick()
         openTab(R.string.main_tab_refills)
-
         tap(string(R.string.refills_log_missed))
+        // Logged on the refill's day, it's that day's pill, taken from before the refill
+        assertNotShown(string(R.string.refills_missed_pill))
+
+        hold(string(R.string.refills_missed))
+        fillField(R.string.edit_field_date, LocalDate.now().plusDays(1).toString())
+        tap(string(R.string.edit_save))
 
         assertShown(string(R.string.refills_missed_pill))
         assertShown(refillBox(23))
         assertEquals(7, data.refills.single().amount)
-        hold(string(R.string.refills_missed))
-        assertShown(string(R.string.edit_miss_title))
     }
 
     @Test

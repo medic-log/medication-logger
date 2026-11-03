@@ -38,13 +38,13 @@ sealed interface RefillLogEntry {
 
     /**
      * Cards pasted together, each newest first: [refills] that belong together, either partial ones made one after
-     * another on one day that add up to a full week or a single one, and the [missedDoses] since then.
+     * another on one day that add up to a full week or a single one, and the missed or delayed [doses] taken from them.
      */
     data class RefillGroupEntry(
         val refills: List<RefillEntry>,
-        val missedDoses: List<MissEntry> = emptyList(),
+        val doses: List<MissEntry> = emptyList(),
     ) : RefillLogEntry {
-        val members: List<RefillLogEntry> get() = missedDoses + refills
+        val members: List<RefillLogEntry> get() = doses + refills
         override val key get() = "group-${refills.last().refill.id}"
         override val date get() = members.maxOf { it.date }
     }
@@ -87,20 +87,20 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
             RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount, leftRange)
         }
         val refillEntries = groupingFullWeeks(refills)
-        val (missed, others) = data.misses.map { RefillLogEntry.MissEntry(it) }
-            .partition { it.miss.kind == MedicationMiss.Kind.MISSED }
-        // A missed dose belongs to the last refill made by then; before any refill, it stands alone
-        val missedByRefill = missed.groupBy { dose -> refillEntries.indexOfLast { it.date <= dose.date } }
+        // A dose is its day's pill, which comes before that day's refills as in lotPills, so it belongs to the last
+        // refill made before its day; until there's one, it stands alone
+        val dosesByRefill = data.misses.map { RefillLogEntry.MissEntry(it) }
+            .groupBy { dose -> refillEntries.indexOfLast { it.date < dose.date } }
         val stacked = refillEntries.mapIndexed { index, entry ->
-            val doses = missedByRefill[index].orEmpty().asReversed()
+            val doses = dosesByRefill[index].orEmpty().asReversed()
             when {
                 doses.isEmpty() -> entry
-                entry is RefillLogEntry.RefillGroupEntry -> entry.copy(missedDoses = doses)
+                entry is RefillLogEntry.RefillGroupEntry -> entry.copy(doses = doses)
                 entry is RefillLogEntry.RefillEntry -> RefillLogEntry.RefillGroupEntry(listOf(entry), doses)
                 else -> entry
             }
         }
-        val alone = (others + missedByRefill[-1].orEmpty()).sortedByDescending { it.miss.id }
+        val alone = dosesByRefill[-1].orEmpty().sortedByDescending { it.miss.id }
         return RefillsUiState(
             entries = (alone + stacked.asReversed()).sortedByDescending { it.date },
             lotPills = data.lotPills(LocalDateTime.now(clock)),
