@@ -30,7 +30,7 @@ object ReminderCalculator {
 
     // The first day with no pill left in the weekly lot
     private fun coveredUntil(data: MedicationData, now: LocalDateTime): LocalDate? {
-        if (data.weeklyLot.countedAt == null && pillsRemaining(data) == 0) return null
+        if (data.refills.isEmpty() && pillsRemaining(data) == 0) return null
         return nextPill(data.reminderSettings, now).toLocalDate().plusDays(data.lotPills(now).toLong())
     }
 

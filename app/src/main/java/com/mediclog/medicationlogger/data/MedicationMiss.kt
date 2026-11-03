@@ -10,4 +10,6 @@ data class MedicationMiss(
 ) {
     /** What went wrong with the dose. */
     enum class Kind { MISSED, DELAYED }
+
+    val isMissed: Boolean get() = kind == Kind.MISSED
 }

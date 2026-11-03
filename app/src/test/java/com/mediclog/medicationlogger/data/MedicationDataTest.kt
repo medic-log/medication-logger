@@ -164,19 +164,30 @@ class MedicationDataTest {
     }
 
     @Test
-    fun `deleting the latest refill or miss takes it out of the lot`() {
+    fun `editing or deleting a refill or miss changes the lot`() {
         val data = prescribed.buyRepetition(1, day1)
             .refillWeekly(1, sunday(0))
-            .logMiss(MedicationMiss.Kind.MISSED, sunday(0))
+            .refillWeekly(1, sunday(1))
+            .logMiss(MedicationMiss.Kind.MISSED, sunday(1))
 
-        assertEquals(7, data.deleteMiss(1).lotPills(sunday(0)))
-        assertEquals(1, data.deleteRefill(1).lotPills(sunday(0)))
+        assertEquals(7, data.deleteMiss(1).lotPills(sunday(1)))
+        assertEquals(1, data.deleteRefill(2).lotPills(sunday(1)))
         val delayed = data.editMiss(data.misses.single().copy(kind = MedicationMiss.Kind.DELAYED))
-        assertEquals(7, delayed.lotPills(sunday(0)))
+        assertEquals(7, delayed.lotPills(sunday(1)))
     }
 
     @Test
-    fun `correcting an older refill leaves the lot alone`() {
+    fun `the weekly lot is 0 without refills`() {
+        val bought = prescribed.buyRepetition(1, day1)
+        assertEquals(0, bought.logMiss(MedicationMiss.Kind.MISSED, sunday(0)).lotPills(sunday(0)))
+
+        val emptied = bought.refillWeekly(1, sunday(0)).refillWeekly(1, sunday(1)).deleteRefill(2).deleteRefill(1)
+        assertEquals(0, emptied.lotPills(sunday(1)))
+        assertEquals(7, emptied.refillWeekly(1, sunday(1)).lotPills(sunday(1)))
+    }
+
+    @Test
+    fun `an older refill's pills are used up by now`() {
         val data = prescribed.buyRepetition(1, day1).refillWeekly(1, sunday(0)).refillWeekly(1, sunday(1))
 
         assertEquals(7, data.deleteRefill(1).lotPills(sunday(1)))

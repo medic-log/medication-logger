@@ -55,8 +55,8 @@ sealed interface RefillLogEntry {
     }
 }
 
-/** The medication log, newest first, and the pills in the weekly lot (null before any refill). */
-data class RefillsUiState(val entries: List<RefillLogEntry> = emptyList(), val lotPills: Int? = null)
+/** The medication log, newest first, and the pills in the weekly lot. */
+data class RefillsUiState(val entries: List<RefillLogEntry> = emptyList(), val lotPills: Int = 0)
 
 /** Lists refills, misses and delays, and registers misses and delays. */
 class RefillsViewModel(private val repository: MedicationRepository, private val clock: Clock) : ViewModel() {
@@ -102,7 +102,7 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
         val alone = (others + missedByRefill[-1].orEmpty()).sortedByDescending { it.miss.id }
         return RefillsUiState(
             entries = (alone + stacked.asReversed()).sortedByDescending { it.date },
-            lotPills = data.weeklyLot.countedAt?.let { data.lotPills(LocalDateTime.now(clock)) },
+            lotPills = data.lotPills(LocalDateTime.now(clock)),
         )
     }
 

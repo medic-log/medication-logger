@@ -126,21 +126,6 @@ class JsonFileMedicationStoreTest {
     }
 
     @Test
-    fun `a file saved before the weekly lot existed counts it from the last refills`() {
-        val data = MedicationData()
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 10, 2, 1), day)
-            .buyRepetition(1, day)
-            .refillWeekly(1, day.atTime(21, 0))
-            .refillWeekly(1, day.atTime(21, 0))
-        JsonFileMedicationStore(file).save(data)
-        val json = JSONObject(file.readText())
-        json.remove("weeklyLot")
-        file.writeText(json.toString())
-
-        assertEquals(WeeklyLot(3, day.atTime(LocalTime.MAX)), JsonFileMedicationStore(file).load().weeklyLot)
-    }
-
-    @Test
     fun `an unreadable file is kept aside instead of being overwritten`() {
         file.writeText("not json")
 

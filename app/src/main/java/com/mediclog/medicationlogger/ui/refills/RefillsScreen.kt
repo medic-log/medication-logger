@@ -99,18 +99,16 @@ fun RefillsScreen(
                         Text(stringResource(R.string.refills_log_delayed))
                     }
                 }
-                if (state.lotPills != null) {
-                    val message = pluralStringResource(R.plurals.refills_lot_pills, state.lotPills, state.lotPills)
-                    Text(
-                        text = buildAnnotatedString {
-                            append(message)
-                            val pills = state.lotPills.toString()
-                            val start = message.indexOf(pills)
-                            if (start >= 0) addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, start + pills.length)
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
+                val message = pluralStringResource(R.plurals.refills_lot_pills, state.lotPills, state.lotPills)
+                Text(
+                    text = buildAnnotatedString {
+                        append(message)
+                        val pills = state.lotPills.toString()
+                        val start = message.indexOf(pills)
+                        if (start >= 0) addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, start + pills.length)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
             }
         }
         if (state.entries.isEmpty()) {

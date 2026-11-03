@@ -8,7 +8,6 @@ import java.io.File
 import java.io.IOException
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.format.DateTimeParseException
@@ -56,38 +55,14 @@ private fun MedicationData.toJson() = JSONObject()
     .put("refills", refills.toJsonArray { it.toJson() })
     .put("misses", misses.toJsonArray { it.toJson() })
     .put("reminderSettings", reminderSettings.toJson())
-    .put("weeklyLot", weeklyLot.toJson())
 
-private fun JSONObject.toMedicationData(): MedicationData {
-    val refills = getJSONArray("refills").map { it.toRefill() }
-    return MedicationData(
-        prescriptions = getJSONArray("prescriptions").map { it.toPrescription() },
-        boxes = getJSONArray("boxes").map { it.toBox() },
-        refills = refills,
-        misses = getJSONArray("misses").map { it.toMiss() },
-        reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
-        weeklyLot = optJSONObject("weeklyLot")?.toWeeklyLot() ?: estimatedWeeklyLot(refills),
-    )
-}
-
-private fun WeeklyLot.toJson() = JSONObject()
-    .put("pills", pills)
-    .put("countedAt", countedAt?.toString())
-
-private fun JSONObject.toWeeklyLot() = WeeklyLot(
-    pills = getInt("pills"),
-    countedAt = if (has("countedAt")) LocalDateTime.parse(getString("countedAt")) else null,
+private fun JSONObject.toMedicationData() = MedicationData(
+    prescriptions = getJSONArray("prescriptions").map { it.toPrescription() },
+    boxes = getJSONArray("boxes").map { it.toBox() },
+    refills = getJSONArray("refills").map { it.toRefill() },
+    misses = getJSONArray("misses").map { it.toMiss() },
+    reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
 )
-
-// Files saved before the lot was counted start from their last refills, counted at the end of that day
-private fun estimatedWeeklyLot(refills: List<Refill>): WeeklyLot {
-    val last = refills.lastOrNull() ?: return WeeklyLot()
-    val partialPills = refills.asReversed().takeWhile { it.isPartial }.sumOf { it.amount } % PILLS_PER_WEEK
-    return WeeklyLot(
-        pills = if (partialPills == 0) PILLS_PER_WEEK else partialPills,
-        countedAt = last.date.atTime(LocalTime.MAX),
-    )
-}
 
 private const val YEAR_MONTH_LENGTH = 7
 

@@ -2,6 +2,8 @@ package com.mediclog.medicationlogger.data
 
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.time.YearMonth
 
 /** Pills in a full weekly refill. */
@@ -17,17 +19,32 @@ data class MedicationData(
     val refills: List<Refill> = emptyList(),
     val misses: List<MedicationMiss> = emptyList(),
     val reminderSettings: ReminderSettings = ReminderSettings(),
-    val weeklyLot: WeeklyLot = WeeklyLot(),
 ) {
-    /** Pills in the weekly lot at [now]. */
-    fun lotPills(now: LocalDateTime): Int = weeklyLot.pillsAt(now, reminderSettings.pillTime)
+    /**
+     * Pills in the weekly lot at [now], counted from the first refill: refills add their pills and missed doses one,
+     * and each day's pill time takes one. Records have only a date, so they count as made after that day's pill.
+     */
+    fun lotPills(now: LocalDateTime): Int {
+        val firstDay = refills.minOfOrNull { it.date } ?: return 0
+        val today = now.toLocalDate()
+        val addedByDay = (refills.map { it.date to it.amount } + misses.filter { it.isMissed }.map { it.date to 1 })
+            .groupBy({ it.first }, { it.second })
+        var pills = 0
+        var day = firstDay
+        while (day <= today) {
+            if (!day.atTime(reminderSettings.pillTime).isAfter(now)) pills = (pills - 1).coerceAtLeast(0)
+            pills += addedByDay[day]?.sum() ?: 0
+            day = day.plusDays(1)
+        }
+        return pills
+    }
 
     /**
      * Pills the weekly lot is short of lasting until the next weekly refill; 0 when it lasts,
      * or before the first refill, as there's nothing to make up yet.
      */
     fun pendingRefillAmount(now: LocalDateTime): Int {
-        if (weeklyLot.countedAt == null) return 0
+        if (refills.isEmpty()) return 0
         val nextRefill = ReminderCalculator.nextRefill(reminderSettings, now)
         val doses = pillTimesBetween(now, nextRefill, reminderSettings.pillTime)
         return (doses - lotPills(now)).coerceAtLeast(0)
@@ -111,11 +128,6 @@ data class MedicationData(
             date = now.toLocalDate(),
             kind = kind,
         ),
-        weeklyLot = if (kind == MedicationMiss.Kind.MISSED && weeklyLot.countedAt != null) {
-            addingToLot(1, now)
-        } else {
-            weeklyLot
-        },
     )
 
     /** Replaces a prescription's fields. Its status follows from them, and its boxes stay as they are. */
@@ -187,7 +199,6 @@ data class MedicationData(
     /**
      * Replaces a refill's date, amount, pills left and partial flag.
      * A change in pills left moves pills to or from its box, and later refills follow.
-     * A change in amount changes the weekly lot too, when the refill is from the day it was last counted.
      */
     fun editRefill(updated: Refill): MedicationData {
         val refill = refills.find { it.id == updated.id } ?: return this
@@ -205,38 +216,18 @@ data class MedicationData(
         )
         return copy(refills = refills.map { if (it.id == refill.id) edited else it })
             .takingPills(refill, -leftChange)
-            .correctingLot(refill.date, extraPills)
     }
 
-    /** Deletes a refill, and its pills go back to its box, and out of the weekly lot as for an edit. */
+    /** Deletes a refill, and its pills go back to its box. */
     fun deleteRefill(refillId: Long): MedicationData {
         val refill = refills.find { it.id == refillId } ?: return this
         return copy(refills = refills - refill).takingPills(refill, -refill.amount)
-            .correctingLot(refill.date, -refill.amount)
     }
 
-    /** Replaces a missed or delayed dose. Changing its kind changes the weekly lot as for a refill edit. */
-    fun editMiss(updated: MedicationMiss): MedicationData {
-        val miss = misses.find { it.id == updated.id } ?: return this
-        return copy(misses = misses.map { if (it.id == updated.id) updated else it })
-            .correctingLot(miss.date, updated.missedPills - miss.missedPills)
-    }
+    fun editMiss(updated: MedicationMiss): MedicationData =
+        copy(misses = misses.map { if (it.id == updated.id) updated else it })
 
-    fun deleteMiss(missId: Long): MedicationData {
-        val miss = misses.find { it.id == missId } ?: return this
-        return copy(misses = misses - miss).correctingLot(miss.date, -miss.missedPills)
-    }
-
-    private val MedicationMiss.missedPills get() = if (kind == MedicationMiss.Kind.MISSED) 1 else 0
-
-    private fun addingToLot(pills: Int, now: LocalDateTime) = weeklyLot.adding(pills, now, reminderSettings.pillTime)
-
-    // Older records went into lots already used up, so only a fix to the latest count reaches it
-    private fun correctingLot(date: LocalDate, pills: Int): MedicationData {
-        val countedAt = weeklyLot.countedAt
-        if (pills == 0 || countedAt == null || date < countedAt.toLocalDate()) return this
-        return copy(weeklyLot = weeklyLot.copy(pills = (weeklyLot.pills + pills).coerceAtLeast(0)))
-    }
+    fun deleteMiss(missId: Long): MedicationData = copy(misses = misses.filterNot { it.id == missId })
 
     // Later refills recorded how many pills were left after them, so they change along with the box
     private fun takingPills(refill: Refill, pills: Int) = copy(
@@ -273,12 +264,18 @@ data class MedicationData(
             isPartial = isPartial,
         )
         val openDate = box.openDate ?: today.takeIf { box.pillsLeft == box.pillsTotal }
-        return copy(refills = refills + refill, weeklyLot = addingToLot(amount, now))
-            .withBox(box.copy(pillsLeft = pillsLeft, openDate = openDate))
+        return copy(refills = refills + refill).withBox(box.copy(pillsLeft = pillsLeft, openDate = openDate))
     }
 
     private fun withPrescription(updated: Prescription) =
         copy(prescriptions = prescriptions.map { if (it.id == updated.id) updated else it })
 
     private fun withBox(updated: Box) = copy(boxes = boxes.map { if (it.id == updated.id) updated else it })
+}
+
+/** How many times [pillTime] comes after [from] and by [to]. */
+private fun pillTimesBetween(from: LocalDateTime, to: LocalDateTime, pillTime: LocalTime): Int {
+    val first = from.toLocalDate().atTime(pillTime).let { if (it.isAfter(from)) it else it.plusDays(1) }
+    val last = to.toLocalDate().atTime(pillTime).let { if (it.isAfter(to)) it.minusDays(1) else it }
+    return if (last.isBefore(first)) 0 else ChronoUnit.DAYS.between(first, last).toInt() + 1
 }
