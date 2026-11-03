@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.MedicationData
+import com.mediclog.medicationlogger.data.MedicationExport
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderSettings
@@ -33,6 +34,16 @@ class RemindersViewModel(private val repository: MedicationRepository, private v
         .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value))
 
     fun updateSettings(settings: ReminderSettings) = repository.updateReminderSettings(settings)
+
+    /** The saved records as export file text; sample records shown by the tutorial are never exported. */
+    fun exportRecords(): String = MedicationExport.write(repository.data.value)
+
+    /** Replaces the records with those in [text], keeping the settings; false when [text] isn't an export. */
+    fun importRecords(text: String): Boolean {
+        val records = MedicationExport.read(text) ?: return false
+        repository.replaceRecords(records)
+        return true
+    }
 
     private fun toUiState(data: MedicationData) = RemindersUiState(
         settings = data.reminderSettings,

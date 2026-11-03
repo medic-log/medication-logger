@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,10 +27,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,11 +62,16 @@ import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 private const val MIN_DAYS = 1
 private const val MAX_DAYS = 365
+private const val EXPORT_MIME_TYPE = "application/json"
 
 /** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
@@ -85,6 +95,58 @@ fun RemindersRoute(
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         checkNotifications()
     }
+    val scope = rememberCoroutineScope()
+    val showMessage = { message: Int -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
+    val exportContract = ActivityResultContracts.CreateDocument(EXPORT_MIME_TYPE)
+    val exportLauncher = rememberLauncherForActivityResult(exportContract) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val text = viewModel.exportRecords()
+        scope.launch {
+            val isWritten = withContext(Dispatchers.IO) {
+                try {
+                    val stream = context.contentResolver.openOutputStream(uri, "wt")
+                    stream?.use { it.write(text.encodeToByteArray()) } != null
+                } catch (_: IOException) {
+                    false
+                }
+            }
+            showMessage(if (isWritten) R.string.settings_export_done else R.string.settings_export_failed)
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val text = withContext(Dispatchers.IO) {
+                try {
+                    context.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+                } catch (_: IOException) {
+                    null
+                }
+            }
+            val isImported = text != null && viewModel.importRecords(text)
+            showMessage(if (isImported) R.string.settings_import_done else R.string.settings_import_failed)
+        }
+    }
+    var isImportConfirmShown by rememberSaveable { mutableStateOf(false) }
+    if (isImportConfirmShown) {
+        AlertDialog(
+            onDismissRequest = { isImportConfirmShown = false },
+            title = { Text(stringResource(R.string.settings_import_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_import_confirm_text)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isImportConfirmShown = false
+                        // Some file managers don't know .json as application/json, so any file can be picked
+                        importLauncher.launch(arrayOf(EXPORT_MIME_TYPE, "text/plain", "application/octet-stream"))
+                    },
+                ) { Text(stringResource(R.string.settings_import_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { isImportConfirmShown = false }) { Text(stringResource(R.string.edit_cancel)) }
+            },
+        )
+    }
     SettingsScreen(
         state = state,
         areNotificationsAllowed = areNotificationsAllowed,
@@ -101,10 +163,12 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
-        // Update, export and import don't do anything yet
+        // Update doesn't do anything yet
         onSettingsAction = {
             when (it) {
                 SettingsAction.HELP -> onHelp()
+                SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
+                SettingsAction.IMPORT -> isImportConfirmShown = true
                 SettingsAction.SHARE -> context.startActivity(
                     Intent.createChooser(
                         Intent(Intent.ACTION_SEND)

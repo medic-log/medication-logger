@@ -49,22 +49,29 @@ class JsonFileMedicationStore(private val file: File) : MedicationStore {
     }
 }
 
-private fun MedicationData.toJson() = JSONObject()
+private fun MedicationData.toJson() = recordsToJson()
+    .put("reminderSettings", reminderSettings.toJson())
+    .put("isTutorialDone", isTutorialDone)
+
+private fun JSONObject.toMedicationData() = toRecords().copy(
+    reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
+    // Files saved before the tutorial existed show it once too
+    isTutorialDone = optBoolean("isTutorialDone", false),
+)
+
+/** The prescriptions, boxes, refills and misses alone, as the file and exports hold them. */
+internal fun MedicationData.recordsToJson(): JSONObject = JSONObject()
     .put("prescriptions", prescriptions.toJsonArray { it.toJson() })
     .put("boxes", boxes.toJsonArray { it.toJson() })
     .put("refills", refills.toJsonArray { it.toJson() })
     .put("misses", misses.toJsonArray { it.toJson() })
-    .put("reminderSettings", reminderSettings.toJson())
-    .put("isTutorialDone", isTutorialDone)
 
-private fun JSONObject.toMedicationData() = MedicationData(
+/** Reads what [recordsToJson] writes, with everything else at its default. */
+internal fun JSONObject.toRecords() = MedicationData(
     prescriptions = getJSONArray("prescriptions").map { it.toPrescription() },
     boxes = getJSONArray("boxes").map { it.toBox() },
     refills = getJSONArray("refills").map { it.toRefill() },
     misses = getJSONArray("misses").map { it.toMiss() },
-    reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
-    // Files saved before the tutorial existed show it once too
-    isTutorialDone = optBoolean("isTutorialDone", false),
 )
 
 private const val YEAR_MONTH_LENGTH = 7

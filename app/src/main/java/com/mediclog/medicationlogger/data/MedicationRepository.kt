@@ -74,6 +74,16 @@ class MedicationRepository(
 
     fun deleteMiss(missId: Long) = change { it.deleteMiss(missId) }
 
+    /** Replaces the prescriptions, boxes, refills and misses with those of [records], keeping the settings. */
+    fun replaceRecords(records: MedicationData) = change {
+        it.copy(
+            prescriptions = records.prescriptions,
+            boxes = records.boxes,
+            refills = records.refills,
+            misses = records.misses,
+        )
+    }
+
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
     fun finishTutorial() = change { it.finishTutorial() }

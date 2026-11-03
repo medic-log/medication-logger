@@ -138,6 +138,13 @@
     <string name="settings_update">Update</string>
     <string name="settings_export">Export</string>
     <string name="settings_import">Import</string>
+    <string name="settings_export_done">Exported your prescriptions, boxes and refills</string>
+    <string name="settings_export_failed">Couldn\'t write the file. Try another location.</string>
+    <string name="settings_import_confirm_title">Replace your records?</string>
+    <string name="settings_import_confirm_text">Importing replaces your prescriptions, boxes, refills, and missed and delayed doses with those in the file. Your reminder settings stay as they are.</string>
+    <string name="settings_import_confirm">Choose file</string>
+    <string name="settings_import_done">Imported your prescriptions, boxes and refills</string>
+    <string name="settings_import_failed">Couldn\'t read that file. Choose a file exported from this app.</string>
     <string name="settings_share">Share</string>
     <string name="settings_share_text">Medication logger: track your prescriptions, pill boxes and refills. %1$s</string>
     <string name="tutorial_progress">Step %1$d of %2$d</string>

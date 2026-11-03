@@ -42,6 +42,22 @@ class MedicationRepositoryTest {
     }
 
     @Test
+    fun `replacing records keeps the settings and tutorial progress`() {
+        val settings = ReminderSettings(isPillEnabled = false)
+        store.saved = MedicationData(reminderSettings = settings).finishTutorial()
+        val repository = repository()
+        repository.addPrescription(draft)
+        val records = MedicationData().addPrescription(PrescriptionDraft("Dr Other", "Other", 7, 1, 1), today)
+
+        repository.replaceRecords(records)
+
+        assertEquals(records.prescriptions, repository.data.value.prescriptions)
+        assertEquals(settings, repository.data.value.reminderSettings)
+        assertTrue(repository.data.value.isTutorialDone)
+        assertEquals(repository.data.value, store.saved)
+    }
+
+    @Test
     fun `a failed save is reported and cleared by the next good one`() {
         val repository = repository()
 
