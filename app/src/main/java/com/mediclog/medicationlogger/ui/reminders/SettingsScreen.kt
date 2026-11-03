@@ -71,6 +71,7 @@ fun RemindersRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val shareText = stringResource(R.string.settings_share_text)
     var areNotificationsAllowed by remember { mutableStateOf(true) }
     val checkNotifications = {
         areNotificationsAllowed = NotificationManagerCompat.from(context).areNotificationsEnabled()
@@ -83,7 +84,7 @@ fun RemindersRoute(
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         checkNotifications()
     }
-    RemindersScreen(
+    SettingsScreen(
         state = state,
         areNotificationsAllowed = areNotificationsAllowed,
         onSettingsChange = { settings ->
@@ -99,15 +100,28 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
-        // Only help does something so far
-        onSettingsAction = { if (it == SettingsAction.HELP) onHelp() },
+        // Update, export and import don't do anything yet
+        onSettingsAction = {
+            when (it) {
+                SettingsAction.HELP -> onHelp()
+                SettingsAction.SHARE -> context.startActivity(
+                    Intent.createChooser(
+                        Intent(Intent.ACTION_SEND)
+                            .setType("text/plain")
+                            .putExtra(Intent.EXTRA_TEXT, shareText),
+                        null,
+                    ),
+                )
+                else -> Unit
+            }
+        },
         modifier = modifier,
     )
 }
 
 /** The settings tab: the configuration of the five reminders, then the app settings, none yet. */
 @Composable
-fun RemindersScreen(
+fun SettingsScreen(
     state: RemindersUiState,
     areNotificationsAllowed: Boolean,
     onSettingsChange: (ReminderSettings) -> Unit,
@@ -242,9 +256,16 @@ fun RemindersScreen(
             )
         }
         SectionTitle(stringResource(R.string.settings_section_settings))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            SettingsAction.entries.forEach { action ->
-                SettingsActionButton(action = action, onClick = { onSettingsAction(action) })
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SettingsAction.rows.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                ) {
+                    row.forEach { action ->
+                        SettingsActionButton(action = action, onClick = { onSettingsAction(action) })
+                    }
+                }
             }
         }
     }
@@ -367,10 +388,10 @@ private fun StepperButton(
 }
 
 @Composable
-private fun RemindersPreviewContent(state: RemindersUiState, areNotificationsAllowed: Boolean = true) {
+private fun SettingsPreviewContent(state: RemindersUiState, areNotificationsAllowed: Boolean = true) {
     MedicationLoggerTheme {
         Surface {
-            RemindersScreen(
+            SettingsScreen(
                 state = state,
                 areNotificationsAllowed = areNotificationsAllowed,
                 onSettingsChange = {},
@@ -391,12 +412,12 @@ private val previewState = RemindersUiState(
 
 @PreviewLightDark
 @Composable
-private fun RemindersScreenPreview() {
-    RemindersPreviewContent(previewState)
+private fun SettingsScreenPreview() {
+    SettingsPreviewContent(previewState)
 }
 
 @PreviewLightDark
 @Composable
-private fun RemindersScreenNotificationsOffPreview() {
-    RemindersPreviewContent(previewState, areNotificationsAllowed = false)
+private fun SettingsScreenNotificationsOffPreview() {
+    SettingsPreviewContent(previewState, areNotificationsAllowed = false)
 }

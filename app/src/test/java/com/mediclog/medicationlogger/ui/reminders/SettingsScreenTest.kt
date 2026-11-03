@@ -18,7 +18,7 @@ import org.robolectric.RobolectricTestRunner
 import java.time.LocalDateTime
 
 @RunWith(RobolectricTestRunner::class)
-class RemindersScreenTest {
+class SettingsScreenTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
@@ -31,7 +31,7 @@ class RemindersScreenTest {
         onOpen: () -> Unit = {},
     ) {
         composeRule.setContent {
-            RemindersScreen(
+            SettingsScreen(
                 state = RemindersUiState(settings = settings, nextRefill = LocalDateTime.of(2026, 11, 8, 9, 0)),
                 areNotificationsAllowed = areNotificationsAllowed,
                 onSettingsChange = {},
