@@ -17,9 +17,11 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.ui.components.DialogField
 import com.mediclog.medicationlogger.ui.components.RecordEditDialog
+import com.mediclog.medicationlogger.ui.components.TimeSelector
 import com.mediclog.medicationlogger.ui.components.dateOrNull
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
+import java.time.LocalTime
 
 /** Edits a missed or delayed dose by hand, or deletes it. */
 @Composable
@@ -32,13 +34,14 @@ fun EditMissDialog(
 ) {
     var date by rememberSaveable { mutableStateOf(miss.date.toString()) }
     var kind by rememberSaveable { mutableStateOf(miss.kind) }
+    var time by rememberSaveable { mutableStateOf(miss.time ?: LocalTime.now().withSecond(0).withNano(0)) }
     val parsedDate = date.dateOrNull()
 
     RecordEditDialog(
         title = stringResource(R.string.edit_miss_title),
         canSave = parsedDate != null,
         deleteMessage = stringResource(R.string.edit_delete_message),
-        onSave = { parsedDate?.let { onSave(miss.copy(date = it, kind = kind)) } },
+        onSave = { parsedDate?.let { onSave(miss.copy(date = it, kind = kind, time = time.takeIf { kind == MedicationMiss.Kind.DELAYED })) } },
         onDelete = onDelete,
         onDismiss = onDismiss,
         modifier = modifier,
@@ -62,6 +65,13 @@ fun EditMissDialog(
                     },
                 )
             }
+        }
+        if (kind == MedicationMiss.Kind.DELAYED) {
+            TimeSelector(
+                time = time,
+                dialogTitle = stringResource(R.string.refills_delayed_time_dialog_title),
+                onTimeChange = { time = it },
+            )
         }
     }
 }

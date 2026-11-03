@@ -146,11 +146,13 @@ private fun MedicationMiss.toJson() = JSONObject()
     .put("id", id)
     .put("date", date.toString())
     .put("kind", kind.name)
+    .put("time", time?.toString() ?: JSONObject.NULL)
 
 private fun JSONObject.toMiss() = MedicationMiss(
     id = getLong("id"),
     date = LocalDate.parse(getString("date")),
     kind = MedicationMiss.Kind.valueOf(getString("kind")),
+    time = if (has("time") && !isNull("time")) LocalTime.parse(getString("time")) else null,
 )
 
 private fun ReminderSettings.toJson() = JSONObject()

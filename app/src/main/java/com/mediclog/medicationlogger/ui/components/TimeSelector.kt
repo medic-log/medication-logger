@@ -20,7 +20,6 @@ import com.mediclog.medicationlogger.R
 import java.time.LocalTime
 
 /** A button showing [time] that opens a dialog to change it. */
-@OptIn(ExperimentalMaterial3Api::class) // TimeInput has no stable alternative in Material 3
 @Composable
 fun TimeSelector(
     time: LocalTime,
@@ -33,30 +32,45 @@ fun TimeSelector(
         Text(stringResource(R.string.reminders_choose_time, time.toString()))
     }
     if (isDialogOpen) {
-        val pickerState = rememberTimePickerState(
-            initialHour = time.hour,
-            initialMinute = time.minute,
-            is24Hour = DateFormat.is24HourFormat(LocalContext.current),
-        )
-        AlertDialog(
-            onDismissRequest = { isDialogOpen = false },
-            title = { Text(dialogTitle) },
-            text = { TimeInput(state = pickerState) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onTimeChange(LocalTime.of(pickerState.hour, pickerState.minute))
-                        isDialogOpen = false
-                    },
-                ) {
-                    Text(stringResource(R.string.reminders_time_confirm))
-                }
+        TimePickerDialog(
+            time = time,
+            title = dialogTitle,
+            onConfirm = {
+                onTimeChange(it)
+                isDialogOpen = false
             },
-            dismissButton = {
-                TextButton(onClick = { isDialogOpen = false }) {
-                    Text(stringResource(R.string.reminders_time_cancel))
-                }
-            },
+            onDismiss = { isDialogOpen = false },
         )
     }
+}
+
+/** A dialog to pick a time, starting at [time]. */
+@OptIn(ExperimentalMaterial3Api::class) // TimeInput has no stable alternative in Material 3
+@Composable
+fun TimePickerDialog(
+    time: LocalTime,
+    title: String,
+    onConfirm: (LocalTime) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val pickerState = rememberTimePickerState(
+        initialHour = time.hour,
+        initialMinute = time.minute,
+        is24Hour = DateFormat.is24HourFormat(LocalContext.current),
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { TimeInput(state = pickerState) },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(LocalTime.of(pickerState.hour, pickerState.minute)) }) {
+                Text(stringResource(R.string.reminders_time_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.reminders_time_cancel))
+            }
+        },
+    )
 }

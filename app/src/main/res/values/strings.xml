@@ -120,6 +120,8 @@
     <string name="refills_box">Box %1$s (%2$d left)</string>
     <string name="refills_missed">Missed dose</string>
     <string name="refills_delayed">Delayed dose</string>
+    <string name="refills_delayed_time">Taken at %1$s</string>
+    <string name="refills_delayed_time_dialog_title">When did you take it?</string>
     <string name="refills_missed_pill">-1 pill</string>
     <plurals name="refills_pills">
         <item quantity="one">%1$d pill</item>

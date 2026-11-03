@@ -122,12 +122,16 @@ data class MedicationData(
         return withBox(box.copy(isExtra = false))
     }
 
-    /** Logs a dose dated today. A missed one leaves its pill in the weekly lot, once there's been a refill. */
-    fun logMiss(kind: MedicationMiss.Kind, now: LocalDateTime): MedicationData = copy(
+    /**
+     * Logs a dose dated today, a delayed one taken at [time]. A missed one leaves its pill in the weekly lot, once
+     * there's been a refill.
+     */
+    fun logMiss(kind: MedicationMiss.Kind, now: LocalDateTime, time: LocalTime? = null): MedicationData = copy(
         misses = misses + MedicationMiss(
             id = (misses.maxOfOrNull { it.id } ?: 0) + 1,
             date = now.toLocalDate(),
             kind = kind,
+            time = time.takeIf { kind == MedicationMiss.Kind.DELAYED },
         ),
     )
 

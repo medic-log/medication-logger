@@ -41,10 +41,12 @@ import com.mediclog.medicationlogger.data.Refill
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.RecordCard
+import com.mediclog.medicationlogger.ui.components.TimePickerDialog
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
+import java.time.LocalTime
 
 /** The refills tab with its ViewModel. */
 @Composable
@@ -72,7 +74,7 @@ fun RefillsRoute(
 @Composable
 fun RefillsScreen(
     state: RefillsUiState,
-    onLogMiss: (MedicationMiss.Kind) -> Unit,
+    onLogMiss: (MedicationMiss.Kind, LocalTime?) -> Unit,
     onEditRefill: (Refill) -> Unit,
     onDeleteRefill: (Long) -> Unit,
     onEditMiss: (MedicationMiss) -> Unit,
@@ -82,6 +84,7 @@ fun RefillsScreen(
     modifier: Modifier = Modifier,
 ) {
     var editingKey by rememberSaveable { mutableStateOf<String?>(null) }
+    var isPickingDelayTime by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -94,10 +97,10 @@ fun RefillsScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
-                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED) }) {
+                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED, null) }) {
                         Text(stringResource(R.string.refills_log_missed))
                     }
-                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.DELAYED) }) {
+                    OutlinedButton(onClick = { isPickingDelayTime = true }) {
                         Text(stringResource(R.string.refills_log_delayed))
                     }
                 }
@@ -146,6 +149,17 @@ fun RefillsScreen(
                 )
             }
         }
+    }
+    if (isPickingDelayTime) {
+        TimePickerDialog(
+            time = LocalTime.now().withSecond(0).withNano(0),
+            title = stringResource(R.string.refills_delayed_time_dialog_title),
+            onConfirm = {
+                onLogMiss(MedicationMiss.Kind.DELAYED, it)
+                isPickingDelayTime = false
+            },
+            onDismiss = { isPickingDelayTime = false },
+        )
     }
     val allEntries = state.entries.flatMap { if (it is RefillLogEntry.RefillGroupEntry) it.members else listOf(it) }
     when (val entry = allEntries.find { it.key == editingKey }) {
@@ -308,6 +322,12 @@ private fun MissCard(
             ),
             style = MaterialTheme.typography.bodyMedium,
         )
+        miss.time?.let {
+            Text(
+                text = stringResource(R.string.refills_delayed_time, it.toString()),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         if (isCounted) {
             Text(
                 text = stringResource(R.string.refills_missed_pill),
@@ -323,7 +343,7 @@ private fun RefillsPreviewContent(state: RefillsUiState) {
         Surface {
             RefillsScreen(
                 state = state,
-                onLogMiss = {},
+                onLogMiss = { _, _ -> },
                 onEditRefill = {},
                 onDeleteRefill = {},
                 onEditMiss = {},
@@ -342,7 +362,7 @@ private fun RefillsScreenPreview() {
     RefillsPreviewContent(
         RefillsUiState(
             listOf(
-                RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED)),
+                RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED, LocalTime.of(10, 30))),
                 RefillLogEntry.RefillGroupEntry(
                     listOf(
                         RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3, 0..30),

@@ -12,6 +12,7 @@ import java.io.IOException
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.YearMonth
 
 /**
@@ -54,7 +55,7 @@ class MedicationRepository(
 
     fun backToInventory(boxId: Long) = change { it.backToInventory(boxId) }
 
-    fun logMiss(kind: MedicationMiss.Kind) = change { it.logMiss(kind, now()) }
+    fun logMiss(kind: MedicationMiss.Kind, time: LocalTime? = null) = change { it.logMiss(kind, now(), time) }
 
     fun editPrescription(updated: Prescription) = change { it.editPrescription(updated) }
 

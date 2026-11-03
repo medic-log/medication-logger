@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 /** One line of the medication log. */
 sealed interface RefillLogEntry {
@@ -64,7 +65,7 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value))
 
-    fun logMiss(kind: MedicationMiss.Kind) = repository.logMiss(kind)
+    fun logMiss(kind: MedicationMiss.Kind, time: LocalTime? = null) = repository.logMiss(kind, time)
 
     fun editRefill(updated: Refill) = repository.editRefill(updated)
 

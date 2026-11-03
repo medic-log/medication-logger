@@ -32,6 +32,7 @@ import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -360,11 +361,13 @@ class MainActivityTest {
 
         tap(string(R.string.refills_log_missed))
         tap(string(R.string.refills_log_delayed))
+        tap(string(R.string.reminders_time_confirm))
 
         assertShown(string(R.string.refills_missed))
         assertShown(string(R.string.refills_delayed))
         composeRule.onAllNodesWithText(today).onFirst().assertIsDisplayed()
         assertEquals(2, data.misses.size)
+        assertNotNull(data.misses.single { it.kind == MedicationMiss.Kind.DELAYED }.time)
     }
 
     private fun hold(text: String) {
