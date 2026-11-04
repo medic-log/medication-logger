@@ -232,6 +232,14 @@ fun RemindersRoute(
                         else -> availableUpdate = latest
                     }
                 }
+                // Per-app languages arrived in Android 13; before that only the system language can change
+                SettingsAction.LANGUAGE -> context.startActivity(
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", context.packageName, null))
+                    } else {
+                        Intent(Settings.ACTION_LOCALE_SETTINGS)
+                    },
+                )
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
                 SettingsAction.SHARE -> context.startActivity(

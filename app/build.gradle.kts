@@ -53,6 +53,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    androidResources {
+        // Lists the app's languages in the system's per-app language settings, opened by Language
+        generateLocaleConfig = true
+    }
     buildFeatures {
         compose = true
         buildConfig = true

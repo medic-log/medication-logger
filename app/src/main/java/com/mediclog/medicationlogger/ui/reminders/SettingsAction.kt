@@ -2,7 +2,6 @@ package com.mediclog.medicationlogger.ui.reminders
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 
 /** The buttons in the settings section. */
@@ -12,14 +11,11 @@ enum class SettingsAction(@param:StringRes val labelRes: Int, @param:DrawableRes
     EXPORT(R.string.settings_export, R.drawable.ic_export),
     IMPORT(R.string.settings_import, R.drawable.ic_import),
     SHARE(R.string.settings_share, R.drawable.ic_share),
+    LANGUAGE(R.string.settings_language, R.drawable.ic_translation),
     ;
 
     companion object {
         /** The buttons as laid out, row by row. Without a download site there is nothing to update from or share. */
-        val rows = if (BuildConfig.SITE_URL.isNotEmpty()) {
-            listOf(listOf(HELP, UPDATE, SHARE), listOf(IMPORT, EXPORT))
-        } else {
-            listOf(listOf(HELP, IMPORT, EXPORT))
-        }
+        val rows = listOf(listOf(HELP, LANGUAGE, UPDATE, SHARE), listOf(IMPORT, EXPORT))
     }
 }
