@@ -213,6 +213,9 @@
     <string name="reminders_notifications_off">Notifications are off, so reminders can\'t reach you. Allow them in system settings.</string>
     <string name="reminders_open_settings">Open settings</string>
     <string name="reminders_channel_name">Reminders</string>
+    <string name="update_channel_name">Updates</string>
+    <string name="update_notification_title">Updated to version %1$s</string>
+    <string name="update_notification_text">Tap to open Medication logger.</string>
     <string name="reminders_notification_pill_title">Time to take your pill</string>
     <string name="reminders_notification_pill_text">Take today\'s pill.</string>
     <string name="reminders_notification_refill_title">Time for your weekly refill</string>
