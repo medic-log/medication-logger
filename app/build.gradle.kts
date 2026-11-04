@@ -17,8 +17,8 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
-        // The public download site; empty until the app is published, which hides Update and Share
-        buildConfigField("String", "SITE_URL", "\"\"")
+        // The public download site, with latest.json and the APK; empty hides Update and Share
+        buildConfigField("String", "SITE_URL", "\"https://medic-log.github.io/medication-logger/\"")
     }
 
     // Release signing comes from the environment (set by the release workflow); without it the release APK is unsigned

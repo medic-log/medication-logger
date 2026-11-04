@@ -1,8 +1,12 @@
 package com.mediclog.medicationlogger.ui.reminders
 
 import android.Manifest
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -52,6 +57,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.LatestRelease
 import com.mediclog.medicationlogger.data.ReminderSettings
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.RecordCard
@@ -72,6 +78,7 @@ import java.time.LocalDateTime
 private const val MIN_DAYS = 1
 private const val MAX_DAYS = 365
 private const val EXPORT_MIME_TYPE = "application/json"
+private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
 
 /** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
@@ -82,6 +89,7 @@ fun RemindersRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val shareText = stringResource(R.string.settings_share_text, BuildConfig.SITE_URL)
     var areNotificationsAllowed by remember { mutableStateOf(true) }
     val checkNotifications = {
@@ -163,10 +171,24 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
-        // Update doesn't do anything yet
         onSettingsAction = {
             when (it) {
                 SettingsAction.HELP -> onHelp()
+                SettingsAction.UPDATE -> scope.launch {
+                    val latest = withContext(Dispatchers.IO) { LatestRelease.fetch(BuildConfig.SITE_URL) }
+                    when {
+                        latest == null -> showMessage(R.string.settings_update_failed)
+                        latest.versionCode <= BuildConfig.VERSION_CODE -> showMessage(R.string.settings_update_latest)
+                        else -> {
+                            downloadApk(context, latest)
+                            Toast.makeText(
+                                context,
+                                resources.getString(R.string.settings_update_downloading, latest.versionName),
+                                Toast.LENGTH_LONG,
+                            ).show()
+                        }
+                    }
+                }
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
                 SettingsAction.SHARE -> context.startActivity(
@@ -177,11 +199,22 @@ fun RemindersRoute(
                         null,
                     ),
                 )
-                else -> Unit
             }
         },
         modifier = modifier,
     )
+}
+
+/** Downloads [release]'s APK with the system download manager, whose notification opens the installer. */
+private fun downloadApk(context: Context, release: LatestRelease) {
+    val fileName = "medication-logger-${release.versionName}.apk"
+    val request = DownloadManager.Request(Uri.parse(release.apkUrl))
+        .setTitle(fileName)
+        .setMimeType(APK_MIME_TYPE)
+        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        // The app's own external folder needs no storage permission on Android 9
+        .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
+    context.getSystemService(DownloadManager::class.java).enqueue(request)
 }
 
 /** The settings tab: the configuration of the five reminders, then the app settings, none yet. */
