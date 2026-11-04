@@ -1,12 +1,8 @@
 package com.mediclog.medicationlogger.ui.reminders
 
 import android.Manifest
-import android.app.DownloadManager
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -42,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +64,7 @@ import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+import com.mediclog.medicationlogger.update.ApkInstaller
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -78,7 +75,6 @@ import java.time.LocalDateTime
 private const val MIN_DAYS = 1
 private const val MAX_DAYS = 365
 private const val EXPORT_MIME_TYPE = "application/json"
-private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
 
 /** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
@@ -89,7 +85,6 @@ fun RemindersRoute(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val resources = LocalResources.current
     val shareText = stringResource(R.string.settings_share_text, BuildConfig.SITE_URL)
     var areNotificationsAllowed by remember { mutableStateOf(true) }
     val checkNotifications = {
@@ -136,6 +131,9 @@ fun RemindersRoute(
         }
     }
     var isImportConfirmShown by rememberSaveable { mutableStateOf(false) }
+    // The version being downloaded, while the update is downloading
+    var downloadingVersion by remember { mutableStateOf<String?>(null) }
+    downloadingVersion?.let { UpdateDownloadDialog(it) }
     if (isImportConfirmShown) {
         AlertDialog(
             onDismissRequest = { isImportConfirmShown = false },
@@ -180,12 +178,13 @@ fun RemindersRoute(
                         latest == null -> showMessage(R.string.settings_update_failed)
                         latest.versionCode <= BuildConfig.VERSION_CODE -> showMessage(R.string.settings_update_latest)
                         else -> {
-                            downloadApk(context, latest)
-                            Toast.makeText(
-                                context,
-                                resources.getString(R.string.settings_update_downloading, latest.versionName),
-                                Toast.LENGTH_LONG,
-                            ).show()
+                            downloadingVersion = latest.versionName
+                            val isStarted = try {
+                                ApkInstaller.install(context, latest)
+                            } finally {
+                                downloadingVersion = null
+                            }
+                            if (!isStarted) showMessage(R.string.settings_update_download_failed)
                         }
                     }
                 }
@@ -203,18 +202,6 @@ fun RemindersRoute(
         },
         modifier = modifier,
     )
-}
-
-/** Downloads [release]'s APK with the system download manager, whose notification opens the installer. */
-private fun downloadApk(context: Context, release: LatestRelease) {
-    val fileName = "medication-logger-${release.versionName}.apk"
-    val request = DownloadManager.Request(Uri.parse(release.apkUrl))
-        .setTitle(fileName)
-        .setMimeType(APK_MIME_TYPE)
-        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-        // The app's own external folder needs no storage permission on Android 9
-        .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
-    context.getSystemService(DownloadManager::class.java).enqueue(request)
 }
 
 /** The settings tab: the configuration of the five reminders, then the app settings, none yet. */
@@ -373,6 +360,18 @@ fun SettingsScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
     }
+}
+
+/** Shown while an update downloads, before the system asks to install it; it can't be dismissed. */
+@Composable
+private fun UpdateDownloadDialog(versionName: String, modifier: Modifier = Modifier) {
+    AlertDialog(
+        onDismissRequest = {},
+        confirmButton = {},
+        modifier = modifier,
+        title = { Text(stringResource(R.string.settings_update_downloading, versionName)) },
+        text = { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) },
+    )
 }
 
 @Composable

@@ -138,7 +138,9 @@
     <string name="settings_help">Help</string>
     <string name="settings_update">Update</string>
     <string name="settings_update_latest">You have the latest version</string>
-    <string name="settings_update_downloading">Downloading version %1$s. Open it from the notification to install.</string>
+    <string name="settings_update_downloading">Downloading version %1$s</string>
+    <string name="settings_update_download_failed">Couldn\'t download the update. Check your connection and try again.</string>
+    <string name="settings_update_install_failed">Couldn\'t install the update. Try again, or download it from the website.</string>
     <string name="settings_update_failed">Couldn\'t check for updates. Check your connection.</string>
     <string name="settings_export">Export</string>
     <string name="settings_import">Import</string>
