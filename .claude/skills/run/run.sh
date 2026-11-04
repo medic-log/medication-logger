@@ -4,7 +4,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
 
-PKG=com.mediclog.medicationlogger
+# The debug build's app id; its classes keep the namespace, so the activity is named in full
+PKG=com.mediclog.medicationlogger.debug
+ACTIVITY=com.mediclog.medicationlogger.MainActivity
 APK=app/build/outputs/apk/debug/app-debug.apk
 ADB_TIMEOUT=${ADB_TIMEOUT:-90}
 
@@ -37,5 +39,5 @@ fi
 
 # Not ./gradlew installDebug: its ddmlib times out reading properties on some devices (Samsung)
 adb_ install -r "$APK"
-adb_ shell am start -n "$PKG/.MainActivity"
+adb_ shell am start -n "$PKG/$ACTIVITY"
 echo "Launched $PKG on $serial."
