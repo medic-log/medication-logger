@@ -43,6 +43,7 @@ import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.TimePickerDialog
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.outlinedBorder
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
@@ -97,10 +98,10 @@ fun RefillsScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
-                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED, null) }) {
+                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED, null) }, border = outlinedBorder()) {
                         Text(stringResource(R.string.refills_log_missed))
                     }
-                    OutlinedButton(onClick = { isPickingDelayTime = true }) {
+                    OutlinedButton(onClick = { isPickingDelayTime = true }, border = outlinedBorder()) {
                         Text(stringResource(R.string.refills_log_delayed))
                     }
                 }

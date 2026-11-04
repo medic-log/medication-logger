@@ -47,6 +47,7 @@ fun CardButton(
             modifier = sizedModifier,
             enabled = enabled,
             shape = shape,
+            border = outlinedBorder(enabled),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary),
             contentPadding = contentPadding,
             content = styledContent,

@@ -21,8 +21,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -62,6 +62,7 @@ import com.mediclog.medicationlogger.ui.components.TimeSelector
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
+import com.mediclog.medicationlogger.ui.components.outlinedBorder
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import com.mediclog.medicationlogger.update.ApkInstaller
@@ -421,7 +422,7 @@ private fun NotificationsOffNotice(onOpenSettings: () -> Unit, modifier: Modifie
                 text = stringResource(R.string.reminders_notifications_off),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            OutlinedButton(onClick = onOpenSettings) {
+            OutlinedButton(onClick = onOpenSettings, border = outlinedBorder()) {
                 Text(stringResource(R.string.reminders_open_settings))
             }
         }
