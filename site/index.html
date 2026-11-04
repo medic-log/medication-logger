@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Medication logger</title>
   <link rel="icon" href="logo.svg" type="image/svg+xml">
-  <meta name="description" content="Track your prescriptions, pill boxes and refills, with reminders. Android app.">
+  <meta name="description" data-i18n-content="index.description" content="Track your prescriptions, pill boxes and refills, with reminders. Android app.">
   <style>
     :root {
       --bg: #1a1110; --surface: #271d1c; --on-surface: #f1dedc; --muted: #d8c2be;
@@ -18,7 +18,7 @@
       font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     main { width: 100%; max-width: 32rem; padding: 2rem 1.5rem; }
-    .logo { display: block; width: 4rem; height: 4rem; margin: 0 auto 1rem; }
+    .logo { display: block; width: 4rem; height: 4rem; margin: .5rem auto; }
     h1 { margin: 0 0 .5rem; font-size: 2rem; color: var(--primary); }
     p { margin: 0 0 1rem; color: var(--muted); }
     .download {
@@ -30,28 +30,45 @@
     details { margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface); }
     summary { cursor: pointer; font-weight: 600; }
     ol { padding-left: 1.25rem; color: var(--muted); }
+    /* An icon over an invisible select, so tapping it opens the system's language picker */
+    .language { position: relative; width: 2.5rem; height: 2.5rem; margin: 0 0 0 auto; border-radius: 50%; color: var(--muted); }
+    .language:hover { background: var(--surface); }
+    .language:has(select:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
+    .language svg { width: 1.25rem; height: 1.25rem; margin: .625rem; fill: currentColor; }
+    .language select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 1rem; }
     code { font-size: .8rem; word-break: break-all; color: var(--on-surface); }
   </style>
 </head>
 <body>
 <main>
   <img class="logo" src="logo.svg" alt="">
+  <div class="language">
+    <!-- Material ic_translate, like the app's ic_translation -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87,15.07l-2.54,-2.51 0.03,-0.03c1.74,-1.94 2.98,-4.17 3.71,-6.53L17,6L17,4h-7L10,2L8,2v2L1,4v1.99h11.17C11.5,7.92 10.44,9.75 9,11.35 8.07,10.32 7.3,9.19 6.69,8h-2c0.73,1.63 1.73,3.17 2.98,4.56l-5.09,5.02L4,19l5,-5 3.11,3.11 0.76,-2.04zM18.5,10h-2L12,22h2l1.12,-3h4.75L21,22h2l-4.5,-12zM15.88,17l1.62,-4.33L19.12,17h-3.24z"/></svg>
+    <select id="language" aria-label="Language" data-i18n-aria-label="language">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="pt">Português</option>
+      <option value="nl">Nederlands</option>
+    </select>
+  </div>
   <h1>Medication logger</h1>
-  <p>Track your prescriptions, pill boxes and weekly refills, with reminders for refills, pickups and running out. Your data stays on your device.</p>
+  <p data-i18n="index.intro">Track your prescriptions, pill boxes and weekly refills, with reminders for refills, pickups and running out. Your data stays on your device.</p>
 
-  <a class="download" href="medication-logger.apk" download>Download APK (Android)</a>
-  <p>Latest version: <span id="version">…</span><br>Requires Android 9 or newer.</p>
+  <a class="download" href="medication-logger.apk" download data-i18n="index.download">Download APK (Android)</a>
+  <p><span data-i18n="index.latest">Latest version:</span> <span id="version">…</span><br><span data-i18n="index.requires">Requires Android 9 or newer.</span></p>
 
   <details>
-    <summary>How to install</summary>
+    <summary data-i18n="index.install">How to install</summary>
     <ol>
-      <li>Open the downloaded <code>medication-logger.apk</code>.</li>
-      <li>If Android asks, allow your browser or file manager to install unknown apps.</li>
-      <li>Tap Install. To update later, download and install the new version the same way; your data is kept.</li>
+      <li data-i18n-html="index.step1">Open the downloaded <code>medication-logger.apk</code>.</li>
+      <li data-i18n="index.step2">If Android asks, allow your browser or file manager to install unknown apps.</li>
+      <li data-i18n="index.step3">Tap Install. To update later, download and install the new version the same way; your data is kept.</li>
     </ol>
     <p id="checksum" hidden>SHA-256: <code id="sha256"></code></p>
   </details>
 </main>
+<script src="i18n.js"></script>
 <script>
   fetch('latest.json', { cache: 'no-store' })
     .then(r => r.ok ? r.json() : Promise.reject())
@@ -60,7 +77,7 @@
       document.getElementById('sha256').textContent = latest.sha256;
       document.getElementById('checksum').hidden = false;
     })
-    .catch(() => { document.getElementById('version').textContent = 'unavailable'; });
+    .catch(() => { document.getElementById('version').textContent = i18n.t('index.unavailable'); });
 </script>
 </body>
 </html>

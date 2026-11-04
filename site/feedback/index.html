@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Feedback · Medication logger</title>
   <link rel="icon" href="../logo.svg" type="image/svg+xml">
-  <meta name="description" content="Send feedback about the Medication logger Android app.">
+  <meta name="description" data-i18n-content="feedback.description" content="Send feedback about the Medication logger Android app.">
   <style>
     :root {
       --bg: #1a1110; --surface: #271d1c; --on-surface: #f1dedc; --muted: #d8c2be;
@@ -18,7 +18,7 @@
       font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     main { width: 100%; max-width: 32rem; padding: 2rem 1.5rem; }
-    .logo { display: block; width: 4rem; height: 4rem; margin: 0 auto 1rem; }
+    .logo { display: block; width: 4rem; height: 4rem; margin: .5rem auto; }
     h1 { margin: 0 0 .5rem; font-size: 2rem; color: var(--primary); }
     p { margin: 0 0 1rem; color: var(--muted); }
     a { color: var(--primary); }
@@ -32,6 +32,12 @@
       appearance: none; padding-right: 2.75rem; cursor: pointer;
       background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23d8c2be' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right .75rem center / 1.5rem;
     }
+    /* An icon over an invisible select, so tapping it opens the system's language picker */
+    .language { position: relative; width: 2.5rem; height: 2.5rem; margin: 0 0 0 auto; border-radius: 50%; color: var(--muted); }
+    .language:hover { background: var(--surface); }
+    .language:has(select:focus-visible) { outline: 3px solid var(--primary); outline-offset: 2px; }
+    .language svg { width: 1.25rem; height: 1.25rem; margin: .625rem; fill: currentColor; }
+    .language select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; font-size: 1rem; }
     select option { background: var(--surface); color: var(--on-surface); }
     input[readonly] { opacity: .5; cursor: not-allowed; }
     textarea { min-height: 8rem; resize: vertical; }
@@ -51,43 +57,56 @@
 <body>
 <main>
   <img class="logo" src="../logo.svg" alt="">
+  <div class="language">
+    <!-- Material ic_translate, like the app's ic_translation -->
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.87,15.07l-2.54,-2.51 0.03,-0.03c1.74,-1.94 2.98,-4.17 3.71,-6.53L17,6L17,4h-7L10,2L8,2v2L1,4v1.99h11.17C11.5,7.92 10.44,9.75 9,11.35 8.07,10.32 7.3,9.19 6.69,8h-2c0.73,1.63 1.73,3.17 2.98,4.56l-5.09,5.02L4,19l5,-5 3.11,3.11 0.76,-2.04zM18.5,10h-2L12,22h2l1.12,-3h4.75L21,22h2l-4.5,-12zM15.88,17l1.62,-4.33L19.12,17h-3.24z"/></svg>
+    <select id="language" aria-label="Language" data-i18n-aria-label="language">
+      <option value="en">English</option>
+      <option value="es">Español</option>
+      <option value="pt">Português</option>
+      <option value="nl">Nederlands</option>
+    </select>
+  </div>
   <h1>Feedback</h1>
-  <p>Tell us about a bug, a translation error, an idea or anything else about <a href="../">Medication logger</a>.</p>
+  <p data-i18n-html="feedback.intro">Tell us about a bug, a translation error, an idea or anything else about <a href="../">Medication logger</a>.</p>
 
   <form id="feedback">
-    <label>Title
+    <label><span data-i18n="feedback.title">Title</span>
       <input name="title" required maxlength="120">
     </label>
-    <label>Topic
+    <label><span data-i18n="feedback.topic">Topic</span>
       <select name="topic" required>
-        <option value="translation">Translation</option>
-        <option value="bug">Bug</option>
-        <option value="suggestion" selected>Suggestion</option>
-        <option value="help">Help</option>
-        <option value="question">Question</option>
-        <option value="other">Other</option>
+        <option value="translation" data-i18n="feedback.topic.translation">Translation</option>
+        <option value="bug" data-i18n="feedback.topic.bug">Bug</option>
+        <option value="suggestion" data-i18n="feedback.topic.suggestion" selected>Suggestion</option>
+        <option value="help" data-i18n="feedback.topic.help">Help</option>
+        <option value="question" data-i18n="feedback.topic.question">Question</option>
+        <option value="other" data-i18n="feedback.topic.other">Other</option>
       </select>
     </label>
-    <label id="email" hidden>Email (optional, to answer you)
+    <label id="email" hidden><span data-i18n="feedback.email">Email (optional, to answer you)</span>
       <input name="email" type="email" maxlength="254" disabled>
     </label>
-    <label>Version
-      <input name="version" placeholder="Settings shows it at the bottom">
+    <label><span data-i18n="feedback.version">Version</span>
+      <input name="version" placeholder="Settings shows it at the bottom" data-i18n-placeholder="feedback.versionHint">
     </label>
-    <label>Message
+    <label><span data-i18n="feedback.message">Message</span>
       <textarea name="message" required maxlength="5000"></textarea>
     </label>
     <!-- Hidden from people; bots fill it in, and the Worker drops what they send -->
     <input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <button type="submit">Send</button>
-    <p class="note" id="status" aria-live="polite">Sends the title, topic, version, message and your email if you give one, nothing from your medication records.</p>
+    <button type="submit" data-i18n="feedback.send">Send</button>
+    <p class="note" id="status" aria-live="polite" data-i18n="feedback.contents">Sends the title, topic, version, message and your email if you give one, nothing from your medication records.</p>
   </form>
 </main>
+<script src="../i18n.js"></script>
 <script>
   // The Cloudflare Worker that turns feedback into issues
   const ENDPOINT = 'https://feedback.medic-log.workers.dev';
   const form = document.getElementById('feedback');
   const status = document.getElementById('status');
+  // Keeps the key so a language change translates the status too
+  const setStatus = key => { status.dataset.i18n = key; status.textContent = i18n.t(key); };
   const version = document.querySelector('[name=version]');
   // Help and questions ask for an email to answer to; a disabled field isn't sent
   const topic = document.querySelector('[name=topic]');
@@ -102,7 +121,7 @@
     e.preventDefault();
     const button = form.querySelector('button');
     button.disabled = true;
-    status.textContent = 'Sending…';
+    setStatus('feedback.sending');
     const body = JSON.stringify({ ...Object.fromEntries(new FormData(form)), source: 'web' });
     const response = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
       .catch(() => null);
@@ -112,9 +131,9 @@
       form.reset();
       version.value = sentVersion;
       showEmail();
-      status.textContent = 'Feedback sent. Thank you!';
+      setStatus('feedback.sent');
     } else {
-      status.textContent = "Couldn't send feedback. Check your internet connection and try again.";
+      setStatus('feedback.failed');
     }
     button.disabled = false;
   });
