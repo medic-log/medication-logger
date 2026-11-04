@@ -142,6 +142,23 @@ fun RemindersRoute(
     var isLanguageShown by rememberSaveable { mutableStateOf(false) }
     var isFeedbackShown by rememberSaveable { mutableStateOf(false) }
     if (isFeedbackShown) FeedbackDialog(onDismiss = { isFeedbackShown = false })
+    var isShareShown by rememberSaveable { mutableStateOf(false) }
+    if (isShareShown) {
+        ShareDialog(
+            url = BuildConfig.SITE_URL,
+            onShare = {
+                context.startActivity(
+                    Intent.createChooser(
+                        Intent(Intent.ACTION_SEND)
+                            .setType("text/plain")
+                            .putExtra(Intent.EXTRA_TEXT, shareText),
+                        null,
+                    ),
+                )
+            },
+            onDismiss = { isShareShown = false },
+        )
+    }
     if (isLanguageShown) {
         val activity = LocalActivity.current
         LanguageDialog(
@@ -252,14 +269,7 @@ fun RemindersRoute(
                 SettingsAction.FEEDBACK -> isFeedbackShown = true
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
-                SettingsAction.SHARE -> context.startActivity(
-                    Intent.createChooser(
-                        Intent(Intent.ACTION_SEND)
-                            .setType("text/plain")
-                            .putExtra(Intent.EXTRA_TEXT, shareText),
-                        null,
-                    ),
-                )
+                SettingsAction.SHARE -> isShareShown = true
             }
         },
         modifier = modifier,
