@@ -35,6 +35,11 @@ android {
     }
 
     buildTypes {
+        // Its own app id, so it installs next to the release; src/debug gives it its own name and icon
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-dev"
+        }
         release {
             if (releaseKeystore != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
