@@ -1,10 +1,12 @@
 package com.mediclog.medicationlogger.ui.refills
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.ZeroCornerSize
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +29,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,6 +55,8 @@ import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
 import java.time.LocalTime
+
+private val DOSE_BUTTON_SPACING = 8.dp
 
 /** The refills tab with its ViewModel. */
 @Composable
@@ -97,14 +106,10 @@ fun RefillsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
-                    OutlinedButton(onClick = { onLogMiss(MedicationMiss.Kind.MISSED, null) }, border = outlinedBorder()) {
-                        Text(stringResource(R.string.refills_log_missed))
-                    }
-                    OutlinedButton(onClick = { isPickingDelayTime = true }, border = outlinedBorder()) {
-                        Text(stringResource(R.string.refills_log_delayed))
-                    }
-                }
+                DoseLogButtons(
+                    onLogMissed = { onLogMiss(MedicationMiss.Kind.MISSED, null) },
+                    onLogDelayed = { isPickingDelayTime = true },
+                )
                 val message = pluralStringResource(R.plurals.refills_lot_pills, state.lotPills, state.lotPills)
                 Text(
                     text = buildAnnotatedString {
@@ -195,6 +200,39 @@ fun RefillsScreen(
 }
 
 // Pasted together, sandwich style: only the outer corners of the stack are round
+/** The two dose buttons side by side: as wide as their labels when both fit, else half the width each, wrapping. */
+@Composable
+private fun DoseLogButtons(onLogMissed: () -> Unit, onLogDelayed: () -> Unit, modifier: Modifier = Modifier) {
+    val missedLabel = stringResource(R.string.refills_log_missed)
+    val delayedLabel = stringResource(R.string.refills_log_delayed)
+    val labelStyle = MaterialTheme.typography.labelLarge
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val contentPadding = ButtonDefaults.ContentPadding
+        val buttonPadding = contentPadding.calculateStartPadding(layoutDirection) +
+            contentPadding.calculateEndPadding(layoutDirection)
+        val labelsWidth = with(density) {
+            (textMeasurer.measure(missedLabel, labelStyle).size.width +
+                textMeasurer.measure(delayedLabel, labelStyle).size.width).toDp()
+        }
+        val isWrapping = labelsWidth + buttonPadding * 2 + DOSE_BUTTON_SPACING > maxWidth
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(DOSE_BUTTON_SPACING, Alignment.CenterHorizontally),
+        ) {
+            val buttonModifier = if (isWrapping) Modifier.weight(1f) else Modifier
+            OutlinedButton(onClick = onLogMissed, modifier = buttonModifier, border = outlinedBorder()) {
+                Text(missedLabel, textAlign = TextAlign.Center)
+            }
+            OutlinedButton(onClick = onLogDelayed, modifier = buttonModifier, border = outlinedBorder()) {
+                Text(delayedLabel, textAlign = TextAlign.Center)
+            }
+        }
+    }
+}
+
 @Composable
 private fun RefillGroupCard(
     group: RefillLogEntry.RefillGroupEntry,
