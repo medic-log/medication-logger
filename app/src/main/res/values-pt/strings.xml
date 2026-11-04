@@ -160,6 +160,7 @@
     <string name="settings_import_failed">Não foi possível ler esse arquivo. Escolha um arquivo exportado deste app.</string>
     <string name="settings_share">Compartilhar</string>
     <string name="settings_language">Idioma</string>
+    <string name="settings_language_confirm">Confirmar</string>
     <string name="settings_share_text">Medication logger: acompanhe suas receitas, caixas de comprimidos e reposições. %1$s</string>
     <string name="settings_version">Versão %1$s</string>
     <string name="tutorial_progress">Passo %1$d de %2$d</string>

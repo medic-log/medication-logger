@@ -144,9 +144,9 @@ fun RemindersRoute(
         val activity = LocalActivity.current
         LanguageDialog(
             selected = AppLanguage.current(context),
-            onSelect = { language ->
+            onConfirm = { language ->
                 isLanguageShown = false
-                activity?.let { AppLanguage.choose(it, language) }
+                if (language != AppLanguage.current(context)) activity?.let { AppLanguage.choose(it, language) }
             },
             onDismiss = { isLanguageShown = false },
         )
