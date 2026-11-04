@@ -135,6 +135,34 @@ fun RemindersRoute(
     // The version being downloaded, while the update is downloading
     var downloadingVersion by remember { mutableStateOf<String?>(null) }
     downloadingVersion?.let { UpdateDownloadDialog(it) }
+    // A newer version found, waiting for the user to confirm downloading it
+    var availableUpdate by remember { mutableStateOf<LatestRelease?>(null) }
+    availableUpdate?.let { release ->
+        AlertDialog(
+            onDismissRequest = { availableUpdate = null },
+            title = { Text(stringResource(R.string.settings_update_confirm_title, release.versionName)) },
+            text = { Text(stringResource(R.string.settings_update_confirm_text, BuildConfig.VERSION_NAME)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        availableUpdate = null
+                        scope.launch {
+                            downloadingVersion = release.versionName
+                            val isStarted = try {
+                                ApkInstaller.install(context, release)
+                            } finally {
+                                downloadingVersion = null
+                            }
+                            if (!isStarted) showMessage(R.string.settings_update_download_failed)
+                        }
+                    },
+                ) { Text(stringResource(R.string.settings_update)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { availableUpdate = null }) { Text(stringResource(R.string.edit_cancel)) }
+            },
+        )
+    }
     if (isImportConfirmShown) {
         AlertDialog(
             onDismissRequest = { isImportConfirmShown = false },
@@ -178,15 +206,7 @@ fun RemindersRoute(
                     when {
                         latest == null -> showMessage(R.string.settings_update_failed)
                         latest.versionCode <= BuildConfig.VERSION_CODE -> showMessage(R.string.settings_update_latest)
-                        else -> {
-                            downloadingVersion = latest.versionName
-                            val isStarted = try {
-                                ApkInstaller.install(context, latest)
-                            } finally {
-                                downloadingVersion = null
-                            }
-                            if (!isStarted) showMessage(R.string.settings_update_download_failed)
-                        }
+                        else -> availableUpdate = latest
                     }
                 }
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
