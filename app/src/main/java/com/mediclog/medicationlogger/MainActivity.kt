@@ -1,6 +1,7 @@
 package com.mediclog.medicationlogger
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +16,10 @@ import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 class MainActivity : ComponentActivity() {
     // The reminders tab checks the permission again when it resumes, so the answer needs no handling here
     private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLanguage.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

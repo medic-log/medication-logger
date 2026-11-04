@@ -1,6 +1,7 @@
 package com.mediclog.medicationlogger
 
 import android.app.Application
+import android.content.Context
 import com.mediclog.medicationlogger.data.JsonFileMedicationStore
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.reminders.ReminderScheduler
@@ -27,8 +28,14 @@ class MedicationLoggerApplication : Application() {
 
     val reminderScheduler: ReminderScheduler by lazy { ReminderScheduler(this, clock) }
 
+    // Notifications are written with the application's resources, so they need the chosen language too
+    override fun attachBaseContext(base: Context) {
+        super.attachBaseContext(AppLanguage.wrap(base))
+    }
+
     override fun onCreate() {
         super.onCreate()
+        AppLanguage.applyDefault(this)
         MainScope().launch {
             repository.data.collect(reminderScheduler::reschedule)
         }

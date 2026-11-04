@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -52,6 +53,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.LatestRelease
@@ -137,6 +139,18 @@ fun RemindersRoute(
         }
     }
     var isImportConfirmShown by rememberSaveable { mutableStateOf(false) }
+    var isLanguageShown by rememberSaveable { mutableStateOf(false) }
+    if (isLanguageShown) {
+        val activity = LocalActivity.current
+        LanguageDialog(
+            selected = AppLanguage.current(context),
+            onSelect = { language ->
+                isLanguageShown = false
+                activity?.let { AppLanguage.choose(it, language) }
+            },
+            onDismiss = { isLanguageShown = false },
+        )
+    }
     // The version being downloaded, while the update is downloading
     var downloadingVersion by remember { mutableStateOf<String?>(null) }
     downloadingVersion?.let { UpdateDownloadDialog(it) }
@@ -232,14 +246,7 @@ fun RemindersRoute(
                         else -> availableUpdate = latest
                     }
                 }
-                // Per-app languages arrived in Android 13; before that only the system language can change
-                SettingsAction.LANGUAGE -> context.startActivity(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        Intent(Settings.ACTION_APP_LOCALE_SETTINGS, Uri.fromParts("package", context.packageName, null))
-                    } else {
-                        Intent(Settings.ACTION_LOCALE_SETTINGS)
-                    },
-                )
+                SettingsAction.LANGUAGE -> isLanguageShown = true
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
                 SettingsAction.SHARE -> context.startActivity(
