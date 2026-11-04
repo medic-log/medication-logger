@@ -7,6 +7,13 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# One Pages deploy at a time, so an older release never overwrites a newer one
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -55,3 +62,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" "medication-logger-$GITHUB_REF_NAME.apk" medication-logger.apk --generate-notes
+
+      # The download site: site/index.html plus the release's APK and latest.json, which the app's Update button reads
+      - name: Build download site
+        run: |
+          version_code=$(sed -n 's/^ *versionCode = \([0-9]*\)/\1/p' app/build.gradle.kts)
+          mkdir -p _site
+          cp site/index.html medication-logger.apk _site/
+          jq -n \
+            --argjson versionCode "$version_code" \
+            --arg versionName "${GITHUB_REF_NAME#v}" \
+            --arg sha256 "$(sha256sum medication-logger.apk | cut -d' ' -f1)" \
+            '{versionCode: $versionCode, versionName: $versionName, apk: "medication-logger.apk", sha256: $sha256}' \
+            > _site/latest.json
+
+      - uses: actions/upload-pages-artifact@v4
+
+  deploy-site:
+    needs: release
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

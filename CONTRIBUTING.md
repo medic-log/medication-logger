@@ -39,7 +39,7 @@ scripts/check.sh                                # CI checks, also run by .githoo
 
 GitHub Actions runs `scripts/check.sh` on every push to `master` and every pull request (`.github/workflows/ci.yml`). The APK and the lint and test reports are attached to the run as artifacts.
 
-Pushing a `v*` tag builds a signed release APK and publishes it as a GitHub release (`.github/workflows/release.yml`), both versioned and as `medication-logger.apk`, so the newest is always at `https://github.com/medic-log/medication-logger/releases/latest/download/medication-logger.apk`. The release workflow doesn't run the checks, so run `./scripts/check.sh` before tagging, or use `/release`, which does. The tag must match `versionName` in `app/build.gradle.kts`:
+Pushing a `v*` tag builds a signed release APK and publishes it as a GitHub release (`.github/workflows/release.yml`), both versioned and as `medication-logger.apk`, so the newest is always at `https://github.com/medic-log/medication-logger/releases/latest/download/medication-logger.apk`. It then deploys the download site to GitHub Pages at `https://medic-log.github.io/medication-logger/`: the page in `site/index.html`, the APK as `medication-logger.apk` and `latest.json` (`versionCode`, `versionName`, `apk`, `sha256`). Pages must be enabled once with Source set to GitHub Actions (Settings → Pages). The release workflow doesn't run the checks, so run `./scripts/check.sh` before tagging, or use `/release`, which does. The tag must match `versionName` in `app/build.gradle.kts`:
 
 ```bash
 git tag v0.1.0 && git push origin v0.1.0

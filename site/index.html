@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medication logger</title>
+  <meta name="description" content="Track your prescriptions, pill boxes and refills, with reminders. Android app.">
+  <style>
+    :root {
+      --bg: #1a1110; --surface: #271d1c; --on-surface: #f1dedc; --muted: #d8c2be;
+      --primary: #ffb4a8; --on-primary: #561e16; --outline: #534341;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--bg); color: var(--on-surface);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 32rem; padding: 2rem 1.5rem; }
+    h1 { margin: 0 0 .5rem; font-size: 2rem; color: var(--primary); }
+    p { margin: 0 0 1rem; color: var(--muted); }
+    .download {
+      display: inline-block; margin: 1rem 0; padding: .9rem 1.6rem; border-radius: 999px;
+      background: var(--primary); color: var(--on-primary); font-weight: 600; text-decoration: none;
+    }
+    .download:focus-visible { outline: 3px solid var(--on-surface); outline-offset: 3px; }
+    #version { color: var(--on-surface); }
+    details { margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface); }
+    summary { cursor: pointer; font-weight: 600; }
+    ol { padding-left: 1.25rem; color: var(--muted); }
+    code { font-size: .8rem; word-break: break-all; color: var(--on-surface); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Medication logger</h1>
+  <p>Track your prescriptions, pill boxes and weekly refills, with reminders for refills, pickups and running out. Your data stays on your device.</p>
+
+  <a class="download" href="medication-logger.apk" download>Download APK (Android)</a>
+  <p>Latest version: <span id="version">…</span><br>Requires Android 9 or newer.</p>
+
+  <details>
+    <summary>How to install</summary>
+    <ol>
+      <li>Open the downloaded <code>medication-logger.apk</code>.</li>
+      <li>If Android asks, allow your browser or file manager to install unknown apps.</li>
+      <li>Tap Install. To update later, download and install the new version the same way; your data is kept.</li>
+    </ol>
+    <p id="checksum" hidden>SHA-256: <code id="sha256"></code></p>
+  </details>
+</main>
+<script>
+  fetch('latest.json', { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(latest => {
+      document.getElementById('version').textContent = latest.versionName;
+      document.getElementById('sha256').textContent = latest.sha256;
+      document.getElementById('checksum').hidden = false;
+    })
+    .catch(() => { document.getElementById('version').textContent = 'unavailable'; });
+</script>
+</body>
+</html>
