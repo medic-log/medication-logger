@@ -2,6 +2,7 @@ package com.mediclog.medicationlogger.ui.reminders
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
@@ -117,8 +118,12 @@ fun RemindersRoute(
             showMessage(if (isWritten) R.string.settings_export_done else R.string.settings_export_failed)
         }
     }
+    // The picked file, waiting for the second confirmation before it replaces the records
+    var importUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
+        importUri = uri
+    }
+    val importFile = { uri: Uri ->
         scope.launch {
             val text = withContext(Dispatchers.IO) {
                 try {
@@ -179,6 +184,24 @@ fun RemindersRoute(
             },
             dismissButton = {
                 TextButton(onClick = { isImportConfirmShown = false }) { Text(stringResource(R.string.edit_cancel)) }
+            },
+        )
+    }
+    importUri?.let { uri ->
+        AlertDialog(
+            onDismissRequest = { importUri = null },
+            title = { Text(stringResource(R.string.settings_import_replace_title)) },
+            text = { Text(stringResource(R.string.settings_import_replace_text)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        importUri = null
+                        importFile(uri)
+                    },
+                ) { Text(stringResource(R.string.settings_import_replace)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { importUri = null }) { Text(stringResource(R.string.edit_cancel)) }
             },
         )
     }

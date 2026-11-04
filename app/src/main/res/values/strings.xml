@@ -151,6 +151,9 @@
     <string name="settings_import_confirm_title">Replace your records?</string>
     <string name="settings_import_confirm_text">Importing replaces your prescriptions, boxes, refills, and missed and delayed doses with those in the file. Your reminder settings stay as they are.</string>
     <string name="settings_import_confirm">Choose file</string>
+    <string name="settings_import_replace_title">Replace your records now?</string>
+    <string name="settings_import_replace_text">Your current prescriptions, boxes, refills, and missed and delayed doses will be deleted and replaced with those in this file. This can\'t be undone, so export them first if you might need them.</string>
+    <string name="settings_import_replace">Replace</string>
     <string name="settings_import_done">Imported your prescriptions, boxes and refills</string>
     <string name="settings_import_failed">Couldn\'t read that file. Choose a file exported from this app.</string>
     <string name="settings_share">Share</string>
