@@ -27,3 +27,6 @@ Thumbs.db
 # Claude Code: personal settings and notes
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Private docs, kept out of history
+docs/
