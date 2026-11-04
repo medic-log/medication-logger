@@ -12,10 +12,11 @@ enum class SettingsAction(@param:StringRes val labelRes: Int, @param:DrawableRes
     IMPORT(R.string.settings_import, R.drawable.ic_import),
     SHARE(R.string.settings_share, R.drawable.ic_share),
     LANGUAGE(R.string.settings_language, R.drawable.ic_translation),
+    FEEDBACK(R.string.settings_feedback, R.drawable.ic_feedback),
     ;
 
     companion object {
         /** The buttons as laid out, row by row. Without a download site there is nothing to update from or share. */
-        val rows = listOf(listOf(HELP, LANGUAGE, UPDATE, SHARE), listOf(IMPORT, EXPORT))
+        val rows = listOf(listOf(HELP, LANGUAGE, UPDATE, SHARE), listOf(IMPORT, EXPORT, FEEDBACK))
     }
 }

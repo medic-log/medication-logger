@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="26 26 56 56">
+  <!-- The app icon's half-filled capsule (ic_launcher_foreground), centered with room for the stroke -->
+  <path fill="#ffb4a8" d="M45.51,45.51L57.51,33.51A12,12 0,0 1,74.49 50.49L62.49,62.49Z"/>
+  <path fill="none" stroke="#ffb4a8" stroke-width="4" d="M33.51,57.51L57.51,33.51A12,12 0,0 1,74.49 50.49L50.49,74.49A12,12 0,0 1,33.51 57.51Z"/>
+</svg>

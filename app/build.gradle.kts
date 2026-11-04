@@ -19,6 +19,8 @@ android {
         versionName = "0.3.3"
         // The public download site, with latest.json and the APK; empty hides Update and Share
         buildConfigField("String", "SITE_URL", "\"https://medic-log.github.io/medication-logger/\"")
+        // The Cloudflare Worker that turns feedback into issues
+        buildConfigField("String", "FEEDBACK_URL", "\"https://feedback.medic-log.workers.dev\"")
     }
 
     // Release signing comes from the environment (set by the release workflow); without it the release APK is unsigned

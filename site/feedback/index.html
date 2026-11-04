@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feedback · Medication logger</title>
+  <link rel="icon" href="../logo.svg" type="image/svg+xml">
+  <meta name="description" content="Send feedback about the Medication logger Android app.">
+  <style>
+    :root {
+      --bg: #1a1110; --surface: #271d1c; --on-surface: #f1dedc; --muted: #d8c2be;
+      --primary: #ffb4a8; --on-primary: #561e16; --outline: #534341;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; display: flex; justify-content: center;
+      background: var(--bg); color: var(--on-surface);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { width: 100%; max-width: 32rem; padding: 2rem 1.5rem; }
+    .logo { display: block; width: 4rem; height: 4rem; margin: 0 auto 1rem; }
+    h1 { margin: 0 0 .5rem; font-size: 2rem; color: var(--primary); }
+    p { margin: 0 0 1rem; color: var(--muted); }
+    a { color: var(--primary); }
+    form { display: flex; flex-direction: column; gap: 1rem; }
+    label { display: flex; flex-direction: column; gap: .25rem; font-weight: 600; }
+    input, select, textarea {
+      font: inherit; font-weight: 500; color: var(--on-surface); background: var(--surface);
+      border: 1px solid var(--outline); border-radius: 12px; padding: .75rem;
+    }
+    select {
+      appearance: none; padding-right: 2.75rem; cursor: pointer;
+      background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23d8c2be' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") no-repeat right .75rem center / 1.5rem;
+    }
+    select option { background: var(--surface); color: var(--on-surface); }
+    input[readonly] { opacity: .5; cursor: not-allowed; }
+    textarea { min-height: 8rem; resize: vertical; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+      outline: 3px solid var(--primary); outline-offset: 2px;
+    }
+    button {
+      align-self: flex-start; padding: .9rem 1.6rem; border: 0; border-radius: 999px;
+      background: var(--primary); color: var(--on-primary); font: inherit; font-weight: 600;
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .note { font-size: .875rem; margin: 0; }
+    [hidden] { display: none; }
+    .trap { position: absolute; left: -9999px; }
+  </style>
+</head>
+<body>
+<main>
+  <img class="logo" src="../logo.svg" alt="">
+  <h1>Feedback</h1>
+  <p>Tell us about a bug, a translation error, an idea or anything else about <a href="../">Medication logger</a>.</p>
+
+  <form id="feedback">
+    <label>Title
+      <input name="title" required maxlength="120">
+    </label>
+    <label>Topic
+      <select name="topic" required>
+        <option value="translation">Translation</option>
+        <option value="bug">Bug</option>
+        <option value="suggestion" selected>Suggestion</option>
+        <option value="help">Help</option>
+        <option value="question">Question</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <label id="email" hidden>Email (optional, to answer you)
+      <input name="email" type="email" maxlength="254" disabled>
+    </label>
+    <label>Version
+      <input name="version" placeholder="Settings shows it at the bottom">
+    </label>
+    <label>Message
+      <textarea name="message" required maxlength="5000"></textarea>
+    </label>
+    <!-- Hidden from people; bots fill it in, and the Worker drops what they send -->
+    <input class="trap" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button type="submit">Send</button>
+    <p class="note" id="status" aria-live="polite">Sends the title, topic, version, message and your email if you give one, nothing from your medication records.</p>
+  </form>
+</main>
+<script>
+  // The Cloudflare Worker that turns feedback into issues
+  const ENDPOINT = 'https://feedback.medic-log.workers.dev';
+  const form = document.getElementById('feedback');
+  const status = document.getElementById('status');
+  const version = document.querySelector('[name=version]');
+  // Help and questions ask for an email to answer to; a disabled field isn't sent
+  const topic = document.querySelector('[name=topic]');
+  const emailLabel = document.getElementById('email');
+  const showEmail = () => {
+    const isAnswerExpected = ['help', 'question'].includes(topic.value);
+    emailLabel.hidden = !isAnswerExpected;
+    emailLabel.querySelector('input').disabled = !isAnswerExpected;
+  };
+  topic.addEventListener('change', showEmail);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const button = form.querySelector('button');
+    button.disabled = true;
+    status.textContent = 'Sending…';
+    const body = JSON.stringify({ ...Object.fromEntries(new FormData(form)), source: 'web' });
+    const response = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      .catch(() => null);
+    if (response?.ok) {
+      // Keeps the version passed by the app
+      const sentVersion = version.value;
+      form.reset();
+      version.value = sentVersion;
+      showEmail();
+      status.textContent = 'Feedback sent. Thank you!';
+    } else {
+      status.textContent = "Couldn't send feedback. Check your internet connection and try again.";
+    }
+    button.disabled = false;
+  });
+  // Opened from the app, which passes its version: fill it in and keep it
+  const appVersion = new URLSearchParams(location.search).get('version');
+  if (appVersion) {
+    version.value = appVersion;
+    version.readOnly = true;
+  }
+</script>
+</body>
+</html>
