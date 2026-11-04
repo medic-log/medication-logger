@@ -187,6 +187,8 @@
     <string name="tutorial_back">Back</string>
     <string name="tutorial_next">Next</string>
     <string name="tutorial_done">Done</string>
+    <string name="tutorial_language_title">Choose your language</string>
+    <string name="tutorial_language_text">You can change it later in Settings.</string>
     <string name="tutorial_welcome_title">Welcome to Medication Logger</string>
     <string name="tutorial_welcome_text">It tracks your prescriptions, the boxes you buy and the pills you set out each week. This tour uses sample data; yours stays as it is.</string>
     <string name="tutorial_tabs_title">Tabs</string>

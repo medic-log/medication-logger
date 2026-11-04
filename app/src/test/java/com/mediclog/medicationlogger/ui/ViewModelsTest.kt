@@ -75,8 +75,9 @@ class ViewModelsTest {
     @Test
     fun `the tutorial opens on first launch, leads through the tabs and stays closed once done`() {
         val viewModel = MainViewModel(repository, clock, draft)
-        assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
+        assertEquals(TutorialStep.LANGUAGE, viewModel.uiState.value.tutorialStep)
 
+        viewModel.nextTutorialStep()
         viewModel.nextTutorialStep()
         assertEquals(TutorialStep.TABS, viewModel.uiState.value.tutorialStep)
         viewModel.nextTutorialStep()
@@ -117,7 +118,7 @@ class ViewModelsTest {
         assertTrue(repository.data.value.isTutorialDone)
 
         viewModel.startTutorial()
-        assertEquals(TutorialStep.WELCOME, viewModel.uiState.value.tutorialStep)
+        assertEquals(TutorialStep.LANGUAGE, viewModel.uiState.value.tutorialStep)
     }
 
     @Test

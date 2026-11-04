@@ -184,6 +184,8 @@
     <string name="tutorial_back">Terug</string>
     <string name="tutorial_next">Volgende</string>
     <string name="tutorial_done">Klaar</string>
+    <string name="tutorial_language_title">Kies je taal</string>
+    <string name="tutorial_language_text">Je kunt dit later wijzigen in Instellingen.</string>
     <string name="tutorial_welcome_title">Welkom bij Medication Logger</string>
     <string name="tutorial_welcome_text">De app houdt je recepten bij, de doosjes die je koopt en de pillen die je elke week klaarzet. Deze rondleiding gebruikt voorbeeldgegevens; die van jou blijven zoals ze zijn.</string>
     <string name="tutorial_tabs_title">Tabbladen</string>

@@ -189,6 +189,8 @@
     <string name="tutorial_back">Atrás</string>
     <string name="tutorial_next">Siguiente</string>
     <string name="tutorial_done">Hecho</string>
+    <string name="tutorial_language_title">Elige tu idioma</string>
+    <string name="tutorial_language_text">Puedes cambiarlo más tarde en Ajustes.</string>
     <string name="tutorial_welcome_title">Te damos la bienvenida a Medication Logger</string>
     <string name="tutorial_welcome_text">Lleva el control de tus recetas, las cajas que compras y las pastillas que preparas cada semana. Este recorrido usa datos de ejemplo; los tuyos no cambian.</string>
     <string name="tutorial_tabs_title">Pestañas</string>

@@ -681,11 +681,16 @@ class MainActivityTest {
         openTab(R.string.main_tab_settings)
         composeRule.onNodeWithText(string(R.string.settings_help)).performScrollTo().performClick()
 
-        assertShown(string(R.string.tutorial_welcome_title))
+        assertShown(string(R.string.tutorial_language_title))
+        // Marking a language previews it on the card only, until Next
+        tap("Español")
+        composeRule.onNodeWithText(string(R.string.tutorial_language_title)).assertDoesNotExist()
+        composeRule.onNode(hasText(string(R.string.main_tab_boxes)) and isSelected()).assertExists()
+        tap("English")
         // The app behind the tutorial ignores taps
         openTab(R.string.main_tab_refills)
         composeRule.onNode(hasText(string(R.string.main_tab_boxes)) and isSelected()).assertExists()
-        repeat(2) { tap(string(R.string.tutorial_next)) }
+        repeat(3) { tap(string(R.string.tutorial_next)) }
         assertShown(string(R.string.tutorial_prescription_text))
         composeRule.onNode(hasText(string(R.string.main_tab_prescriptions)) and isSelected()).assertExists()
         // Sample records fill the tabs during the tour

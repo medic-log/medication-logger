@@ -14,6 +14,7 @@ enum class TutorialStep(
     @param:StringRes val titleRes: Int,
     @param:StringRes val textRes: Int,
 ) {
+    LANGUAGE(AppTab.BOXES, null, R.string.tutorial_language_title, R.string.tutorial_language_text),
     WELCOME(AppTab.BOXES, null, R.string.tutorial_welcome_title, R.string.tutorial_welcome_text),
     TABS(AppTab.BOXES, TutorialTarget.TAB_BAR, R.string.tutorial_tabs_title, R.string.tutorial_tabs_text),
     PRESCRIPTION(

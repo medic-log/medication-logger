@@ -189,6 +189,8 @@
     <string name="tutorial_back">Voltar</string>
     <string name="tutorial_next">Próximo</string>
     <string name="tutorial_done">Concluir</string>
+    <string name="tutorial_language_title">Escolha seu idioma</string>
+    <string name="tutorial_language_text">Você pode mudá-lo depois em Configurações.</string>
     <string name="tutorial_welcome_title">Boas-vindas ao Medication Logger</string>
     <string name="tutorial_welcome_text">Ele acompanha suas receitas, as caixas que você compra e os comprimidos que você separa a cada semana. Este tour usa dados de exemplo; os seus continuam como estão.</string>
     <string name="tutorial_tabs_title">Abas</string>
