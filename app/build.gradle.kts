@@ -15,8 +15,8 @@ android {
         applicationId = "com.mediclog.medicationlogger"
         minSdk = 28
         targetSdk = 37
-        versionCode = 5
-        versionName = "0.3.2"
+        versionCode = 6
+        versionName = "0.3.3"
         // The public download site, with latest.json and the APK; empty hides Update and Share
         buildConfigField("String", "SITE_URL", "\"https://medic-log.github.io/medication-logger/\"")
     }
