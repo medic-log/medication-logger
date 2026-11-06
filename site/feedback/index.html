@@ -132,8 +132,12 @@
       version.value = sentVersion;
       showEmail();
       setStatus('feedback.sent');
+    } else if (!response) {
+      // fetch fails without an answer both offline and when the server can't be reached
+      setStatus(navigator.onLine ? 'feedback.unavailable' : 'feedback.offline');
     } else {
-      setStatus('feedback.failed');
+      // Busy (429) and server errors are worth retrying later
+      setStatus(response.status === 429 || response.status >= 500 ? 'feedback.unavailable' : 'feedback.rejected');
     }
     button.disabled = false;
   });

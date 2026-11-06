@@ -178,11 +178,16 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                         email = if (topic.isAnswerExpected) email.trim() else "",
                     )
                     scope.launch {
-                        val isSent = withContext(Dispatchers.IO) { feedback.send(BuildConfig.FEEDBACK_URL) }
+                        val result = withContext(Dispatchers.IO) { feedback.send(BuildConfig.FEEDBACK_URL) }
                         isSending = false
-                        val result = if (isSent) R.string.feedback_sent else R.string.feedback_send_failed
-                        Toast.makeText(context, result, Toast.LENGTH_SHORT).show()
-                        if (isSent) onDismiss()
+                        val text = when (result) {
+                            Feedback.SendResult.SENT -> R.string.feedback_sent
+                            Feedback.SendResult.OFFLINE -> R.string.feedback_send_offline
+                            Feedback.SendResult.UNAVAILABLE -> R.string.feedback_send_unavailable
+                            Feedback.SendResult.REJECTED -> R.string.feedback_send_rejected
+                        }
+                        Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+                        if (result == Feedback.SendResult.SENT) onDismiss()
                     }
                 },
                 enabled = title.isNotBlank() && message.isNotBlank() && !isEmailInvalid && !isSending,

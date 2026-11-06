@@ -38,4 +38,12 @@ class FeedbackTest {
         assertFalse(Feedback.isValidEmail("@example.org"))
         assertFalse(Feedback.isValidEmail("a".repeat(250) + "@b.org"))
     }
+
+    @Test
+    fun `the worker's answer tells whether to retry later`() {
+        assertEquals(Feedback.SendResult.SENT, Feedback.SendResult.of(201))
+        assertEquals(Feedback.SendResult.UNAVAILABLE, Feedback.SendResult.of(429))
+        assertEquals(Feedback.SendResult.UNAVAILABLE, Feedback.SendResult.of(503))
+        assertEquals(Feedback.SendResult.REJECTED, Feedback.SendResult.of(400))
+    }
 }

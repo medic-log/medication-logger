@@ -178,7 +178,9 @@
     <string name="feedback_send">Enviar</string>
     <string name="feedback_sent_contents">Se envían el título, el tema, el mensaje, la versión de la app y tu correo si lo das, nada de tus registros de medicación.</string>
     <string name="feedback_sent">Feedback enviado. ¡Gracias!</string>
-    <string name="feedback_send_failed">No se pudo enviar el feedback. Revisa tu conexión a internet y vuelve a intentarlo.</string>
+    <string name="feedback_send_offline">No se pudo enviar el feedback. Revisa tu conexión a internet y vuelve a intentarlo.</string>
+    <string name="feedback_send_unavailable">El servidor de feedback no está disponible ahora. Inténtalo más tarde.</string>
+    <string name="feedback_send_rejected">El servidor de feedback no aceptó este feedback. Actualiza la app y vuelve a intentarlo.</string>
     <string name="feedback_open_site">Abrir sitio web</string>
     <string name="feedback_open_site_title">¿Abrir el formulario de feedback en línea?</string>
     <string name="feedback_open">Abrir</string>

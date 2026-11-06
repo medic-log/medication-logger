@@ -33,7 +33,9 @@ const STRINGS = {
     'feedback.contents': 'Sends the title, topic, version, message and your email if you give one, nothing from your medication records.',
     'feedback.sending': 'Sending…',
     'feedback.sent': 'Feedback sent. Thank you!',
-    'feedback.failed': "Couldn't send feedback. Check your internet connection and try again.",
+    'feedback.offline': "Couldn't send feedback. Check your internet connection and try again.",
+    'feedback.unavailable': "The feedback server isn't available right now. Try again later.",
+    'feedback.rejected': "The feedback server didn't accept this feedback. Reload the page and try again.",
   },
   es: {
     language: 'Idioma',
@@ -65,7 +67,9 @@ const STRINGS = {
     'feedback.contents': 'Se envían el título, el tema, la versión, el mensaje y tu correo si lo das, nada de tus registros de medicación.',
     'feedback.sending': 'Enviando…',
     'feedback.sent': 'Feedback enviado. ¡Gracias!',
-    'feedback.failed': 'No se pudo enviar el feedback. Revisa tu conexión a internet y vuelve a intentarlo.',
+    'feedback.offline': 'No se pudo enviar el feedback. Revisa tu conexión a internet y vuelve a intentarlo.',
+    'feedback.unavailable': 'El servidor de feedback no está disponible ahora. Inténtalo más tarde.',
+    'feedback.rejected': 'El servidor de feedback no aceptó este feedback. Recarga la página y vuelve a intentarlo.',
   },
   pt: {
     language: 'Idioma',
@@ -97,7 +101,9 @@ const STRINGS = {
     'feedback.contents': 'São enviados o título, o assunto, a versão, a mensagem e seu e-mail se você informar, nada dos seus registros de medicação.',
     'feedback.sending': 'Enviando…',
     'feedback.sent': 'Feedback enviado. Obrigado!',
-    'feedback.failed': 'Não foi possível enviar o feedback. Verifique sua conexão com a internet e tente novamente.',
+    'feedback.offline': 'Não foi possível enviar o feedback. Verifique sua conexão com a internet e tente novamente.',
+    'feedback.unavailable': 'O servidor de feedback não está disponível agora. Tente novamente mais tarde.',
+    'feedback.rejected': 'O servidor de feedback não aceitou este feedback. Recarregue a página e tente novamente.',
   },
   nl: {
     language: 'Taal',
@@ -129,7 +135,9 @@ const STRINGS = {
     'feedback.contents': 'Verstuurt de titel, het onderwerp, de versie, het bericht en je e-mail als je die invult, niets uit je medicatiegegevens.',
     'feedback.sending': 'Versturen…',
     'feedback.sent': 'Feedback verstuurd. Bedankt!',
-    'feedback.failed': 'Feedback versturen is mislukt. Controleer je internetverbinding en probeer het opnieuw.',
+    'feedback.offline': 'Feedback versturen is mislukt. Controleer je internetverbinding en probeer het opnieuw.',
+    'feedback.unavailable': 'De feedbackserver is nu niet beschikbaar. Probeer het later opnieuw.',
+    'feedback.rejected': 'De feedbackserver heeft deze feedback niet geaccepteerd. Laad de pagina opnieuw en probeer het nog eens.',
   },
 };
 

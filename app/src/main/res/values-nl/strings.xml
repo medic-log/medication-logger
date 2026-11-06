@@ -173,7 +173,9 @@
     <string name="feedback_send">Versturen</string>
     <string name="feedback_sent_contents">Verstuurt de titel, het onderwerp, het bericht, de appversie en je e-mail als je die invult, niets uit je medicatiegegevens.</string>
     <string name="feedback_sent">Feedback verstuurd. Bedankt!</string>
-    <string name="feedback_send_failed">Feedback versturen is mislukt. Controleer je internetverbinding en probeer het opnieuw.</string>
+    <string name="feedback_send_offline">Feedback versturen is mislukt. Controleer je internetverbinding en probeer het opnieuw.</string>
+    <string name="feedback_send_unavailable">De feedbackserver is nu niet beschikbaar. Probeer het later opnieuw.</string>
+    <string name="feedback_send_rejected">De feedbackserver heeft deze feedback niet geaccepteerd. Werk de app bij en probeer het opnieuw.</string>
     <string name="feedback_open_site">Website openen</string>
     <string name="feedback_open_site_title">Het online feedbackformulier openen?</string>
     <string name="feedback_open">Openen</string>
