@@ -57,6 +57,7 @@
     <string name="prescriptions_empty_active">No hay recetas activas. Añade una con Nueva receta, o elige Todas para ver las terminadas.</string>
     <string name="prescriptions_empty_all">Aún no hay recetas. Añade una con Nueva receta.</string>
     <string name="prescriptions_prescribed_date">Recetada el %1$s</string>
+    <string name="prescriptions_medication">Medicamento: %1$s</string>
     <string name="prescriptions_prescribed_by">Recetada por: %1$s</string>
     <string name="prescriptions_ordered_date">Pedida: %1$s</string>
     <string name="prescriptions_bought_first">Primera compra: %1$s</string>
@@ -72,6 +73,7 @@
     <string name="prescriptions_status_ordered">Pedida</string>
     <string name="prescriptions_status_in_progress">En curso</string>
     <string name="prescriptions_status_finished">Terminada</string>
+    <string name="prescriptions_field_medication">Medicamento</string>
     <string name="prescriptions_field_doctor">Médico</string>
     <string name="prescriptions_field_pharmacy">Farmacia</string>
     <string name="prescriptions_field_pills_per_box">Pastillas por caja</string>
@@ -218,6 +220,7 @@
     <string name="tutorial_refill_time_text">¿Cuándo preparas las pastillas de la semana? El recordatorio de relleno llega entonces.</string>
     <string name="tutorial_done_title">Todo listo</string>
     <string name="tutorial_done_text">Empieza añadiendo tu receta. Ayuda en Ajustes vuelve a mostrar este recorrido.</string>
+    <string name="tutorial_sample_medication">Medicamento de ejemplo</string>
     <string name="tutorial_sample_doctor">Dra. Ejemplo</string>
     <string name="tutorial_sample_pharmacy">Farmacia Ejemplo</string>
     <string name="reminders_pill_title">Pastilla diaria</string>

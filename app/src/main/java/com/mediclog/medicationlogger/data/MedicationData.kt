@@ -54,6 +54,7 @@ data class MedicationData(
     fun addPrescription(draft: PrescriptionDraft, today: LocalDate): MedicationData = copy(
         prescriptions = prescriptions + Prescription(
             id = (prescriptions.maxOfOrNull { it.id } ?: 0) + 1,
+            medication = draft.medication,
             prescribedDate = today,
             prescribedBy = draft.prescribedBy,
             pharmacy = draft.pharmacy,
@@ -144,6 +145,7 @@ data class MedicationData(
     /** Replaces a prescription's fields. Its status follows from them, and its boxes stay as they are. */
     fun editPrescription(updated: Prescription): MedicationData {
         val isValid = prescriptions.any { it.id == updated.id } &&
+            updated.medication.isNotBlank() &&
             updated.prescribedBy.isNotBlank() &&
             updated.pharmacy.isNotBlank() &&
             updated.pillsPerBox > 0 &&

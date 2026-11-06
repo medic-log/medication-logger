@@ -30,6 +30,7 @@ class PrescriptionsScreenTest {
     fun `six box links fit in a row on a typical phone`() {
         val prescription = Prescription(
             id = 1,
+            medication = "Test medication",
             prescribedDate = date,
             prescribedBy = "Dr Test",
             pharmacy = "Test Pharmacy",

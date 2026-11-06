@@ -30,6 +30,7 @@ fun EditPrescriptionDialog(
     modifier: Modifier = Modifier,
 ) {
     var prescribedDate by rememberSaveable { mutableStateOf(prescription.prescribedDate.toString()) }
+    var medication by rememberSaveable { mutableStateOf(prescription.medication) }
     var doctor by rememberSaveable { mutableStateOf(prescription.prescribedBy) }
     var pharmacy by rememberSaveable { mutableStateOf(prescription.pharmacy) }
     var pillsPerBox by rememberSaveable { mutableStateOf(prescription.pillsPerBox.toString()) }
@@ -48,10 +49,11 @@ fun EditPrescriptionDialog(
     val areOptionalDatesValid = listOf(orderedDate, boughtFirstDate, boughtLastDate).all { it.isOptionalDate() }
     val updated = if (
         date != null && pills != null && boxes != null && total != null && bought != null &&
-        doctor.isNotBlank() && pharmacy.isNotBlank() && areOptionalDatesValid
+        medication.isNotBlank() && doctor.isNotBlank() && pharmacy.isNotBlank() && areOptionalDatesValid
     ) {
         prescription.copy(
             prescribedDate = date,
+            medication = medication.trim(),
             prescribedBy = doctor.trim(),
             pharmacy = pharmacy.trim(),
             pillsPerBox = pills,
@@ -84,6 +86,12 @@ fun EditPrescriptionDialog(
             { prescribedDate = it },
             R.string.edit_field_prescribed_date,
             isError = date == null,
+        )
+        DialogField(
+            medication,
+            { medication = it },
+            R.string.prescriptions_field_medication,
+            isError = medication.isBlank(),
         )
         DialogField(doctor, { doctor = it }, R.string.prescriptions_field_doctor, isError = doctor.isBlank())
         DialogField(pharmacy, { pharmacy = it }, R.string.prescriptions_field_pharmacy, isError = pharmacy.isBlank())
@@ -143,6 +151,7 @@ private fun EditPrescriptionDialogPreview() {
         EditPrescriptionDialog(
             prescription = Prescription(
                 id = 1,
+                medication = "Ibuprofen 600 mg",
                 prescribedDate = LocalDate.of(2026, 11, 2),
                 prescribedBy = "A doctor",
                 pharmacy = "Corner pharmacy",

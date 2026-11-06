@@ -20,6 +20,7 @@ object AppViewModelProvider {
         initializer {
             val application = application()
             val sampleDraft = PrescriptionDraft(
+                medication = application.getString(R.string.tutorial_sample_medication),
                 prescribedBy = application.getString(R.string.tutorial_sample_doctor),
                 pharmacy = application.getString(R.string.tutorial_sample_pharmacy),
                 pillsPerBox = 30,

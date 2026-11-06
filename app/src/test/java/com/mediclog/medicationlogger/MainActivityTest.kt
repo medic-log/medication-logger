@@ -80,6 +80,7 @@ class MainActivityTest {
 
     private fun addPrescription(pillsPerBox: Int, boxesPerRepetition: Int, repetitions: Int) {
         composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+        fillField(R.string.prescriptions_field_medication, "Test medication")
         fillField(R.string.prescriptions_field_doctor, "Dr Test")
         fillField(R.string.prescriptions_field_pharmacy, "Test Pharmacy")
         fillField(R.string.prescriptions_field_pills_per_box, pillsPerBox.toString())
@@ -244,6 +245,7 @@ class MainActivityTest {
     fun `save stays disabled until the prescription is complete`() {
         openTab(R.string.main_tab_prescriptions)
         composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
+        fillField(R.string.prescriptions_field_medication, "Test medication")
         fillField(R.string.prescriptions_field_doctor, "Dr Test")
 
         composeRule.onNodeWithText(string(R.string.prescriptions_save)).assertIsNotEnabled()

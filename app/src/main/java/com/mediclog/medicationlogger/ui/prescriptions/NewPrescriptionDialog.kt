@@ -31,13 +31,14 @@ fun NewPrescriptionDialog(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var medication by rememberSaveable { mutableStateOf(previous?.medication.orEmpty()) }
     var doctor by rememberSaveable { mutableStateOf(previous?.prescribedBy.orEmpty()) }
     var pharmacy by rememberSaveable { mutableStateOf(previous?.pharmacy.orEmpty()) }
     var pillsPerBox by rememberSaveable { mutableStateOf(previous?.pillsPerBox?.toString().orEmpty()) }
     var boxesPerRepetition by rememberSaveable { mutableStateOf(previous?.boxesPerRepetition?.toString().orEmpty()) }
     var repetitionsTotal by rememberSaveable { mutableStateOf(previous?.repetitionsTotal?.toString().orEmpty()) }
 
-    val draft = draftOrNull(doctor, pharmacy, pillsPerBox, boxesPerRepetition, repetitionsTotal)
+    val draft = draftOrNull(medication, doctor, pharmacy, pillsPerBox, boxesPerRepetition, repetitionsTotal)
     AlertDialog(
         modifier = modifier,
         onDismissRequest = onDismiss,
@@ -47,6 +48,7 @@ fun NewPrescriptionDialog(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                DialogField(medication, { medication = it }, R.string.prescriptions_field_medication)
                 DialogField(doctor, { doctor = it }, R.string.prescriptions_field_doctor)
                 DialogField(pharmacy, { pharmacy = it }, R.string.prescriptions_field_pharmacy)
                 DialogField(
@@ -83,6 +85,7 @@ fun NewPrescriptionDialog(
 }
 
 private fun draftOrNull(
+    medication: String,
     doctor: String,
     pharmacy: String,
     pillsPerBox: String,
@@ -92,8 +95,8 @@ private fun draftOrNull(
     val pills = pillsPerBox.positiveCountOrNull() ?: return null
     val boxes = boxesPerRepetition.positiveCountOrNull() ?: return null
     val repetitions = repetitionsTotal.positiveCountOrNull() ?: return null
-    if (doctor.isBlank() || pharmacy.isBlank()) return null
-    return PrescriptionDraft(doctor.trim(), pharmacy.trim(), pills, boxes, repetitions)
+    if (medication.isBlank() || doctor.isBlank() || pharmacy.isBlank()) return null
+    return PrescriptionDraft(medication.trim(), doctor.trim(), pharmacy.trim(), pills, boxes, repetitions)
 }
 
 @PreviewLightDark

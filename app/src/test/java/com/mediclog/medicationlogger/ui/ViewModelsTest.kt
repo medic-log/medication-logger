@@ -39,7 +39,7 @@ class ViewModelsTest {
     private val today = LocalDate.of(2026, 11, 2)
     private val clock = Clock.fixed(today.atTime(12, 0).toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
     private val store = FakeMedicationStore()
-    private val draft = PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1)
+    private val draft = PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 1)
     private lateinit var repository: MedicationRepository
 
     @Before

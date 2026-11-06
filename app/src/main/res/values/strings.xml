@@ -60,6 +60,7 @@
     <string name="prescriptions_empty_active">No active prescriptions. Add one with New prescription, or choose All to see finished ones.</string>
     <string name="prescriptions_empty_all">No prescriptions yet. Add one with New prescription.</string>
     <string name="prescriptions_prescribed_date">Prescribed %1$s</string>
+    <string name="prescriptions_medication">Medication: %1$s</string>
     <string name="prescriptions_prescribed_by">Prescribed by: %1$s</string>
     <string name="prescriptions_ordered_date">Ordered: %1$s</string>
     <string name="prescriptions_bought_first">First bought: %1$s</string>
@@ -75,6 +76,7 @@
     <string name="prescriptions_status_ordered">Ordered</string>
     <string name="prescriptions_status_in_progress">In progress</string>
     <string name="prescriptions_status_finished">Finished</string>
+    <string name="prescriptions_field_medication">Medication</string>
     <string name="prescriptions_field_doctor">Doctor</string>
     <string name="prescriptions_field_pharmacy">Pharmacy</string>
     <string name="prescriptions_field_pills_per_box">Pills per box</string>
@@ -216,6 +218,7 @@
     <string name="tutorial_refill_time_text">When do you set out your pills for the week? The refill reminder comes then.</string>
     <string name="tutorial_done_title">You\'re all set</string>
     <string name="tutorial_done_text">Start by adding your prescription. Help in Settings brings back this tour.</string>
+    <string name="tutorial_sample_medication">Example medication</string>
     <string name="tutorial_sample_doctor">Dr Example</string>
     <string name="tutorial_sample_pharmacy">Example Pharmacy</string>
     <string name="reminders_pill_title">Daily pill</string>

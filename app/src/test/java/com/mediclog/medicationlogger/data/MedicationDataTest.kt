@@ -16,7 +16,7 @@ class MedicationDataTest {
     private fun sunday(week: Int) = LocalDate.of(2026, 1, 4).plusWeeks(week.toLong()).atTime(21, 0)
 
     private fun draft(pillsPerBox: Int = 30, boxesPerRepetition: Int = 3, repetitionsTotal: Int = 2) =
-        PrescriptionDraft("Dr Test", "Test Pharmacy", pillsPerBox, boxesPerRepetition, repetitionsTotal)
+        PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", pillsPerBox, boxesPerRepetition, repetitionsTotal)
 
     private val prescribed = MedicationData().addPrescription(draft(), day1)
 

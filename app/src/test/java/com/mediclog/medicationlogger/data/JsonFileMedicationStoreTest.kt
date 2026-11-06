@@ -44,8 +44,8 @@ class JsonFileMedicationStoreTest {
                 expiryDaysBefore = 30,
             ),
         )
-            .addPrescription(PrescriptionDraft("Dr \"Quote\"", "Pharmacy, ünï", 7, 1, 2), day)
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
+            .addPrescription(PrescriptionDraft("Ibuprofen \"600\" mg", "Dr \"Quote\"", "Pharmacy, ünï", 7, 1, 2), day)
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 2, 1), day)
             .buyRepetition(1, day)
             .orderRepetition(1, day)
             .buyRepetition(2, day)
@@ -76,7 +76,7 @@ class JsonFileMedicationStoreTest {
     @Test
     fun `open and expiry dates load back`() {
         val data = MedicationData()
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 2, 1), day)
             .buyRepetition(1, day, listOf(YearMonth.of(2030, 1), YearMonth.of(2031, 6)))
             .refillWeekly(1, day.atTime(21, 0))
 
@@ -88,7 +88,7 @@ class JsonFileMedicationStoreTest {
     @Test
     fun `an expiry saved as a full date loads as its year and month`() {
         val data = MedicationData()
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1), day)
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 1), day)
             .buyRepetition(1, day, listOf(YearMonth.of(2030, 1)))
         JsonFileMedicationStore(file).save(data)
         val json = JSONObject(file.readText())
@@ -101,7 +101,7 @@ class JsonFileMedicationStoreTest {
     @Test
     fun `boxes and refills that lost their links load back without them`() {
         val data = MedicationData()
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 2, 1), day)
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 2, 1), day)
             .buyRepetition(1, day)
             .refillWeekly(1, day.atTime(21, 0))
             .refillWeekly(2, day.atTime(21, 0))
@@ -115,7 +115,7 @@ class JsonFileMedicationStoreTest {
 
     @Test
     fun `a file saved before the pill reminder existed still loads`() {
-        val data = MedicationData().addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1), day)
+        val data = MedicationData().addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 1), day)
         JsonFileMedicationStore(file).save(data)
         val json = JSONObject(file.readText())
         json.getJSONObject("reminderSettings").apply {

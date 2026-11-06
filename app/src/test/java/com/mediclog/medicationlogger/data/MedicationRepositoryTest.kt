@@ -16,7 +16,7 @@ class MedicationRepositoryTest {
     private val today = LocalDate.of(2026, 11, 2)
     private val clock = Clock.fixed(today.atStartOfDay().toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
     private val store = FakeMedicationStore()
-    private val draft = PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 1)
+    private val draft = PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 1)
 
     private fun repository() = MedicationRepository(store, clock, CoroutineScope(UnconfinedTestDispatcher()))
 
@@ -47,7 +47,7 @@ class MedicationRepositoryTest {
         store.saved = MedicationData(reminderSettings = settings).finishTutorial()
         val repository = repository()
         repository.addPrescription(draft)
-        val records = MedicationData().addPrescription(PrescriptionDraft("Dr Other", "Other", 7, 1, 1), today)
+        val records = MedicationData().addPrescription(PrescriptionDraft("Test medication", "Dr Other", "Other", 7, 1, 1), today)
 
         repository.replaceRecords(records)
 

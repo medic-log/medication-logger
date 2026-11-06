@@ -57,6 +57,7 @@
     <string name="prescriptions_empty_active">Nenhuma receita ativa. Adicione uma com Nova receita, ou escolha Todas para ver as concluídas.</string>
     <string name="prescriptions_empty_all">Ainda não há receitas. Adicione uma com Nova receita.</string>
     <string name="prescriptions_prescribed_date">Receitada em %1$s</string>
+    <string name="prescriptions_medication">Medicamento: %1$s</string>
     <string name="prescriptions_prescribed_by">Receitada por: %1$s</string>
     <string name="prescriptions_ordered_date">Encomendada: %1$s</string>
     <string name="prescriptions_bought_first">Primeira compra: %1$s</string>
@@ -72,6 +73,7 @@
     <string name="prescriptions_status_ordered">Encomendada</string>
     <string name="prescriptions_status_in_progress">Em andamento</string>
     <string name="prescriptions_status_finished">Concluída</string>
+    <string name="prescriptions_field_medication">Medicamento</string>
     <string name="prescriptions_field_doctor">Médico</string>
     <string name="prescriptions_field_pharmacy">Farmácia</string>
     <string name="prescriptions_field_pills_per_box">Comprimidos por caixa</string>
@@ -218,6 +220,7 @@
     <string name="tutorial_refill_time_text">Quando você separa os comprimidos da semana? O lembrete de reposição chega nesse momento.</string>
     <string name="tutorial_done_title">Tudo pronto</string>
     <string name="tutorial_done_text">Comece adicionando sua receita. Ajuda em Configurações mostra este tour de novo.</string>
+    <string name="tutorial_sample_medication">Medicamento de exemplo</string>
     <string name="tutorial_sample_doctor">Dra. Exemplo</string>
     <string name="tutorial_sample_pharmacy">Farmácia Exemplo</string>
     <string name="reminders_pill_title">Comprimido diário</string>

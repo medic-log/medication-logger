@@ -89,7 +89,7 @@ class ReminderDeliveryTest {
 
     @Test
     fun `a run-out notification says a new prescription is needed when no repetition is left`() {
-        app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1))
+        app.repository.addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 1))
         app.repository.buyRepetition(app.repository.data.value.prescriptions.single().id)
         app.repository.updateReminderSettings(ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 365))
 
@@ -106,7 +106,7 @@ class ReminderDeliveryTest {
 
     @Test
     fun `a run-out notification says to get a repetition when one is left`() {
-        app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 2))
+        app.repository.addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 2))
         app.repository.buyRepetition(app.repository.data.value.prescriptions.single().id)
         app.repository.updateReminderSettings(ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 365))
 
@@ -135,7 +135,7 @@ class ReminderDeliveryTest {
 
     @Test
     fun `a firing expiry alarm names the box`() {
-        app.repository.addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1))
+        app.repository.addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 1))
         val prescription = app.repository.data.value.prescriptions.single()
         app.repository.buyRepetition(prescription.id, listOf(YearMonth.now()))
         app.repository.updateReminderSettings(AllRemindersOff.copy(isExpiryEnabled = true))

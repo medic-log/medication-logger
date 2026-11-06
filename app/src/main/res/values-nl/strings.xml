@@ -57,6 +57,7 @@
     <string name="prescriptions_empty_active">Geen actieve recepten. Voeg er een toe met Nieuw recept, of kies Alle om afgeronde te zien.</string>
     <string name="prescriptions_empty_all">Nog geen recepten. Voeg er een toe met Nieuw recept.</string>
     <string name="prescriptions_prescribed_date">Voorgeschreven op %1$s</string>
+    <string name="prescriptions_medication">Medicijn: %1$s</string>
     <string name="prescriptions_prescribed_by">Voorgeschreven door: %1$s</string>
     <string name="prescriptions_ordered_date">Besteld: %1$s</string>
     <string name="prescriptions_bought_first">Eerst gekocht: %1$s</string>
@@ -72,6 +73,7 @@
     <string name="prescriptions_status_ordered">Besteld</string>
     <string name="prescriptions_status_in_progress">Bezig</string>
     <string name="prescriptions_status_finished">Afgerond</string>
+    <string name="prescriptions_field_medication">Medicijn</string>
     <string name="prescriptions_field_doctor">Arts</string>
     <string name="prescriptions_field_pharmacy">Apotheek</string>
     <string name="prescriptions_field_pills_per_box">Pillen per doosje</string>
@@ -213,6 +215,7 @@
     <string name="tutorial_refill_time_text">Wanneer zet je je pillen voor de week klaar? De aanvulherinnering komt dan.</string>
     <string name="tutorial_done_title">Je bent klaar</string>
     <string name="tutorial_done_text">Begin met het toevoegen van je recept. Help in Instellingen toont deze rondleiding opnieuw.</string>
+    <string name="tutorial_sample_medication">Voorbeeldmedicijn</string>
     <string name="tutorial_sample_doctor">Dr. Voorbeeld</string>
     <string name="tutorial_sample_pharmacy">Voorbeeldapotheek</string>
     <string name="reminders_pill_title">Dagelijkse pil</string>

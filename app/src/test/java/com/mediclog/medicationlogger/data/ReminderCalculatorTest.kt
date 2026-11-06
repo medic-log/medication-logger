@@ -17,7 +17,7 @@ class ReminderCalculatorTest {
 
     // Before the pill time, so today's dose is still to come
     private val morning = today.atTime(7, 0)
-    private val draft = PrescriptionDraft("Dr Test", "Test Pharmacy", 30, 1, 2)
+    private val draft = PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 2)
 
     @Test
     fun `refill reminder is next on the chosen weekday and time`() {
@@ -207,7 +207,7 @@ class ReminderCalculatorTest {
     fun `run-out reminder is due daily once the date is close`() {
         val settings = ReminderSettings(isRunOutEnabled = true, runOutDaysBefore = 14)
         val data = MedicationData(reminderSettings = settings)
-            .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 1), today)
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 1), today)
 
         val now = today.atTime(10, 0)
         assertTrue(ReminderCalculator.isDue(ReminderKind.RUN_OUT, data, now))

@@ -225,6 +225,7 @@ private fun PrescriptionCard(
                 modifier = Modifier.padding(start = 8.dp),
             )
         }
+        Detail(stringResource(R.string.prescriptions_medication, prescription.medication))
         Detail(stringResource(R.string.prescriptions_prescribed_by, prescription.prescribedBy))
         Detail(stringResource(R.string.pharmacy_label, prescription.pharmacy))
         Detail(stringResource(R.string.prescriptions_per_box, prescription.pillsPerBox))
@@ -316,6 +317,7 @@ private fun PrescriptionsPreviewContent(state: PrescriptionsUiState) {
 private fun PrescriptionsScreenPreview() {
     val prescription = Prescription(
         id = 1,
+        medication = "Ibuprofen 600 mg",
         prescribedDate = LocalDate.of(2026, 11, 2),
         prescribedBy = "A doctor",
         pharmacy = "Corner pharmacy",

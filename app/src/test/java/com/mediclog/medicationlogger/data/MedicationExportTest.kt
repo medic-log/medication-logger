@@ -15,7 +15,7 @@ import java.time.LocalTime
 class MedicationExportTest {
     private val day = LocalDate.of(2026, 11, 2)
     private val records = MedicationData()
-        .addPrescription(PrescriptionDraft("Dr Test", "Test Pharmacy", 7, 1, 2), day)
+        .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 2), day)
         .buyRepetition(1, day)
         .refillWeekly(1, day.atTime(21, 0))
         .logMiss(MedicationMiss.Kind.MISSED, day.atTime(21, 0))

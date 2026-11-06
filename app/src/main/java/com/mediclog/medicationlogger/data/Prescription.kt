@@ -5,6 +5,7 @@ import java.time.LocalDate
 /** A prescription, bought in repetitions of boxes. */
 data class Prescription(
     val id: Long,
+    val medication: String,
     val prescribedDate: LocalDate,
     val prescribedBy: String,
     val pharmacy: String,
