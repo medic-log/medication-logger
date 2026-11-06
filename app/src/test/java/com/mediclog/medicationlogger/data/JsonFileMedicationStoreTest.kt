@@ -128,6 +128,18 @@ class JsonFileMedicationStoreTest {
     }
 
     @Test
+    fun `a prescription saved before it had a medication loads with a blank one`() {
+        val data = MedicationData()
+            .addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 1, 1), day)
+        JsonFileMedicationStore(file).save(data)
+        val json = JSONObject(file.readText())
+        json.getJSONArray("prescriptions").getJSONObject(0).remove("medication")
+        file.writeText(json.toString())
+
+        assertEquals("", JsonFileMedicationStore(file).load().prescriptions.single().medication)
+    }
+
+    @Test
     fun `an unreadable file is kept aside instead of being overwritten`() {
         file.writeText("not json")
 

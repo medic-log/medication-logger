@@ -93,7 +93,8 @@ private fun Prescription.toJson() = JSONObject()
 
 private fun JSONObject.toPrescription() = Prescription(
     id = getLong("id"),
-    medication = getString("medication"),
+    // Files and exports from before it was added don't have it
+    medication = optString("medication"),
     prescribedDate = LocalDate.parse(getString("prescribedDate")),
     prescribedBy = getString("prescribedBy"),
     pharmacy = getString("pharmacy"),
