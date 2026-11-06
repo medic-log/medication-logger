@@ -37,6 +37,7 @@ import com.mediclog.medicationlogger.ui.boxes.BoxesRoute
 import com.mediclog.medicationlogger.ui.components.LocalTutorialTargets
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
 import com.mediclog.medicationlogger.ui.components.TutorialTargets
+import com.mediclog.medicationlogger.ui.components.UpdatePrompt
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsRoute
 import com.mediclog.medicationlogger.ui.refills.RefillsRoute
@@ -81,6 +82,7 @@ fun MainRoute(
                 }
             },
         ) { tab -> TabContent(tab, state, viewModel) }
+        UpdatePrompt(state.availableUpdate, onDismiss = viewModel::dismissUpdate)
     }
 }
 

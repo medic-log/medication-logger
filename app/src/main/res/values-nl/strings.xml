@@ -137,8 +137,9 @@
     <string name="settings_help">Help</string>
     <string name="settings_update">Bijwerken</string>
     <string name="settings_update_latest">Je hebt de nieuwste versie</string>
-    <string name="settings_update_confirm_title">Bijwerken naar versie %1$s?</string>
-    <string name="settings_update_confirm_text">Je hebt versie %1$s. De nieuwe versie wordt gedownload, daarna vraagt Android je om hem te installeren. Je records en instellingen blijven bewaard.</string>
+    <string name="settings_update_confirm_title">Nieuwe versie beschikbaar</string>
+    <string name="settings_update_confirm_text">Versie %1$s is beschikbaar; je hebt %2$s. Hij wordt gedownload, daarna vraagt Android je om hem te installeren. Je records en instellingen blijven bewaard.</string>
+    <string name="settings_update_later">Niet nu</string>
     <string name="settings_update_downloading">Versie %1$s downloaden</string>
     <string name="settings_update_download_failed">De update kon niet worden gedownload. Controleer je verbinding en probeer het opnieuw.</string>
     <string name="settings_update_install_failed">De update kon niet worden geïnstalleerd. Probeer het opnieuw, of download hem van de website.</string>

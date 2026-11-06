@@ -5,14 +5,18 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.MedicationLoggerApplication
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.LatestRelease
 import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.ui.boxes.BoxesViewModel
 import com.mediclog.medicationlogger.ui.main.MainViewModel
 import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsViewModel
 import com.mediclog.medicationlogger.ui.refills.RefillsViewModel
 import com.mediclog.medicationlogger.ui.reminders.RemindersViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** Creates the app's ViewModels with what they need from the application. */
 object AppViewModelProvider {
@@ -27,7 +31,15 @@ object AppViewModelProvider {
                 boxesPerRepetition = 2,
                 repetitionsTotal = 3,
             )
-            MainViewModel(application.repository, application.clock, sampleDraft)
+            MainViewModel(application.repository, application.clock, sampleDraft) {
+                // The debug build can't install the release, and its tests mustn't reach the network
+                if (BuildConfig.DEBUG) {
+                    null
+                } else {
+                    withContext(Dispatchers.IO) { LatestRelease.fetch(BuildConfig.SITE_URL) }
+                        ?.takeIf { it.versionCode > BuildConfig.VERSION_CODE }
+                }
+            }
         }
         initializer { RemindersViewModel(application().repository, application().clock) }
         initializer { PrescriptionsViewModel(application().repository) }

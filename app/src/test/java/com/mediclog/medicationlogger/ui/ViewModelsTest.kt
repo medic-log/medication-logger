@@ -2,6 +2,7 @@ package com.mediclog.medicationlogger.ui
 
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.FakeMedicationStore
+import com.mediclog.medicationlogger.data.LatestRelease
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.MedicationRepository
@@ -52,6 +53,18 @@ class ViewModelsTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `a newer version found at startup is offered after the tutorial until dismissed`() {
+        val release = LatestRelease(99, "9.9.9", "https://example.org/app.apk", "00")
+        val viewModel = MainViewModel(repository, clock, draft) { release }
+        assertNull(viewModel.uiState.value.availableUpdate)
+
+        viewModel.finishTutorial()
+        assertEquals(release, viewModel.uiState.value.availableUpdate)
+        viewModel.dismissUpdate()
+        assertNull(viewModel.uiState.value.availableUpdate)
     }
 
     @Test

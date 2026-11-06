@@ -24,7 +24,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -63,12 +62,12 @@ import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.SquircleShape
 import com.mediclog.medicationlogger.ui.components.TimeSelector
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
+import com.mediclog.medicationlogger.ui.components.UpdatePrompt
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.components.outlinedBorder
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
-import com.mediclog.medicationlogger.update.ApkInstaller
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -170,37 +169,9 @@ fun RemindersRoute(
             onDismiss = { isLanguageShown = false },
         )
     }
-    // The version being downloaded, while the update is downloading
-    var downloadingVersion by remember { mutableStateOf<String?>(null) }
-    downloadingVersion?.let { UpdateDownloadDialog(it) }
-    // A newer version found, waiting for the user to confirm downloading it
+    // A newer version found, waiting for the user to choose to update
     var availableUpdate by remember { mutableStateOf<LatestRelease?>(null) }
-    availableUpdate?.let { release ->
-        AlertDialog(
-            onDismissRequest = { availableUpdate = null },
-            title = { Text(stringResource(R.string.settings_update_confirm_title, release.versionName)) },
-            text = { Text(stringResource(R.string.settings_update_confirm_text, BuildConfig.VERSION_NAME)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        availableUpdate = null
-                        scope.launch {
-                            downloadingVersion = release.versionName
-                            val isStarted = try {
-                                ApkInstaller.install(context, release)
-                            } finally {
-                                downloadingVersion = null
-                            }
-                            if (!isStarted) showMessage(R.string.settings_update_download_failed)
-                        }
-                    },
-                ) { Text(stringResource(R.string.settings_update)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { availableUpdate = null }) { Text(stringResource(R.string.edit_cancel)) }
-            },
-        )
-    }
+    UpdatePrompt(availableUpdate, onDismiss = { availableUpdate = null })
     if (isImportConfirmShown) {
         AlertDialog(
             onDismissRequest = { isImportConfirmShown = false },
@@ -432,18 +403,6 @@ fun SettingsScreen(
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
     }
-}
-
-/** Shown while an update downloads, before the system asks to install it; it can't be dismissed. */
-@Composable
-private fun UpdateDownloadDialog(versionName: String, modifier: Modifier = Modifier) {
-    AlertDialog(
-        onDismissRequest = {},
-        confirmButton = {},
-        modifier = modifier,
-        title = { Text(stringResource(R.string.settings_update_downloading, versionName)) },
-        text = { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) },
-    )
 }
 
 @Composable

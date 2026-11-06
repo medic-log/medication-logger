@@ -140,8 +140,9 @@
     <string name="settings_help">Help</string>
     <string name="settings_update">Update</string>
     <string name="settings_update_latest">You have the latest version</string>
-    <string name="settings_update_confirm_title">Update to version %1$s?</string>
-    <string name="settings_update_confirm_text">You have version %1$s. The new version downloads, then Android asks you to install it. Your records and settings are kept.</string>
+    <string name="settings_update_confirm_title">New version available</string>
+    <string name="settings_update_confirm_text">Version %1$s is available; you have %2$s. It downloads, then Android asks you to install it. Your records and settings are kept.</string>
+    <string name="settings_update_later">Not now</string>
     <string name="settings_update_downloading">Downloading version %1$s</string>
     <string name="settings_update_download_failed">Couldn\'t download the update. Check your connection and try again.</string>
     <string name="settings_update_install_failed">Couldn\'t install the update. Try again, or download it from the website.</string>

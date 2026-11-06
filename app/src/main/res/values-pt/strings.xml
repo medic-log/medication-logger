@@ -142,8 +142,9 @@
     <string name="settings_help">Ajuda</string>
     <string name="settings_update">Atualizar</string>
     <string name="settings_update_latest">Você tem a versão mais recente</string>
-    <string name="settings_update_confirm_title">Atualizar para a versão %1$s?</string>
-    <string name="settings_update_confirm_text">Você tem a versão %1$s. A nova versão é baixada e o Android pede para instalá-la. Seus registros e configurações são mantidos.</string>
+    <string name="settings_update_confirm_title">Nova versão disponível</string>
+    <string name="settings_update_confirm_text">A versão %1$s está disponível; você tem a %2$s. Ela é baixada e o Android pede para instalá-la. Seus registros e configurações são mantidos.</string>
+    <string name="settings_update_later">Agora não</string>
     <string name="settings_update_downloading">Baixando a versão %1$s</string>
     <string name="settings_update_download_failed">Não foi possível baixar a atualização. Verifique sua conexão e tente de novo.</string>
     <string name="settings_update_install_failed">Não foi possível instalar a atualização. Tente de novo ou baixe-a no site.</string>
