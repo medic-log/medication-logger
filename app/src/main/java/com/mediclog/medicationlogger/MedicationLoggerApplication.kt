@@ -2,6 +2,8 @@ package com.mediclog.medicationlogger
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.ui.AndroidComposeUiFlags
+import androidx.compose.ui.ExperimentalComposeUiApi
 import com.mediclog.medicationlogger.data.JsonFileMedicationStore
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.reminders.ReminderScheduler
@@ -35,6 +37,10 @@ class MedicationLoggerApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // With the default scheduler, moving between a dialog's text fields hides the keyboard for the old field before
+        // the new one asks for it, so it closes and reopens and the dialog jumps. Choreographer's frame batches both.
+        @OptIn(ExperimentalComposeUiApi::class)
+        AndroidComposeUiFlags.isOutOfFrameSchedulerForTextInputEventsEnabled = false
         AppLanguage.applyDefault(this)
         MainScope().launch {
             repository.data.collect(reminderScheduler::reschedule)
