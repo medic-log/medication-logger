@@ -191,6 +191,7 @@
     <string name="settings_share_title">Compartilhar o app</string>
     <string name="settings_share_qr_description">Código QR com o link para baixar o app</string>
     <string name="settings_share_close">Fechar</string>
+    <string name="settings_share_open_site_title">Abrir o site do app?</string>
     <string name="settings_version">Versão %1$s</string>
     <string name="tutorial_progress">Passo %1$d de %2$d</string>
     <string name="tutorial_skip">Pular</string>
