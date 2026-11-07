@@ -28,6 +28,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
       - name: Check tag matches versionName
         run: |
           version=$(sed -n 's/^ *versionName = "\(.*\)"/\1/p' app/build.gradle.kts)
@@ -63,13 +69,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" "medication-logger-$GITHUB_REF_NAME.apk" medication-logger.apk --generate-notes
 
-      # The download site: site/index.html, its i18n.js, logo.svg and site/feedback/ plus the release's APK and latest.json, which the app's Update button reads
+      # The web app of the same version, from the same strings and version as the APK
+      - name: Build web app
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      # The download site: site/index.html, its i18n.js, logo.svg and site/feedback/ plus the release's APK and latest.json, which the app's Update button reads, and the web app under app/
       - name: Build download site
         run: |
           version_code=$(sed -n 's/^ *versionCode = \([0-9]*\)/\1/p' app/build.gradle.kts)
           mkdir -p _site
           cp site/index.html site/i18n.js site/logo.svg medication-logger.apk _site/
           cp -r site/feedback _site/
+          cp -r web/dist _site/app
           jq -n \
             --argjson versionCode "$version_code" \
             --arg versionName "${GITHUB_REF_NAME#v}" \

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# The checks CI runs: debug build, lint and JVM unit tests. Used by CI, the pre-push hook and /check.
+# The checks CI runs: debug build, lint and JVM unit tests, then the web app's unit tests and build when its
+# dependencies are installed (cd web && npm ci). Used by CI, the pre-push hook and /check.
 # On failure, prints the lint errors and failed tests so there's no need to open the HTML reports.
 # Exit codes: 0 all passed, 1 something failed.
 set -uo pipefail
@@ -7,8 +8,18 @@ cd "$(dirname "$0")/.."
 
 # --continue so one failure (e.g. lint) doesn't hide another (e.g. a failing test);
 # --quiet keeps the log to errors, which are summarized below
+web_failed=0
+if [[ -d web/node_modules ]]; then
+    # Quiet unless something fails; the browser tests run in CI (cd web && npm run e2e)
+    if ! web_log=$(cd web && npm test --silent 2>&1 && npm run build --silent 2>&1); then
+        echo "== Web app checks failed"
+        echo "$web_log" | grep -vE '^\s*$' | tail -40
+        web_failed=1
+    fi
+fi
+
 if ./gradlew assembleDebug lint testDebugUnitTest --continue --quiet "$@"; then
-    exit 0
+    exit $web_failed
 fi
 
 lint=app/build/reports/lint-results-debug.txt

@@ -66,6 +66,7 @@ import com.mediclog.medicationlogger.ui.components.UpdatePrompt
 import com.mediclog.medicationlogger.ui.components.WeekdaySelector
 import com.mediclog.medicationlogger.ui.components.displayName
 import com.mediclog.medicationlogger.ui.components.outlinedBorder
+import com.mediclog.medicationlogger.ui.components.outlinedButtonColors
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import kotlinx.coroutines.Dispatchers
@@ -452,7 +453,7 @@ private fun NotificationsOffNotice(onOpenSettings: () -> Unit, modifier: Modifie
                 text = stringResource(R.string.reminders_notifications_off),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            OutlinedButton(onClick = onOpenSettings, border = outlinedBorder()) {
+            OutlinedButton(onClick = onOpenSettings, border = outlinedBorder(), colors = outlinedButtonColors()) {
                 Text(stringResource(R.string.reminders_open_settings))
             }
         }

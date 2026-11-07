@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Logs your medication prescriptions, pill boxes, and weekly refills, with reminders for refills, pickups, and running out. Single-module Android app (`:app`, package `com.mediclog.medicationlogger`), Kotlin + Compose, minSdk 28, target SDK 37. README.md is the user-facing spec.
+Logs your medication prescriptions, pill boxes, and weekly refills, with reminders for refills, pickups, and running out. Single-module Android app (`:app`, package `com.mediclog.medicationlogger`), Kotlin + Compose, minSdk 28, target SDK 37, plus the same app for the browser in `web/` (React + TypeScript + Vite, an installable PWA). README.md is the user-facing spec.
 
 Detailed standards load automatically from `.claude/rules/` when you work on matching files: Kotlin and architecture, UI and design, tests, Gradle.
 
@@ -19,6 +19,8 @@ Detailed standards load automatically from `.claude/rules/` when you work on mat
 
 - `./scripts/check.sh`: build, lint and unit tests, as CI and the pre-push hook do (`/check` runs it).
 - `./gradlew testDebugUnitTest --tests '*MainActivityTest'`: one test class.
+- `scripts/web.sh` (or the "Web app" run configuration): the web app's dev server, opened in the browser; `--preview` serves the production build.
+- `cd web && npm test` (Vitest), `npm run e2e` (Playwright against the build; `CHROMIUM_PATH=/usr/bin/chromium-browser` uses the system Chromium), `npm run dev`.
 - Releases: `/release` (bumps the version, tags, pushes; `release.yml` signs and publishes).
 
 ## Map and non-obvious constraints
@@ -35,4 +37,5 @@ Keep this to what isn't obvious from the code; add an entry when a new file or c
 - `update/`: `MainViewModel` checks `latest.json` at each start (release builds only, so not in tests) and `ui/components/UpdatePrompt` offers the newer version, after the tutorial; Settings' Update uses the same prompt. Update streams `$SITE_URL/medication-logger.apk` into a `PackageInstaller` session, checks it against `latest.json`'s `sha256`, and `InstallResultReceiver` opens the system's install prompt, then reopens the updated app (a notification to tap on Android 10+, which blocks background starts).
 - Debug build: app id `com.mediclog.medicationlogger.debug` and version `-dev`, so it installs next to the release; `src/debug/res` renames it "Medication logger dev" and adds a `</>` mark to the icon. Its Update can't install the release APK (other package).
 - `site/index.html`: the download page. `site/feedback/`: a feedback form. `site/i18n.js` translates both into the app's languages (`?lang=`, then the page's language menu, then the browser's); keep it in step with the app's strings and copy new site files in `release.yml`. The form is like the app's `FeedbackDialog`; both post to a Cloudflare Worker (`FEEDBACK_URL`), kept outside this repo, which opens issues in the private `medic-log/feedback` repo. `release.yml` deploys it to GitHub Pages (`https://medic-log.github.io/medication-logger/`) with the release APK and `latest.json`.
+- `web/`: a port, not shared code, so the Android app stays as it is. `src/data` mirrors `data/` function by function (dates as ISO strings, a LocalDateTime as local epoch minutes), and its `*.test.ts` and `e2e/` port the JVM tests: a behavior change goes in both apps and both test suites. `android-resources.ts` serves `strings.xml` (all languages), the `ic_*` drawables and `versionName`/`versionCode` as `virtual:android-resources`, so Android strings need no copy; only texts that must differ on the web are in `src/i18n/webStrings.ts`, in all four languages. Data is the Android file's JSON in `localStorage["medication-data"]`, so exports move between the apps. Reminders (`src/reminders/ReminderScheduler`) fire only while the app is open, from `nextTrigger`; with no backend there's no push. Updates: the build writes `version.json`, compared like `latest.json`, and the service worker switches on Update. Language is `localStorage["app-language"]`, never the browser's. `release.yml` deploys it to `app/` on the Pages site; `site/index.html` links to `app/?install`, which opens the install dialog.
 - Tests: `MainActivityTest` runs tablet-sized, because under Robolectric a Material text field in a dialog never goes idle at some window sizes, including 412x915 (it fails after a 60 s timeout, with `AppNotIdleException`).

@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +44,12 @@ import com.mediclog.medicationlogger.ui.prescriptions.PrescriptionsRoute
 import com.mediclog.medicationlogger.ui.refills.RefillsRoute
 import com.mediclog.medicationlogger.ui.reminders.RemindersRoute
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
+
+// From the 24 dp icon to the 64 x 32 dp indicator Material draws around it
+private val INDICATOR_OUTSET = DpSize(20.dp, 4.dp)
+
+// From the tabs, which fill the bar's 80 dp, in to the content's 16 dp margins and to 12 dp around icons and labels
+private val TAB_BAR_OUTSET = DpSize((-16).dp, (-12).dp)
 
 /** The app's frame, with its ViewModel: tabs and what's in them. */
 @Composable
@@ -140,17 +147,25 @@ private fun MainScaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            NavigationBar(modifier = background.tutorialTarget(TutorialTarget.TAB_BAR)) {
+            NavigationBar(modifier = background) {
                 AppTab.entries.forEach { tab ->
                     val isMain = tab == AppTab.BOXES
                     NavigationBarItem(
                         selected = tab == state.selectedTab,
                         onClick = { onSelectTab(tab) },
-                        modifier = Modifier.tutorialTarget(tab.tutorialTarget),
-                        icon = { Icon(painter = painterResource(tab.iconRes), contentDescription = null) },
+                        // The tabs together are spotlit as wide as the content, each tab around its indicator and label
+                        modifier = Modifier.tutorialTarget(TutorialTarget.TAB_BAR, TAB_BAR_OUTSET),
+                        icon = {
+                            Icon(
+                                painter = painterResource(tab.iconRes),
+                                contentDescription = null,
+                                modifier = Modifier.tutorialTarget(tab.tutorialTarget, INDICATOR_OUTSET),
+                            )
+                        },
                         label = {
                             Text(
                                 text = stringResource(tab.labelRes),
+                                modifier = Modifier.tutorialTarget(tab.tutorialTarget),
                                 fontWeight = if (isMain) FontWeight.Bold else null,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,

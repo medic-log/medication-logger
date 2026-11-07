@@ -45,7 +45,7 @@ fun MonthSelector(
     canClear: Boolean = false,
 ) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
-    OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier, border = outlinedBorder()) {
+    OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier, border = outlinedBorder(), colors = outlinedButtonColors()) {
         Text(
             if (month != null) {
                 stringResource(R.string.month_selector_value, label, month.toString())

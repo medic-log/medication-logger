@@ -20,6 +20,8 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.components.QrCode
+import com.mediclog.medicationlogger.ui.components.outlinedBorder
+import com.mediclog.medicationlogger.ui.components.outlinedButtonColors
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 
 private val QR_SIZE = 200.dp
@@ -47,7 +49,7 @@ fun ShareDialog(
                     contentDescription = stringResource(R.string.settings_share_qr_description),
                     modifier = Modifier.size(QR_SIZE),
                 )
-                OutlinedButton(onClick = onShare) {
+                OutlinedButton(onClick = onShare, border = outlinedBorder(), colors = outlinedButtonColors()) {
                     Icon(painterResource(R.drawable.ic_share), contentDescription = null)
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.settings_share))

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Medication logger</title>
   <link rel="icon" href="logo.svg" type="image/svg+xml">
-  <meta name="description" data-i18n-content="index.description" content="Track your prescriptions, pill boxes and refills, with reminders. Android app.">
+  <meta name="description" data-i18n-content="index.description" content="Track your prescriptions, pill boxes and refills, with reminders. Android app and web app.">
   <style>
     :root {
       --bg: #1a1110; --surface: #271d1c; --on-surface: #f1dedc; --muted: #d8c2be;
@@ -26,6 +26,8 @@
       background: var(--primary); color: var(--on-primary); font-weight: 600; text-decoration: none;
     }
     .download:focus-visible { outline: 3px solid var(--on-surface); outline-offset: 3px; }
+    /* The web app's button: outlined, next to the APK's filled one */
+    .download.web { background: transparent; color: var(--primary); border: 2px solid var(--primary); padding: calc(.9rem - 2px) calc(1.6rem - 2px); }
     #version { color: var(--on-surface); }
     details { margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--outline); border-radius: 12px; background: var(--surface); }
     summary { cursor: pointer; font-weight: 600; }
@@ -66,6 +68,9 @@
   <a class="download" href="medication-logger.apk" download data-i18n="index.download">Download APK (Android)</a>
   <p><span data-i18n="index.latest">Latest version:</span> <span id="version">…</span><br><span data-i18n="index.requires">Requires Android 9 or newer.</span></p>
 
+  <a class="download web" href="app/?install" data-i18n="index.installWeb">Install web app (any device)</a>
+  <p data-i18n="index.webNote">Runs in your browser on any phone, tablet or computer, also offline. Your data stays on that device.</p>
+
   <details>
     <summary data-i18n="index.install">How to install</summary>
     <ol>
@@ -74,6 +79,14 @@
       <li data-i18n="index.step3">Tap Install. To update later, download and install the new version the same way; your data is kept.</li>
     </ol>
     <p id="checksum" hidden>SHA-256: <code id="sha256"></code></p>
+  </details>
+  <details>
+    <summary data-i18n="index.installWebHow">How to install the web app</summary>
+    <ol>
+      <li data-i18n="index.webStep1">Open the web app with the button above.</li>
+      <li data-i18n="index.webStep2">Tap Install when your browser offers it. In Safari on iPhone or iPad, tap Share, then Add to Home Screen.</li>
+      <li data-i18n="index.webStep3">Open it from your home screen or app list. To move your records from the Android app, use Export there and Import in the web app.</li>
+    </ol>
   </details>
   <a class="source" href="https://github.com/medic-log/medication-logger">
     <!-- The GitHub mark -->

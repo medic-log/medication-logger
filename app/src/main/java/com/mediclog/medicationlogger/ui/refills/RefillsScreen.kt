@@ -51,6 +51,7 @@ import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.TimePickerDialog
 import com.mediclog.medicationlogger.ui.components.TutorialTarget
 import com.mediclog.medicationlogger.ui.components.outlinedBorder
+import com.mediclog.medicationlogger.ui.components.outlinedButtonColors
 import com.mediclog.medicationlogger.ui.components.tutorialTarget
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
@@ -223,10 +224,20 @@ private fun DoseLogButtons(onLogMissed: () -> Unit, onLogDelayed: () -> Unit, mo
             horizontalArrangement = Arrangement.spacedBy(DOSE_BUTTON_SPACING, Alignment.CenterHorizontally),
         ) {
             val buttonModifier = if (isWrapping) Modifier.weight(1f) else Modifier
-            OutlinedButton(onClick = onLogMissed, modifier = buttonModifier, border = outlinedBorder()) {
+            OutlinedButton(
+                onClick = onLogMissed,
+                modifier = buttonModifier,
+                border = outlinedBorder(),
+                colors = outlinedButtonColors(),
+            ) {
                 Text(missedLabel, textAlign = TextAlign.Center)
             }
-            OutlinedButton(onClick = onLogDelayed, modifier = buttonModifier, border = outlinedBorder()) {
+            OutlinedButton(
+                onClick = onLogDelayed,
+                modifier = buttonModifier,
+                border = outlinedBorder(),
+                colors = outlinedButtonColors(),
+            ) {
                 Text(delayedLabel, textAlign = TextAlign.Center)
             }
         }

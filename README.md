@@ -15,6 +15,16 @@ Prescriptions and boxes can be filtered to **Active** or **All**, and boxes also
 
 Hold a prescription, box or refill card for a second to edit its fields by hand or delete it, after confirming. Deleting a prescription or box can keep its boxes or refills; their link to it then shows crossed out and disabled.
 
+## Web app
+
+The same app runs in the browser at <https://medic-log.github.io/medication-logger/app/>, on any phone, tablet or computer, and installs from there: **Install web app** on the download page, or the browser's own install or Add to Home Screen. Once opened it also works offline. It looks and works like the Android app, in the same four languages, except where the browser differs:
+
+- Your records are kept in that browser on that device. **Export** and **Import** move them between browsers and to or from the Android app; both apps use the same file.
+- Reminders arrive as notifications while the app is open, also in the background, once you allow notifications (asked when the tutorial closes, or from the notice in Settings). They can't arrive while it's closed. A pickup, running-out or expiry reminder that's due shows the next time the app is open after 9:00.
+- **Update** reloads into the newest version; the app also checks each time it starts and offers it.
+- **Share** uses the browser's share sheet, or copies the link where there's none.
+- Hold a card for a second to edit it, as on Android; on a computer a right-click does it too.
+
 ## Build from source
 
 Requirements: JDK 17+ and the Android SDK (platform 37). Android Studio works too: open the project folder.
@@ -22,6 +32,14 @@ Requirements: JDK 17+ and the Android SDK (platform 37). Android Studio works to
 ```bash
 ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+The web app needs Node.js 22 or newer:
+
+```bash
+cd web
+npm ci
+npm run dev        # http://localhost:5173/medication-logger/app/
 ```
 
 Checks, CI and releases are described in [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -28,7 +28,7 @@ fun TimeSelector(
     modifier: Modifier = Modifier,
 ) {
     var isDialogOpen by rememberSaveable { mutableStateOf(false) }
-    OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier, border = outlinedBorder()) {
+    OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier, border = outlinedBorder(), colors = outlinedButtonColors()) {
         Text(stringResource(R.string.reminders_choose_time, time.toString()))
     }
     if (isDialogOpen) {

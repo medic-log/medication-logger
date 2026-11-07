@@ -20,7 +20,7 @@ import java.util.Locale
 fun WeekdaySelector(day: DayOfWeek, onDayChange: (DayOfWeek) -> Unit, modifier: Modifier = Modifier) {
     var isExpanded by remember { mutableStateOf(false) }
     Box(modifier = modifier) {
-        OutlinedButton(onClick = { isExpanded = true }, border = outlinedBorder()) {
+        OutlinedButton(onClick = { isExpanded = true }, border = outlinedBorder(), colors = outlinedButtonColors()) {
             Text(day.displayName())
         }
         DropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
