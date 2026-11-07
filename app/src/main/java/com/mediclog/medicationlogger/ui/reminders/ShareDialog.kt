@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.components.QrCode
 import com.mediclog.medicationlogger.ui.components.outlinedBorder
@@ -36,6 +37,7 @@ fun ShareDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
         modifier = modifier,
         title = { Text(stringResource(R.string.settings_share_title)) },
         text = {

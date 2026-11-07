@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 
 /**
@@ -44,6 +45,7 @@ fun RecordEditDialog(
         AlertDialog(
             modifier = modifier,
             onDismissRequest = { isConfirmingDelete = false },
+            properties = DialogProperties(dismissOnClickOutside = false),
             title = { Text(stringResource(R.string.edit_delete_title)) },
             text = { Text(deleteMessage) },
             confirmButton = {
@@ -72,6 +74,7 @@ fun RecordEditDialog(
         AlertDialog(
             modifier = modifier,
             onDismissRequest = onDismiss,
+            properties = DialogProperties(dismissOnClickOutside = false),
             title = { Text(title) },
             text = {
                 Column(

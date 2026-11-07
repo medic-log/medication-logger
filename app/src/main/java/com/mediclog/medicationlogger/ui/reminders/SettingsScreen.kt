@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -181,6 +182,7 @@ fun RemindersRoute(
     if (isImportConfirmShown) {
         AlertDialog(
             onDismissRequest = { isImportConfirmShown = false },
+            properties = DialogProperties(dismissOnClickOutside = false),
             title = { Text(stringResource(R.string.settings_import_confirm_title)) },
             text = { Text(stringResource(R.string.settings_import_confirm_text)) },
             confirmButton = {
@@ -200,6 +202,7 @@ fun RemindersRoute(
     importUri?.let { uri ->
         AlertDialog(
             onDismissRequest = { importUri = null },
+            properties = DialogProperties(dismissOnClickOutside = false),
             title = { Text(stringResource(R.string.settings_import_replace_title)) },
             text = { Text(stringResource(R.string.settings_import_replace_text)) },
             confirmButton = {

@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.Month
@@ -83,6 +84,7 @@ private fun MonthPickerDialog(
     AlertDialog(
         modifier = modifier,
         onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
         title = { Text(title) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

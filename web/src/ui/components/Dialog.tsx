@@ -1,7 +1,8 @@
 import { type ReactNode, useEffect, useRef } from 'react'
 
 /**
- * Material's AlertDialog, as a modal <dialog>: Escape and a tap outside call [onDismiss] when it's dismissible.
+ * Material's AlertDialog, as a modal <dialog>: Escape calls [onDismiss] when it's dismissible, and so does a tap
+ * outside, but only when there are no [buttons] to close it with.
  * [title] can be text or a whole row.
  */
 export function Dialog({
@@ -45,7 +46,7 @@ export function Dialog({
       }}
       onMouseDown={event => {
         // A press on the backdrop lands on the dialog element itself, outside its content box
-        if (event.target !== ref.current || !isDismissible) return
+        if (event.target !== ref.current || !isDismissible || buttons) return
         const box = ref.current.getBoundingClientRect()
         const isOutside =
           event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.LatestRelease
@@ -66,6 +67,7 @@ private fun UpdateAvailableDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
         modifier = modifier,
         title = { Text(stringResource(R.string.settings_update_confirm_title)) },
         text = { Text(stringResource(R.string.settings_update_confirm_text, versionName, BuildConfig.VERSION_NAME)) },

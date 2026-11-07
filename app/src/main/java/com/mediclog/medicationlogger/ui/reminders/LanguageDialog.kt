@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.components.InLanguage
@@ -31,6 +32,7 @@ fun LanguageDialog(
     InLanguage(chosen) {
         AlertDialog(
             onDismissRequest = onDismiss,
+            properties = DialogProperties(dismissOnClickOutside = false),
             modifier = modifier,
             title = { Text(stringResource(R.string.settings_language)) },
             text = { LanguageOptions(selected = chosen, onSelect = { chosen = it }) },

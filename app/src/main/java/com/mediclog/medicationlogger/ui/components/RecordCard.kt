@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.onLongClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.theme.StatusColors
 
@@ -129,6 +130,7 @@ fun RecordCard(
     if (isConfirmingEdit && onEdit != null) {
         AlertDialog(
             onDismissRequest = { isConfirmingEdit = false },
+            properties = DialogProperties(dismissOnClickOutside = false),
             title = { Text(stringResource(R.string.edit_confirm_title)) },
             confirmButton = {
                 TextButton(
