@@ -3,14 +3,10 @@ package com.mediclog.medicationlogger.ui.reminders
 import android.net.Uri
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +40,7 @@ import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Feedback
 import com.mediclog.medicationlogger.ui.components.DialogField
+import com.mediclog.medicationlogger.ui.components.FormDialog
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,9 +78,8 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     var isSending by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    AlertDialog(
+    FormDialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnClickOutside = false),
         modifier = modifier,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -94,78 +90,6 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                         contentDescription = stringResource(R.string.feedback_open_site),
                     )
                 }
-            }
-        },
-        text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(stringResource(R.string.feedback_description))
-                DialogField(value = title, onValueChange = { title = it.take(Feedback.MAX_TITLE_LENGTH) }, labelRes = R.string.feedback_title)
-                ExposedDropdownMenuBox(expanded = isTopicMenuOpen, onExpandedChange = { isTopicMenuOpen = it }) {
-                    OutlinedTextField(
-                        value = stringResource(topic.labelRes),
-                        onValueChange = {},
-                        readOnly = true,
-                        singleLine = true,
-                        label = { Text(stringResource(R.string.feedback_topic)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTopicMenuOpen) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                    )
-                    ExposedDropdownMenu(expanded = isTopicMenuOpen, onDismissRequest = { isTopicMenuOpen = false }) {
-                        FeedbackTopic.entries.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(stringResource(option.labelRes)) },
-                                onClick = {
-                                    topic = option
-                                    isTopicMenuOpen = false
-                                },
-                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                            )
-                        }
-                    }
-                }
-                if (topic.isAnswerExpected) {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it.take(Feedback.MAX_EMAIL_LENGTH) },
-                        label = { Text(stringResource(R.string.feedback_email)) },
-                        singleLine = true,
-                        isError = isEmailInvalid,
-                        supportingText = if (isEmailInvalid) {
-                            { Text(stringResource(R.string.feedback_email_invalid)) }
-                        } else {
-                            null
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                OutlinedTextField(
-                    value = BuildConfig.VERSION_NAME,
-                    onValueChange = {},
-                    enabled = false,
-                    singleLine = true,
-                    label = { Text(stringResource(R.string.feedback_version)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = message,
-                    onValueChange = { message = it.take(Feedback.MAX_MESSAGE_LENGTH) },
-                    label = { Text(stringResource(R.string.feedback_message)) },
-                    minLines = 4,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 120.dp),
-                )
-                Text(
-                    text = stringResource(R.string.feedback_sent_contents),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         },
         confirmButton = {
@@ -198,7 +122,73 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.edit_cancel)) }
         },
-    )
+    ) {
+        Text(stringResource(R.string.feedback_description))
+        DialogField(value = title, onValueChange = { title = it.take(Feedback.MAX_TITLE_LENGTH) }, labelRes = R.string.feedback_title)
+        ExposedDropdownMenuBox(expanded = isTopicMenuOpen, onExpandedChange = { isTopicMenuOpen = it }) {
+            OutlinedTextField(
+                value = stringResource(topic.labelRes),
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                label = { Text(stringResource(R.string.feedback_topic)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTopicMenuOpen) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            )
+            ExposedDropdownMenu(expanded = isTopicMenuOpen, onDismissRequest = { isTopicMenuOpen = false }) {
+                FeedbackTopic.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(option.labelRes)) },
+                        onClick = {
+                            topic = option
+                            isTopicMenuOpen = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+        if (topic.isAnswerExpected) {
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it.take(Feedback.MAX_EMAIL_LENGTH) },
+                label = { Text(stringResource(R.string.feedback_email)) },
+                singleLine = true,
+                isError = isEmailInvalid,
+                supportingText = if (isEmailInvalid) {
+                    { Text(stringResource(R.string.feedback_email_invalid)) }
+                } else {
+                    null
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        OutlinedTextField(
+            value = BuildConfig.VERSION_NAME,
+            onValueChange = {},
+            enabled = false,
+            singleLine = true,
+            label = { Text(stringResource(R.string.feedback_version)) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = message,
+            onValueChange = { message = it.take(Feedback.MAX_MESSAGE_LENGTH) },
+            label = { Text(stringResource(R.string.feedback_message)) },
+            minLines = 4,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp),
+        )
+        Text(
+            text = stringResource(R.string.feedback_sent_contents),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
     if (isOpenSiteConfirmShown) {
         val uriHandler = LocalUriHandler.current
         AlertDialog(

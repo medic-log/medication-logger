@@ -1,11 +1,8 @@
 package com.mediclog.medicationlogger.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +15,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 
@@ -71,22 +67,10 @@ fun RecordEditDialog(
             },
         )
     } else {
-        AlertDialog(
+        FormDialog(
+            title = { Text(title) },
             modifier = modifier,
             onDismissRequest = onDismiss,
-            properties = DialogProperties(dismissOnClickOutside = false),
-            title = { Text(title) },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    fields()
-                    TextButton(onClick = { isConfirmingDelete = true }, colors = deleteColors) {
-                        Text(stringResource(R.string.edit_delete))
-                    }
-                }
-            },
             confirmButton = {
                 TextButton(onClick = onSave, enabled = canSave) {
                     Text(stringResource(R.string.edit_save))
@@ -97,6 +81,11 @@ fun RecordEditDialog(
                     Text(stringResource(R.string.edit_cancel))
                 }
             },
-        )
+        ) {
+            fields()
+            TextButton(onClick = { isConfirmingDelete = true }, colors = deleteColors) {
+                Text(stringResource(R.string.edit_delete))
+            }
+        }
     }
 }

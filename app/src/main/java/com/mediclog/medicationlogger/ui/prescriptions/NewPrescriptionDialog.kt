@@ -1,10 +1,5 @@
 package com.mediclog.medicationlogger.ui.prescriptions
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,12 +10,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Prescription
 import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.ui.components.DialogField
+import com.mediclog.medicationlogger.ui.components.FormDialog
 import com.mediclog.medicationlogger.ui.components.positiveCountOrNull
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 
@@ -40,39 +34,10 @@ fun NewPrescriptionDialog(
     var repetitionsTotal by rememberSaveable { mutableStateOf(previous?.repetitionsTotal?.toString().orEmpty()) }
 
     val draft = draftOrNull(medication, doctor, pharmacy, pillsPerBox, boxesPerRepetition, repetitionsTotal)
-    AlertDialog(
+    FormDialog(
+        title = { Text(stringResource(R.string.prescriptions_new)) },
         modifier = modifier,
         onDismissRequest = onDismiss,
-        properties = DialogProperties(dismissOnClickOutside = false),
-        title = { Text(stringResource(R.string.prescriptions_new)) },
-        text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                DialogField(medication, { medication = it }, R.string.prescriptions_field_medication)
-                DialogField(doctor, { doctor = it }, R.string.prescriptions_field_doctor)
-                DialogField(pharmacy, { pharmacy = it }, R.string.prescriptions_field_pharmacy)
-                DialogField(
-                    pillsPerBox,
-                    { pillsPerBox = it },
-                    R.string.prescriptions_field_pills_per_box,
-                    isNumber = true,
-                )
-                DialogField(
-                    boxesPerRepetition,
-                    { boxesPerRepetition = it },
-                    R.string.prescriptions_field_boxes_per_repetition,
-                    isNumber = true,
-                )
-                DialogField(
-                    repetitionsTotal,
-                    { repetitionsTotal = it },
-                    R.string.prescriptions_field_repetitions_total,
-                    isNumber = true,
-                )
-            }
-        },
         confirmButton = {
             TextButton(onClick = { draft?.let(onSave) }, enabled = draft != null) {
                 Text(stringResource(R.string.prescriptions_save))
@@ -83,7 +48,29 @@ fun NewPrescriptionDialog(
                 Text(stringResource(R.string.prescriptions_cancel))
             }
         },
-    )
+    ) {
+        DialogField(medication, { medication = it }, R.string.prescriptions_field_medication)
+        DialogField(doctor, { doctor = it }, R.string.prescriptions_field_doctor)
+        DialogField(pharmacy, { pharmacy = it }, R.string.prescriptions_field_pharmacy)
+        DialogField(
+            pillsPerBox,
+            { pillsPerBox = it },
+            R.string.prescriptions_field_pills_per_box,
+            isNumber = true,
+        )
+        DialogField(
+            boxesPerRepetition,
+            { boxesPerRepetition = it },
+            R.string.prescriptions_field_boxes_per_repetition,
+            isNumber = true,
+        )
+        DialogField(
+            repetitionsTotal,
+            { repetitionsTotal = it },
+            R.string.prescriptions_field_repetitions_total,
+            isNumber = true,
+        )
+    }
 }
 
 private fun draftOrNull(
