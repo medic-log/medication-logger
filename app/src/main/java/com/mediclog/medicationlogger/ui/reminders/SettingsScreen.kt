@@ -10,6 +10,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -32,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -83,11 +85,14 @@ private const val EXPORT_MIME_TYPE = "application/json"
 /** The settings tab with its ViewModel, and the notification permission reminders depend on. */
 @Composable
 fun RemindersRoute(
-    onHelp: () -> Unit,
+    initialScroll: Int,
+    onHelp: (scroll: Int) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RemindersViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // Keyed, so closing the tutorial on this tab still moves to the new position
+    val scrollState = key(initialScroll) { rememberScrollState(initialScroll) }
     val context = LocalContext.current
     val shareText = stringResource(R.string.settings_share_text, BuildConfig.SITE_URL)
     var areNotificationsAllowed by remember { mutableStateOf(true) }
@@ -212,6 +217,7 @@ fun RemindersRoute(
     }
     SettingsScreen(
         state = state,
+        scrollState = scrollState,
         areNotificationsAllowed = areNotificationsAllowed,
         onSettingsChange = { settings ->
             val isTurningOn = settings.hasAnyEnabled && !state.settings.hasAnyEnabled
@@ -228,7 +234,7 @@ fun RemindersRoute(
         },
         onSettingsAction = {
             when (it) {
-                SettingsAction.HELP -> onHelp()
+                SettingsAction.HELP -> onHelp(scrollState.value)
                 SettingsAction.UPDATE -> scope.launch {
                     val latest = withContext(Dispatchers.IO) { LatestRelease.fetch(BuildConfig.SITE_URL) }
                     when {
@@ -257,12 +263,13 @@ fun SettingsScreen(
     onOpenNotificationSettings: () -> Unit,
     onSettingsAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
 ) {
     val settings = state.settings
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {

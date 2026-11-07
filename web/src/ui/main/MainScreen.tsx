@@ -52,6 +52,7 @@ export function MainScreen({
             tab={state.selectedTab}
             focusedPrescriptionId={state.focusedPrescriptionId}
             focusedBoxId={state.focusedBoxId}
+            settingsScroll={state.settingsScroll}
             prescriptionsFilter={prescriptionsFilter}
             onPrescriptionsFilterChange={setPrescriptionsFilter}
             boxesFilter={boxesFilter}
@@ -116,6 +117,7 @@ function TabContent({
   tab,
   focusedPrescriptionId,
   focusedBoxId,
+  settingsScroll,
   prescriptionsFilter,
   onPrescriptionsFilterChange,
   boxesFilter,
@@ -124,6 +126,7 @@ function TabContent({
   tab: AppTab
   focusedPrescriptionId: number | null
   focusedBoxId: number | null
+  settingsScroll: number
   prescriptionsFilter: ListFilter
   onPrescriptionsFilterChange: (filter: ListFilter) => void
   boxesFilter: ListFilter
@@ -132,7 +135,7 @@ function TabContent({
   const { viewModel } = useServices()
   switch (tab) {
     case 'SETTINGS':
-      return <SettingsScreen onHelp={viewModel.startTutorial} />
+      return <SettingsScreen initialScroll={settingsScroll} onHelp={viewModel.startTutorial} />
     case 'PRESCRIPTIONS':
       return (
         <PrescriptionsScreen

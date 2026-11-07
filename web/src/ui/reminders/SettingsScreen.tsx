@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import resources from 'virtual:android-resources'
 import { readExport, writeExport } from '../../data/MedicationExport'
 import { type ReminderSettings, hasAnyEnabled } from '../../data/models'
@@ -29,7 +29,13 @@ const MAX_DAYS = 365
 const ACTION_SIZE = 72
 
 /** The settings tab: the configuration of the five reminders, then the app's settings. */
-export function SettingsScreen({ onHelp }: { onHelp: () => void }) {
+export function SettingsScreen({
+  initialScroll,
+  onHelp,
+}: {
+  initialScroll: number
+  onHelp: (scroll: number) => void
+}) {
   const strings = useStrings()
   const services = useServices()
   const { repository, updates, notificationAccess, requestNotifications, language, setLanguage } = services
@@ -38,6 +44,11 @@ export function SettingsScreen({ onHelp }: { onHelp: () => void }) {
   const settings = state.settings
   const showToast = useToast()
   const fileInput = useRef<HTMLInputElement>(null)
+  const scroller = useRef<HTMLDivElement>(null)
+  // Also when it changes, so closing the tutorial on this tab still moves to the new position
+  useLayoutEffect(() => {
+    if (scroller.current) scroller.current.scrollTop = initialScroll
+  }, [initialScroll])
   const [isImportConfirmShown, setImportConfirmShown] = useState(false)
   const [importText, setImportText] = useState<string | null>(null)
   const [isLanguageShown, setLanguageShown] = useState(false)
@@ -70,7 +81,7 @@ export function SettingsScreen({ onHelp }: { onHelp: () => void }) {
   const onAction = async (action: SettingsAction) => {
     switch (action) {
       case 'HELP':
-        return onHelp()
+        return onHelp(scroller.current?.scrollTop ?? 0)
       case 'UPDATE': {
         const latest = await updates.findNewer()
         if (latest === 'failed') showToast(strings.t('settings_update_failed'))
@@ -93,7 +104,7 @@ export function SettingsScreen({ onHelp }: { onHelp: () => void }) {
 
   const reminderNext = (text: string) => <span className="body-medium">{text}</span>
   return (
-    <div className="tab-scroll">
+    <div className="tab-scroll" ref={scroller}>
       <div className="tab-list">
         {hasAnyEnabled(settings) && notificationAccess !== 'granted' && (
           <div className="notice error">

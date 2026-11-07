@@ -103,6 +103,18 @@ describe('MainViewModel', () => {
     expect(viewModel.getState().tutorialStep?.step).toBe('LANGUAGE')
   })
 
+  test('closing the tutorial goes to settings, back where help was tapped', () => {
+    const viewModel = mainViewModel()
+    viewModel.finishTutorial()
+    expect(viewModel.getState().selectedTab).toBe('SETTINGS')
+    expect(viewModel.getState().settingsScroll).toBe(0)
+    viewModel.startTutorial(500)
+    expect(viewModel.getState().settingsScroll).toBe(0)
+    viewModel.finishTutorial()
+    expect(viewModel.getState().selectedTab).toBe('SETTINGS')
+    expect(viewModel.getState().settingsScroll).toBe(500)
+  })
+
   test("the tutorial's settings steps change the reminder settings", () => {
     const viewModel = mainViewModel()
     const settings = { ...viewModel.getState().reminderSettings, pillTime: '09:30' }

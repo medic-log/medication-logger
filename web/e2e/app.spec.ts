@@ -1,9 +1,9 @@
 // The user flows of app/src/test/.../MainActivityTest.kt, run in a browser against the production build.
 import { expect, plural, savedData, string, test, today } from './app'
 
-test('app opens on the boxes tab', async ({ app }) => {
-  await expect(app.tab('main_tab_boxes')).toHaveAttribute('aria-selected', 'true')
-  await expect(app.text(string('boxes_empty_active'))).toBeVisible()
+test('skipping the tutorial at launch goes to the top of settings', async ({ app }) => {
+  await expect(app.tab('main_tab_settings')).toHaveAttribute('aria-selected', 'true')
+  await expect(app.text(string('settings_section_reminders'))).toBeInViewport()
 })
 
 test('tabs are in the order settings, prescriptions, boxes, refills', async ({ app }) => {
@@ -516,6 +516,9 @@ test('help opens the tutorial, which moves through the tabs and asks for the pil
 
   await app.tap(string('tutorial_skip'))
   await expect(app.text(string('tutorial_pill_time_text'))).toHaveCount(0)
+  // Back where Help was tapped
+  await expect(app.tab('main_tab_settings')).toHaveAttribute('aria-selected', 'true')
+  await expect(app.text(string('settings_help'))).toBeInViewport()
   await app.openTab('main_tab_prescriptions')
   await expect(page.getByText(string('tutorial_sample_doctor'))).toHaveCount(0)
 })

@@ -96,7 +96,7 @@ fun MainRoute(
 @Composable
 private fun TabContent(tab: AppTab, state: MainUiState, viewModel: MainViewModel) {
     when (tab) {
-        AppTab.SETTINGS -> RemindersRoute(onHelp = viewModel::startTutorial)
+        AppTab.SETTINGS -> RemindersRoute(initialScroll = state.settingsScroll, onHelp = viewModel::startTutorial)
         AppTab.PRESCRIPTIONS -> PrescriptionsRoute(
             focusedPrescriptionId = state.focusedPrescriptionId,
             onOpenBox = viewModel::openBox,

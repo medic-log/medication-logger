@@ -135,6 +135,21 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `closing the tutorial goes to settings, back where help was tapped`() {
+        val viewModel = MainViewModel(repository, clock, draft)
+
+        viewModel.finishTutorial()
+        assertEquals(AppTab.SETTINGS, viewModel.uiState.value.selectedTab)
+        assertEquals(0, viewModel.uiState.value.settingsScroll)
+
+        viewModel.startTutorial(settingsScroll = 500)
+        assertEquals(0, viewModel.uiState.value.settingsScroll)
+        viewModel.finishTutorial()
+        assertEquals(AppTab.SETTINGS, viewModel.uiState.value.selectedTab)
+        assertEquals(500, viewModel.uiState.value.settingsScroll)
+    }
+
+    @Test
     fun `the tutorial's settings steps change the reminder settings`() {
         val viewModel = MainViewModel(repository, clock, draft)
         val settings = viewModel.uiState.value.reminderSettings.copy(pillTime = LocalTime.of(9, 30))

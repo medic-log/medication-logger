@@ -4,11 +4,12 @@ import type { AppTab } from './AppTab'
 import { TUTORIAL_STEPS, type TutorialStep } from './TutorialStep'
 import { tutorialSample } from './tutorialSample'
 
-/** The current tab and the record a link pointed to. */
+/** The current tab, the record a link pointed to and where Settings opens scrolled to. */
 export interface Navigation {
   selectedTab: AppTab
   focusedPrescriptionId: number | null
   focusedBoxId: number | null
+  settingsScroll: number
 }
 
 /** A newer version, ready to switch to. */
@@ -31,6 +32,7 @@ const navigationTo = (selectedTab: AppTab): Navigation => ({
   selectedTab,
   focusedPrescriptionId: null,
   focusedBoxId: null,
+  settingsScroll: 0,
 })
 
 /**
@@ -41,6 +43,7 @@ const navigationTo = (selectedTab: AppTab): Navigation => ({
 export class MainViewModel {
   private navigation: Navigation
   private tutorialStep: TutorialStep | null
+  private returnScroll = 0
   private availableUpdate: AvailableUpdate | null = null
   private uiState: MainUiState
   private readonly listeners = new Set<() => void>()
@@ -70,7 +73,9 @@ export class MainViewModel {
 
   openBox = (boxId: number) => this.setNavigation({ ...navigationTo('BOXES'), focusedBoxId: boxId })
 
-  startTutorial = () => {
+  /** Opens the tutorial from Settings' Help, scrolled to [settingsScroll], where Settings returns when it closes. */
+  startTutorial = (settingsScroll = 0) => {
+    this.returnScroll = settingsScroll
     this.showSample()
     this.showTutorialStep(TUTORIAL_STEPS[0])
   }
@@ -86,9 +91,13 @@ export class MainViewModel {
     if (previous) this.showTutorialStep(previous)
   }
 
-  /** Closes the tutorial, from its last step or by skipping it, so it no longer opens on its own. */
+  /**
+   * Closes the tutorial, from its last step or by skipping it, so it no longer opens on its own, and goes to Settings:
+   * to its top after the tour at launch, or back to where Help was tapped.
+   */
   finishTutorial = () => {
     this.tutorialStep = null
+    this.navigation = { ...navigationTo('SETTINGS'), settingsScroll: this.returnScroll }
     this.repository.showSample(null)
     this.repository.finishTutorial()
     this.refresh()

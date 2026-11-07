@@ -76,7 +76,10 @@ class MainActivityTest {
 
     private fun tap(text: String) = composeRule.onNodeWithText(text).performClick()
 
-    private fun openTab(id: Int) = tap(string(id))
+    private fun tab(id: Int) =
+        composeRule.onNode(hasText(string(id)) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Tab))
+
+    private fun openTab(id: Int) = tab(id).performClick()
 
     private fun addPrescription(pillsPerBox: Int, boxesPerRepetition: Int, repetitions: Int) {
         composeRule.onNodeWithContentDescription(string(R.string.prescriptions_new)).performClick()
@@ -115,9 +118,9 @@ class MainActivityTest {
     private fun refillBox(left: Int) = string(R.string.refills_box, "$today #1", left)
 
     @Test
-    fun `app opens on the boxes tab`() {
-        composeRule.onNodeWithText(string(R.string.main_tab_boxes)).assertIsSelected()
-        assertShown(string(R.string.boxes_empty_active))
+    fun `skipping the tutorial at launch goes to the top of settings`() {
+        tab(R.string.main_tab_settings).assertIsSelected()
+        assertShown(string(R.string.settings_section_reminders))
     }
 
     @Test
@@ -706,6 +709,9 @@ class MainActivityTest {
 
         tap(string(R.string.tutorial_skip))
         assertNotShown(string(R.string.tutorial_pill_time_text))
+        // Back where Help was tapped
+        tab(R.string.main_tab_settings).assertIsSelected()
+        assertShown(string(R.string.settings_help))
         openTab(R.string.main_tab_prescriptions)
         composeRule.onNode(hasText(string(R.string.tutorial_sample_doctor), substring = true)).assertDoesNotExist()
     }

@@ -16,13 +16,14 @@ import java.time.Clock
 import java.time.LocalDateTime
 
 /**
- * What the app's frame shows: the current tab, the record a link pointed to, any save problem,
- * the tutorial step on screen, if any, with the settings it asks for, and a newer version to offer.
+ * What the app's frame shows: the current tab, the record a link pointed to, where Settings opens scrolled to,
+ * any save problem, the tutorial step on screen, if any, with the settings it asks for, and a newer version to offer.
  */
 data class MainUiState(
     val selectedTab: AppTab = AppTab.BOXES,
     val focusedPrescriptionId: Long? = null,
     val focusedBoxId: Long? = null,
+    val settingsScroll: Int = 0,
     val isSaveFailed: Boolean = false,
     val tutorialStep: TutorialStep? = null,
     val reminderSettings: ReminderSettings = ReminderSettings(),
@@ -44,6 +45,7 @@ class MainViewModel(
     private val tutorialStep = MutableStateFlow(
         TutorialStep.entries.first().takeUnless { repository.data.value.isTutorialDone },
     )
+    private var returnScroll = 0
     private val navigation = MutableStateFlow(MainUiState(selectedTab = tutorialStep.value?.tab ?: AppTab.BOXES))
 
     val uiState: StateFlow<MainUiState> = combine(
@@ -86,7 +88,9 @@ class MainViewModel(
         navigation.value = MainUiState(selectedTab = AppTab.BOXES, focusedBoxId = boxId)
     }
 
-    fun startTutorial() {
+    /** Opens the tutorial from Settings' Help, scrolled to [settingsScroll], where Settings returns when it closes. */
+    fun startTutorial(settingsScroll: Int = 0) {
+        returnScroll = settingsScroll
         showSample()
         showTutorialStep(TutorialStep.entries.first())
     }
@@ -100,9 +104,13 @@ class MainViewModel(
         tutorialStep.value?.previous?.let(::showTutorialStep)
     }
 
-    /** Closes the tutorial, from its last step or by skipping it, so it no longer opens on its own. */
+    /**
+     * Closes the tutorial, from its last step or by skipping it, so it no longer opens on its own, and goes to Settings:
+     * to its top after the tour at launch, or back to where Help was tapped.
+     */
     fun finishTutorial() {
         tutorialStep.value = null
+        navigation.value = MainUiState(selectedTab = AppTab.SETTINGS, settingsScroll = returnScroll)
         repository.showSample(null)
         repository.finishTutorial()
     }
