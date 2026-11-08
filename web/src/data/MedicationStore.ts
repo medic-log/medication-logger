@@ -13,10 +13,13 @@ export const DATA_KEY = 'medication-data'
 
 /**
  * Stores everything as one JSON text in [storage], in the Android app's file format. Unreadable data is set aside
- * under its own key, as starting empty would overwrite it on the next save, so it's kept for recovery.
+ * under its own key with the time, as starting empty would overwrite it on the next save, so it's kept for recovery.
  */
 export class LocalStorageMedicationStore implements MedicationStore {
-  constructor(private readonly storage: Storage) {}
+  constructor(
+    private readonly storage: Storage,
+    private readonly now: () => Date = () => new Date(),
+  ) {}
 
   load(): MedicationData {
     const text = this.storage.getItem(DATA_KEY)
@@ -25,7 +28,9 @@ export class LocalStorageMedicationStore implements MedicationStore {
       return jsonToData(JSON.parse(text))
     } catch (error) {
       if (!(error instanceof SyntaxError || error instanceof DataFormatError)) throw error
-      this.storage.setItem(`${DATA_KEY}.unreadable`, text)
+      // As 20261108T130525Z, in UTC like the Android app's file name
+      const time = this.now().toISOString().replace(/[-:]|\.\d+/g, '')
+      this.storage.setItem(`${DATA_KEY}.unreadable-${time}`, text)
       this.storage.removeItem(DATA_KEY)
       return emptyData()
     }

@@ -23,7 +23,7 @@ class MedicationLoggerApplication : Application() {
     // Loaded on first use, on the main thread: it's one small file, and every screen needs it to draw
     val repository: MedicationRepository by lazy {
         MedicationRepository(
-            store = JsonFileMedicationStore(File(filesDir, "medication-data.json")),
+            store = JsonFileMedicationStore(File(filesDir, "medication-data.json"), clock),
             clock = clock,
             saveScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
         )

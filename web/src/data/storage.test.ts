@@ -126,11 +126,22 @@ describe('LocalStorageMedicationStore', () => {
     expect(store().load().prescriptions[0].medication).toBe('')
   })
 
+  const storeAt = (instant: string) => new LocalStorageMedicationStore(storage, () => new Date(instant))
+
   test('an unreadable file is kept aside instead of being overwritten', () => {
     storage.setItem(DATA_KEY, 'not json')
-    expect(store().load()).toEqual(emptyData())
-    expect(storage.getItem(`${DATA_KEY}.unreadable`)).toBe('not json')
+    expect(storeAt('2026-11-08T13:05:25Z').load()).toEqual(emptyData())
+    expect(storage.getItem(`${DATA_KEY}.unreadable-20261108T130525Z`)).toBe('not json')
     expect(storage.getItem(DATA_KEY)).toBeNull()
+  })
+
+  test("a second unreadable file doesn't replace the first", () => {
+    storage.setItem(DATA_KEY, 'first')
+    storeAt('2026-11-08T13:05:25Z').load()
+    storage.setItem(DATA_KEY, 'second')
+    storeAt('2026-11-09T08:00:00Z').load()
+    expect(storage.getItem(`${DATA_KEY}.unreadable-20261108T130525Z`)).toBe('first')
+    expect(storage.getItem(`${DATA_KEY}.unreadable-20261109T080000Z`)).toBe('second')
   })
 
   test("the Android app's file loads, with absent links and dates as null", () => {

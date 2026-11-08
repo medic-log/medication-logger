@@ -7,15 +7,20 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
 /** Stores everything as one JSON file, written atomically so a crash can't leave half a file. */
-class JsonFileMedicationStore(private val file: File) : MedicationStore {
+class JsonFileMedicationStore(
+    private val file: File,
+    private val clock: Clock = Clock.systemUTC(),
+) : MedicationStore {
     private val atomicFile = AtomicFile(file)
 
     override fun load(): MedicationData {
@@ -46,9 +51,9 @@ class JsonFileMedicationStore(private val file: File) : MedicationStore {
         }
     }
 
-    // Starting empty would overwrite the file on the next save, so it's kept for recovery
+    // Starting empty would overwrite the file on the next save, so it's kept for recovery, each under its own time
     private fun setAsideUnreadableFile(): MedicationData {
-        file.renameTo(File(file.path + ".unreadable"))
+        file.renameTo(File(file.path + ".unreadable-" + SET_ASIDE_TIME.format(clock.instant())))
         return MedicationData()
     }
 }
@@ -82,6 +87,8 @@ internal fun JSONObject.toRecords() = MedicationData(
 )
 
 private const val YEAR_MONTH_LENGTH = 7
+
+private val SET_ASIDE_TIME = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC)
 
 private fun Prescription.toJson() = JSONObject()
     .put("id", id)

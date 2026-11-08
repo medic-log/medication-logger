@@ -9,7 +9,9 @@ import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.io.File
+import java.time.Clock
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
@@ -164,9 +166,23 @@ class JsonFileMedicationStoreTest {
     fun `an unreadable file is kept aside instead of being overwritten`() {
         file.writeText("not json")
 
-        assertEquals(MedicationData(), JsonFileMedicationStore(file).load())
+        assertEquals(MedicationData(), JsonFileMedicationStore(file, clockAt("2026-11-08T13:05:25Z")).load())
 
-        assertEquals("not json", File(file.path + ".unreadable").readText())
+        assertEquals("not json", File(file.path + ".unreadable-20261108T130525Z").readText())
         assertTrue(!file.exists())
     }
+
+    @Test
+    fun `a second unreadable file doesn't replace the first`() {
+        file.writeText("first")
+        JsonFileMedicationStore(file, clockAt("2026-11-08T13:05:25Z")).load()
+        file.writeText("second")
+
+        JsonFileMedicationStore(file, clockAt("2026-11-09T08:00:00Z")).load()
+
+        assertEquals("first", File(file.path + ".unreadable-20261108T130525Z").readText())
+        assertEquals("second", File(file.path + ".unreadable-20261109T080000Z").readText())
+    }
+
+    private fun clockAt(instant: String) = Clock.fixed(Instant.parse(instant), ZoneOffset.UTC)
 }
