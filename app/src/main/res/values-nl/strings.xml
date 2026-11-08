@@ -251,6 +251,8 @@
     <string name="update_channel_name">Updates</string>
     <string name="update_notification_title">Bijgewerkt naar versie %1$s</string>
     <string name="update_notification_text">Tik om Medication logger te openen.</string>
+    <string name="update_install_notification_title">Update klaar om te installeren</string>
+    <string name="update_install_notification_text">Tik om de nieuwe versie te installeren.</string>
     <string name="reminders_notification_pill_title">Tijd voor je pil</string>
     <string name="reminders_notification_pill_text">Neem de pil van vandaag in.</string>
     <string name="reminders_notification_refill_title">Tijd om wekelijks aan te vullen</string>

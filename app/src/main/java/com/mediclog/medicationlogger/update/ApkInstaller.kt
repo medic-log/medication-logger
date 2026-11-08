@@ -30,9 +30,10 @@ object ApkInstaller {
         val installer = context.packageManager.packageInstaller
         val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
             .apply { setAppPackageName(context.packageName) }
-        val sessionId = installer.createSession(params)
+        var sessionId: Int? = null
         var isCommitted = false
         try {
+            sessionId = installer.createSession(params)
             installer.openSession(sessionId).use { session ->
                 if (!download(release, session)) return@withContext false
                 ensureActive()
@@ -43,7 +44,7 @@ object ApkInstaller {
         } catch (_: IOException) {
             false
         } finally {
-            if (!isCommitted) installer.abandonSession(sessionId)
+            if (sessionId != null && !isCommitted) installer.abandonSession(sessionId)
         }
     }
 

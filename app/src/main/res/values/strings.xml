@@ -254,6 +254,8 @@
     <string name="update_channel_name">Updates</string>
     <string name="update_notification_title">Updated to version %1$s</string>
     <string name="update_notification_text">Tap to open Medication logger.</string>
+    <string name="update_install_notification_title">Update ready to install</string>
+    <string name="update_install_notification_text">Tap to install the new version.</string>
     <string name="reminders_notification_pill_title">Time to take your pill</string>
     <string name="reminders_notification_pill_text">Take today\'s pill.</string>
     <string name="reminders_notification_refill_title">Time for your weekly refill</string>
