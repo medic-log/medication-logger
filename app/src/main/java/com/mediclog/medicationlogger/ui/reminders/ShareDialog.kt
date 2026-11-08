@@ -20,12 +20,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.components.QrCode
 import com.mediclog.medicationlogger.ui.components.outlinedBorder
@@ -85,6 +87,8 @@ fun ShareDialog(
     )
     if (isOpenSiteConfirmShown) {
         val uriHandler = LocalUriHandler.current
+        // The site would otherwise follow the browser's language, which the app's needn't be
+        val language = AppLanguage.current(LocalContext.current).tag
         AlertDialog(
             onDismissRequest = { isOpenSiteConfirmShown = false },
             properties = DialogProperties(dismissOnClickOutside = false),
@@ -93,7 +97,7 @@ fun ShareDialog(
                 TextButton(
                     onClick = {
                         isOpenSiteConfirmShown = false
-                        uriHandler.openUri(url)
+                        uriHandler.openUri("$url?lang=$language")
                     },
                 ) { Text(stringResource(R.string.feedback_open)) }
             },

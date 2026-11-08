@@ -66,6 +66,7 @@ export function FeedbackDialog({ onDismiss }: { onDismiss: () => void }) {
   return (
     <>
       <Dialog
+        isForm
         title={
           <div className="dialog-title-row">
             <h2 className="dialog-title">{strings.t('settings_feedback')}</h2>

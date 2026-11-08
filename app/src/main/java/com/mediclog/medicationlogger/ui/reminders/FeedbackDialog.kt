@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.BuildConfig
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Feedback
@@ -191,6 +192,8 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
     }
     if (isOpenSiteConfirmShown) {
         val uriHandler = LocalUriHandler.current
+        // The site would otherwise follow the browser's language, which the app's needn't be
+        val language = AppLanguage.current(LocalContext.current).tag
         AlertDialog(
             onDismissRequest = { isOpenSiteConfirmShown = false },
             properties = DialogProperties(dismissOnClickOutside = false),
@@ -199,7 +202,10 @@ fun FeedbackDialog(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                 TextButton(
                     onClick = {
                         isOpenSiteConfirmShown = false
-                        uriHandler.openUri(BuildConfig.SITE_URL + "feedback/?version=" + Uri.encode(BuildConfig.VERSION_NAME))
+                        uriHandler.openUri(
+                            BuildConfig.SITE_URL + "feedback/?version=" + Uri.encode(BuildConfig.VERSION_NAME) +
+                                "&lang=" + language,
+                        )
                     },
                 ) { Text(stringResource(R.string.feedback_open)) }
             },

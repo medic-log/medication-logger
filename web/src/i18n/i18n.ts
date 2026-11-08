@@ -117,9 +117,7 @@ export class Strings {
       case 'MONTH_DAY_YEAR':
         return `${month.slice(5, 7)}/${yearOf(month)}`
       case 'LANGUAGE': {
-        const name = new Intl.DateTimeFormat(this.language, { month: 'short', timeZone: 'UTC' })
-          .format(utcDate(dateOf(2024, monthOf(month), 1)))
-        return `${name} ${yearOf(month)}`
+        return `${this.monthName(monthOf(month))} ${yearOf(month)}`
       }
     }
   }

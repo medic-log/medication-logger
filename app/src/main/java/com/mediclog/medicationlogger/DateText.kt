@@ -6,6 +6,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.DateStyle
 import java.time.LocalDate
+import java.time.Month
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -27,8 +28,11 @@ fun LocalDate.displayText(style: DateStyle): String = when (style) {
 fun YearMonth.displayText(style: DateStyle): String = when (style) {
     DateStyle.YEAR_MONTH_DAY -> toString()
     DateStyle.DAY_MONTH_YEAR, DateStyle.MONTH_DAY_YEAR -> format(DateTimeFormatter.ofPattern("MM/yyyy"))
-    DateStyle.LANGUAGE -> "${month.getDisplayName(TextStyle.SHORT, Locale.getDefault())} $year"
+    DateStyle.LANGUAGE -> "${month.shortName(Locale.getDefault())} $year"
 }
+
+/** The month's short name in [locale] without the period some languages add, as the web app writes it: "Sep". */
+fun Month.shortName(locale: Locale): String = getDisplayName(TextStyle.SHORT, locale).removeSuffix(".")
 
 /** The box's name, its bought date and number: "2026-11-14 #2". */
 fun Box.displayName(style: DateStyle): String = "${boughtDate.displayText(style)} #$boxNumber"

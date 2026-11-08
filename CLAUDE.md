@@ -10,6 +10,7 @@ Detailed standards load automatically from `.claude/rules/` when you work on mat
 - **Decisions:** take the conventional default and state it. Ask only when the answer would change the outcome and you can't find it out yourself.
 - **Scope:** do what was asked with the smallest change. Reuse existing helpers, remove what the change leaves unused, and mention other problems instead of fixing them.
 - **Reading:** open only the files the change touches (the map below says where things are). Don't explore the codebase, read README.md or re-read files you just edited.
+- **Both apps:** for every change, check that the Android app and the web app (`web/`) behave the same afterwards: what they compute, show (texts, date formats, links and their parameters) and save. Make the matching change and test in the other app, or say why it doesn't apply (platform-only code such as alarms, APK updates or the data file).
 - **Running:** never install or launch the app unless asked; the user runs `/run`. Run `./scripts/check.sh` once when the change is done, not after every edit. On success it prints at most the lint report path.
 - **Docs:** update this file or README.md only when user-visible behavior or architecture changes.
 - **Git:** commit or push only when asked.

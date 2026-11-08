@@ -30,6 +30,8 @@ describe('strings', () => {
     expect(new Strings('en', 'LANGUAGE').date('2026-11-04')).toBe('Nov 4, 2026')
     expect(new Strings('en', 'LANGUAGE').month('2026-11')).toBe('Nov 2026')
     expect(new Strings('es', 'LANGUAGE').date('2026-11-04')).toBe('4 nov 2026')
+    // Without the period Dutch puts after a short month, as on Android
+    expect(new Strings('nl', 'LANGUAGE').month('2026-09')).toBe('sep 2026')
   })
 
   test('a box is named by its bought date and number', () => {

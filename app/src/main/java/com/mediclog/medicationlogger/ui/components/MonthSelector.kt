@@ -30,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.displayText
+import com.mediclog.medicationlogger.shortName
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.Month
 import java.time.YearMonth
-import java.time.format.TextStyle
 
 private const val MONTHS_PER_ROW = 3
 
@@ -113,7 +113,7 @@ private fun MonthPickerDialog(
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         months.forEach { candidate ->
                             val candidateMonth = YearMonth.of(year, candidate)
-                            val name = candidate.getDisplayName(TextStyle.SHORT, locale)
+                            val name = candidate.shortName(locale)
                             val buttonModifier = Modifier.weight(1f)
                             val padding = PaddingValues(0.dp)
                             if (candidateMonth == month) {

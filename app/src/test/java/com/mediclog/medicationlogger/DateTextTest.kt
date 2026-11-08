@@ -39,6 +39,10 @@ class DateTextTest {
 
         Locale.setDefault(Locale.forLanguageTag("es"))
         assertEquals("4 nov 2026", date.displayText(DateStyle.LANGUAGE))
+
+        // Without the period Dutch puts after a short month, as on the web
+        Locale.setDefault(Locale.forLanguageTag("nl"))
+        assertEquals("sep 2026", YearMonth.of(2026, 9).displayText(DateStyle.LANGUAGE))
     }
 
     @Test

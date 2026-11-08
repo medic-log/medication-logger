@@ -53,6 +53,7 @@ export function RecordEditDialog({
   return (
     <Dialog
       key="edit"
+      isForm
       title={title}
       onDismiss={onDismiss}
       buttons={

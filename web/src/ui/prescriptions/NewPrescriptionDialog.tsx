@@ -26,6 +26,7 @@ export function NewPrescriptionDialog({
   const draft = draftOrNull(medication, doctor, pharmacy, pillsPerBox, boxesPerRepetition, repetitionsTotal)
   return (
     <Dialog
+      isForm
       title={strings.t('prescriptions_new')}
       onDismiss={onDismiss}
       buttons={

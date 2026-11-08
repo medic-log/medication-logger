@@ -3,7 +3,8 @@ import { type ReactNode, useEffect, useRef } from 'react'
 /**
  * Material's AlertDialog, as a modal <dialog>: Escape calls [onDismiss] when it's dismissible, and so does a tap
  * outside, but only when there are no [buttons] to close it with.
- * [title] can be text or a whole row.
+ * [title] can be text or a whole row. A dialog that [isForm] scrolls as a whole, title and buttons included, like the
+ * Android app's FormDialog, so a tall form stays reachable while typing; others scroll only their body.
  */
 export function Dialog({
   title,
@@ -12,6 +13,7 @@ export function Dialog({
   onDismiss,
   isDismissible = true,
   isScrolling = true,
+  isForm = false,
   className,
   label,
 }: {
@@ -21,6 +23,7 @@ export function Dialog({
   onDismiss: () => void
   isDismissible?: boolean
   isScrolling?: boolean
+  isForm?: boolean
   className?: string
   label?: string
 }) {
@@ -35,7 +38,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className={`dialog ${className ?? ''}`}
+      className={`dialog ${isForm ? 'form' : ''} ${className ?? ''}`}
       aria-label={label}
       // The dialog itself takes focus, so none of its buttons looks chosen before the user acts
       autoFocus

@@ -348,6 +348,9 @@ dialog.dialog[open] { animation: dialog-in 150ms var(--ease); }
   padding: 8px 24px 0; font-size: 0.875rem; line-height: 1.25rem; letter-spacing: 0.25px; overflow-wrap: anywhere;
 }
 .dialog-body.no-scroll { overflow: visible; }
+dialog.dialog.form { overflow-y: auto; }
+dialog.dialog.form > * { flex: none; }
+dialog.dialog.form .dialog-body { overflow: visible; }
 .dialog-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }
 .dialog-body > .button-text.danger { align-self: flex-start; }
 
