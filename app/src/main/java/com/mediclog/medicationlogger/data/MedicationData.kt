@@ -230,7 +230,7 @@ data class MedicationData(
             isPartial = updated.isPartial,
         )
         return copy(refills = refills.map { if (it.id == refill.id) edited else it })
-            .takingPills(refill, -leftChange)
+            .takingPills(edited, -leftChange)
     }
 
     /** Deletes a refill, and its pills go back to its box. */
@@ -247,7 +247,8 @@ data class MedicationData(
     /** Marks the tutorial as seen, so it no longer opens on its own. */
     fun finishTutorial(): MedicationData = copy(isTutorialDone = true)
 
-    // Later refills recorded how many pills were left after them, so they change along with the box
+    // Later refills recorded how many pills were left after them, so they change along with the box.
+    // Later by date, then id, as an edited date can put a refill out of id order.
     private fun takingPills(refill: Refill, pills: Int) = copy(
         boxes = boxes.map { box ->
             if (box.id == refill.boxId) {
@@ -259,7 +260,9 @@ data class MedicationData(
             }
         },
         refills = refills.map { later ->
-            if (refill.boxId != null && later.boxId == refill.boxId && later.id > refill.id) {
+            if (refill.boxId != null && later.boxId == refill.boxId &&
+                compareValuesBy(later, refill, { it.date }, { it.id }) > 0
+            ) {
                 later.copy(amountRemaining = (later.amountRemaining - pills).coerceAtLeast(0))
             } else {
                 later

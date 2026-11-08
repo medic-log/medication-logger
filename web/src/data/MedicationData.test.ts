@@ -341,6 +341,13 @@ describe('MedicationData', () => {
     expect(deleted.refills[0].amountRemaining).toBe(refilled.refills.at(-1)!.amountRemaining + first.amount)
   })
 
+  test('refills follow date order once a date is edited', () => {
+    const [first, second] = refilled.refills
+    const moved = refilled.editRefill({ ...second, date: '2026-01-04' })
+    const deleted = moved.deleteRefill(first.id)
+    expect(deleted.refills[0].amountRemaining).toBe(second.amountRemaining)
+  })
+
   test('a miss can be edited and deleted', () => {
     const data = new D().logMiss('MISSED', evening(day1))
     const miss = data.misses[0]

@@ -486,6 +486,16 @@ class MedicationDataTest {
     }
 
     @Test
+    fun `refills follow date order once a date is edited`() {
+        val (first, second) = refilled.refills
+        val moved = refilled.editRefill(second.copy(date = day1.minusDays(1)))
+
+        val deleted = moved.deleteRefill(first.id)
+
+        assertEquals(second.amountRemaining, deleted.refills.single().amountRemaining)
+    }
+
+    @Test
     fun `a miss can be edited and deleted`() {
         val data = MedicationData().logMiss(MedicationMiss.Kind.MISSED, day1.atTime(21, 0))
         val miss = data.misses.single()

@@ -315,7 +315,7 @@ export function editRefill(data: MedicationData, updated: Refill): MedicationDat
     amountRemaining: updated.amountRemaining,
     isPartial: updated.isPartial,
   }
-  return takingPills({ ...data, refills: data.refills.map(it => (it.id === refill.id ? edited : it)) }, refill, -leftChange)
+  return takingPills({ ...data, refills: data.refills.map(it => (it.id === refill.id ? edited : it)) }, edited, -leftChange)
 }
 
 /** Deletes a refill, and its pills go back to its box. */
@@ -338,7 +338,8 @@ export function finishTutorial(data: MedicationData): MedicationData {
   return { ...data, isTutorialDone: true }
 }
 
-// Later refills recorded how many pills were left after them, so they change along with the box
+// Later refills recorded how many pills were left after them, so they change along with the box.
+// Later by date, then id, as an edited date can put a refill out of id order.
 function takingPills(data: MedicationData, refill: Refill, pills: number): MedicationData {
   return {
     ...data,
@@ -349,7 +350,8 @@ function takingPills(data: MedicationData, refill: Refill, pills: number): Medic
       return { ...box, pillsLeft, openDate: pillsLeft < box.pillsTotal ? box.openDate : null }
     }),
     refills: data.refills.map(later =>
-      refill.boxId !== null && later.boxId === refill.boxId && later.id > refill.id
+      refill.boxId !== null && later.boxId === refill.boxId &&
+      (later.date > refill.date || (later.date === refill.date && later.id > refill.id))
         ? { ...later, amountRemaining: Math.max(later.amountRemaining - pills, 0) }
         : later,
     ),
