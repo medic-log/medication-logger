@@ -29,6 +29,16 @@ class JsonFileMedicationStoreTest {
     }
 
     @Test
+    fun `a save interrupted after setting the file aside as a backup loads the backup`() {
+        val data = MedicationData().addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 30, 2, 1), day)
+        JsonFileMedicationStore(file).save(data)
+        // What Android 9 and 10 leave when the app is killed between renaming the file and writing the new one
+        file.renameTo(File(file.path + ".bak"))
+
+        assertEquals(data, JsonFileMedicationStore(file).load())
+    }
+
+    @Test
     fun `everything is read back as it was saved`() {
         val data = MedicationData(
             reminderSettings = ReminderSettings(

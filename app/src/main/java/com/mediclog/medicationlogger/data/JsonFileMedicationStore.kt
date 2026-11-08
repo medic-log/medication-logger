@@ -5,6 +5,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -18,9 +19,11 @@ class JsonFileMedicationStore(private val file: File) : MedicationStore {
     private val atomicFile = AtomicFile(file)
 
     override fun load(): MedicationData {
-        if (!atomicFile.baseFile.exists()) return MedicationData()
+        // readFully() restores the backup a save interrupted by a crash leaves, so the file's absence isn't checked
         return try {
             atomicFile.readFully().decodeToString().let(::JSONObject).toMedicationData()
+        } catch (_: FileNotFoundException) {
+            MedicationData()
         } catch (_: IOException) {
             setAsideUnreadableFile()
         } catch (_: JSONException) {
