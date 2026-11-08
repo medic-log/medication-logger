@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { MedicationRepository } from '../data/MedicationRepository'
 import { hasAnyEnabled } from '../data/models'
 import { type AppLanguage, Strings, StringsContext, currentLanguage, saveLanguage } from '../i18n/i18n'
@@ -18,7 +18,8 @@ const notificationAccess = (): NotificationAccess =>
 /** The app: its language, shared objects, reminders and update check, around the main screen. */
 export function App({ repository, updates }: { repository: MedicationRepository; updates: Updates }) {
   const [language, setLanguageState] = useState<AppLanguage>(currentLanguage)
-  const strings = useMemo(() => new Strings(language), [language])
+  const { dateStyle } = useSyncExternalStore(repository.subscribe, repository.getState).data
+  const strings = useMemo(() => new Strings(language, dateStyle), [language, dateStyle])
   const stringsRef = useRef(strings)
   stringsRef.current = strings
   const [viewModel] = useState(

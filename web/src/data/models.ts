@@ -61,7 +61,6 @@ export interface Box {
   notes: string
 }
 
-export const boxName = (box: Box) => `${box.boughtDate} #${box.boxNumber}`
 
 export function boxStatus(box: Box): BoxStatus {
   if (box.isExtra) return 'EXTRA'
@@ -139,3 +138,7 @@ export const hasAnyEnabled = (s: ReminderSettings) =>
 /** The reminders the app can send, in the Android app's order. */
 export const REMINDER_KINDS = ['REFILL', 'PICKUP', 'RUN_OUT', 'PILL', 'EXPIRY'] as const
 export type ReminderKind = (typeof REMINDER_KINDS)[number]
+
+/** How dates are shown: in one of the fixed orders, or as the app's language writes them, as DateStyle. */
+export const DATE_STYLES = ['YEAR_MONTH_DAY', 'DAY_MONTH_YEAR', 'MONTH_DAY_YEAR', 'LANGUAGE'] as const
+export type DateStyle = (typeof DATE_STYLES)[number]

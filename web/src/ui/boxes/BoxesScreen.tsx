@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { type BoxStatus, type Refill, boxName, boxStatus, canRefill, canSaveAsExtra } from '../../data/models'
+import { type BoxStatus, type Refill, boxStatus, canRefill, canSaveAsExtra } from '../../data/models'
 import { type Strings, useStrings } from '../../i18n/i18n'
 import { useNow, useRepositoryState, useServices } from '../AppServices'
 import { CardButton } from '../components/Buttons'
@@ -152,9 +152,9 @@ function BoxCard({
     >
       <div className="row">
         <div className="column grow">
-          <span className="title-medium">{boxName(box)}</span>
-          {box.openDate && <span className="body-medium">{strings.t('boxes_opened', box.openDate)}</span>}
-          {box.expiryDate && <span className="body-medium">{strings.t('boxes_expires', box.expiryDate)}</span>}
+          <span className="title-medium">{strings.boxName(box)}</span>
+          {box.openDate && <span className="body-medium">{strings.t('boxes_opened', strings.date(box.openDate))}</span>}
+          {box.expiryDate && <span className="body-medium">{strings.t('boxes_expires', strings.month(box.expiryDate))}</span>}
         </div>
         <StatusBadge
           status={strings.t(STATUS_LABELS[status])}
@@ -235,6 +235,6 @@ function BoxNotesField({ notes, onNotesChange }: { notes: string; onNotesChange:
 
 function refillSummary(refill: Refill, strings: Strings): string {
   const amounts = strings.plural('refills_amount', refill.amount, refill.amount, refill.amountRemaining)
-  const line = `${refill.date}: ${amounts}`
+  const line = `${strings.date(refill.date)}: ${amounts}`
   return refill.isPartial ? strings.t('refills_partial_suffix', line) : line
 }

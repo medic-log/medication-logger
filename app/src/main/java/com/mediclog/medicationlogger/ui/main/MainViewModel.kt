@@ -2,6 +2,7 @@ package com.mediclog.medicationlogger.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mediclog.medicationlogger.data.DateStyle
 import com.mediclog.medicationlogger.data.LatestRelease
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.data.PrescriptionDraft
@@ -33,6 +34,7 @@ data class MainUiState(
     val isSaveFailed: Boolean = false,
     val tutorialStep: TutorialStep? = null,
     val reminderSettings: ReminderSettings = ReminderSettings(),
+    val dateStyle: DateStyle = DateStyle.YEAR_MONTH_DAY,
     val timeZoneChange: TimeZoneChange? = null,
     val availableUpdate: LatestRelease? = null,
 )
@@ -67,6 +69,7 @@ class MainViewModel(
             isSaveFailed = isSaveFailed,
             tutorialStep = step,
             reminderSettings = data.reminderSettings,
+            dateStyle = data.dateStyle,
             timeZoneChange = zoneChange,
             availableUpdate = update.takeIf { step == null && zoneChange == null },
         )
@@ -77,6 +80,7 @@ class MainViewModel(
             isSaveFailed = repository.isSaveFailed.value,
             tutorialStep = tutorialStep.value,
             reminderSettings = repository.data.value.reminderSettings,
+            dateStyle = repository.data.value.dateStyle,
         ),
     )
 

@@ -43,8 +43,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.Refill
+import com.mediclog.medicationlogger.displayName
+import com.mediclog.medicationlogger.displayText
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.LinkIconButton
 import com.mediclog.medicationlogger.ui.components.RecordCard
@@ -298,7 +301,7 @@ private fun RefillCard(
     RecordCard(modifier = modifier, onEdit = onEdit, shape = shape) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = refill.date.toString(),
+                text = refill.date.displayText(),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -312,7 +315,7 @@ private fun RefillCard(
                 )
                 if (openBox != null) {
                     Text(
-                        text = stringResource(R.string.refills_box, entry.boxName, refill.amountRemaining),
+                        text = stringResource(R.string.refills_box, entry.box?.displayName().orEmpty(), refill.amountRemaining),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -331,7 +334,7 @@ private fun RefillCard(
                 descriptionRes = if (openBox != null) R.string.link_open_box else R.string.link_box_deleted,
                 onClick = openBox,
                 modifier = Modifier.padding(start = 4.dp),
-                label = entry.boxNumber?.let { stringResource(R.string.link_box_number, it) },
+                label = entry.box?.boxNumber?.let { stringResource(R.string.link_box_number, it) },
             )
         }
     }
@@ -362,7 +365,7 @@ private fun MissCard(
     isCounted: Boolean = false,
 ) {
     RecordCard(modifier = modifier, onEdit = onEdit, shape = shape) {
-        Text(text = miss.date.toString(), style = MaterialTheme.typography.titleMedium)
+        Text(text = miss.date.displayText(), style = MaterialTheme.typography.titleMedium)
         Text(
             text = stringResource(
                 when (miss.kind) {
@@ -415,8 +418,8 @@ private fun RefillsScreenPreview() {
                 RefillLogEntry.MissEntry(MedicationMiss(1, date, MedicationMiss.Kind.DELAYED, LocalTime.of(10, 30))),
                 RefillLogEntry.RefillGroupEntry(
                     listOf(
-                        RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), "2026-11-02 #2", 2, 3, 0..30),
-                        RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), "2026-10-01 #1", 1, 4, 0..25),
+                        RefillLogEntry.RefillEntry(Refill(2, 2, 1, date, 3, 27, true), Box(2, 1, 2, date, 27, 30), 3, 0..30),
+                        RefillLogEntry.RefillEntry(Refill(1, 1, 1, date, 4, 0, true), Box(1, 1, 1, date, 0, 30), 4, 0..25),
                     ),
                     listOf(RefillLogEntry.MissEntry(MedicationMiss(2, date, MedicationMiss.Kind.MISSED))),
                 ),

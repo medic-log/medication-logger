@@ -1,9 +1,9 @@
 import { type MedicationData, PILLS_PER_WEEK, lotPills } from '../../data/MedicationData'
-import { type MedicationMiss, type Refill, boxName } from '../../data/models'
+import type { Box, MedicationMiss, Refill } from '../../data/models'
 import type { LocalDate, LocalDateTime } from '../../data/time'
 
 /**
- * A refill, the name and number of the box it came from, and the most it could be edited up to.
+ * A refill, the box it came from, and the most it could be edited up to.
  * leftRange is what its pills left can be edited to while its box stays valid; null without a box.
  */
 export interface RefillEntry {
@@ -11,8 +11,7 @@ export interface RefillEntry {
   key: string
   date: LocalDate
   refill: Refill
-  boxName: string
-  boxNumber: number | null
+  box: Box | null
   maxAmount: number
   leftRange: [number, number] | null
 }
@@ -75,8 +74,7 @@ export function refillsUiState(data: MedicationData, now: LocalDateTime): Refill
       key: `refill-${refill.id}`,
       date: refill.date,
       refill,
-      boxName: box ? boxName(box) : '',
-      boxNumber: box?.boxNumber ?? null,
+      box: box ?? null,
       maxAmount: refill.amount + (box?.pillsLeft ?? 0),
       leftRange: box
         ? [Math.max(refill.amountRemaining - box.pillsLeft, 0), refill.amountRemaining + box.pillsTotal - box.pillsLeft]

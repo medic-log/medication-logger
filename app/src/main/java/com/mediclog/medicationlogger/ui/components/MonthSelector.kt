@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.mediclog.medicationlogger.R
+import com.mediclog.medicationlogger.displayText
 import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.Month
 import java.time.YearMonth
@@ -49,7 +50,7 @@ fun MonthSelector(
     OutlinedButton(onClick = { isDialogOpen = true }, modifier = modifier, border = outlinedBorder(), colors = outlinedButtonColors()) {
         Text(
             if (month != null) {
-                stringResource(R.string.month_selector_value, label, month.toString())
+                stringResource(R.string.month_selector_value, label, month.displayText())
             } else {
                 stringResource(R.string.month_selector_empty, label)
             },

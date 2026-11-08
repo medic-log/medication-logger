@@ -2,7 +2,6 @@ import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import resources from 'virtual:android-resources'
 import { readExport, writeExport } from '../../data/MedicationExport'
 import { type ReminderSettings, hasAnyEnabled } from '../../data/models'
-import { boxName } from '../../data/models'
 import { dayOfWeek, toLocalDate, toLocalTime } from '../../data/time'
 import { useStrings } from '../../i18n/i18n'
 import { useNow, useRepositoryState, useServices } from '../AppServices'
@@ -19,6 +18,7 @@ import { UpdatePrompt } from '../components/UpdatePrompt'
 import { WeekdaySelector } from '../components/WeekdaySelector'
 import type { AvailableUpdate } from '../main/MainViewModel'
 import { FeedbackDialog } from './FeedbackDialog'
+import { DateFormatDialog } from './DateFormatDialog'
 import { LanguageDialog } from './LanguageDialog'
 import { remindersUiState } from './remindersState'
 import { SETTINGS_ACTIONS, SETTINGS_ROWS, type SettingsAction } from './SettingsAction'
@@ -52,6 +52,7 @@ export function SettingsScreen({
   const [isImportConfirmShown, setImportConfirmShown] = useState(false)
   const [importText, setImportText] = useState<string | null>(null)
   const [isLanguageShown, setLanguageShown] = useState(false)
+  const [isDateFormatShown, setDateFormatShown] = useState(false)
   const [isFeedbackShown, setFeedbackShown] = useState(false)
   const [isShareShown, setShareShown] = useState(false)
   // A newer version found, waiting for the user to choose to update
@@ -91,6 +92,8 @@ export function SettingsScreen({
       }
       case 'LANGUAGE':
         return setLanguageShown(true)
+      case 'DATE_FORMAT':
+        return setDateFormatShown(true)
       case 'FEEDBACK':
         return setFeedbackShown(true)
       case 'EXPORT':
@@ -135,7 +138,7 @@ export function SettingsScreen({
             />
           </div>
           {settings.isPillEnabled &&
-            reminderNext(strings.t('reminders_pill_next', toLocalDate(state.nextPill), toLocalTime(state.nextPill)))}
+            reminderNext(strings.t('reminders_pill_next', strings.date(toLocalDate(state.nextPill)), toLocalTime(state.nextPill)))}
         </ReminderCard>
         <ReminderCard
           title={strings.t('reminders_refill_title')}
@@ -157,7 +160,7 @@ export function SettingsScreen({
               strings.t(
                 'reminders_refill_next',
                 strings.dayName(dayOfWeek(toLocalDate(state.nextRefill))),
-                toLocalDate(state.nextRefill),
+                strings.date(toLocalDate(state.nextRefill)),
                 toLocalTime(state.nextRefill),
               ),
             )}
@@ -174,7 +177,7 @@ export function SettingsScreen({
             onDaysChange={it => onSettingsChange({ ...settings, runOutDaysBefore: it })}
           />
           {reminderNext(
-            state.runOutDate ? strings.t('reminders_run_out_date', state.runOutDate) : strings.t('reminders_run_out_none'),
+            state.runOutDate ? strings.t('reminders_run_out_date', strings.date(state.runOutDate)) : strings.t('reminders_run_out_none'),
           )}
           {state.runOutDate && (
             <span className="body-small">
@@ -194,7 +197,7 @@ export function SettingsScreen({
             onDaysChange={it => onSettingsChange({ ...settings, pickupDaysAfterOrder: it })}
           />
           {reminderNext(
-            state.pickupDate ? strings.t('reminders_pickup_next', state.pickupDate) : strings.t('reminders_pickup_none'),
+            state.pickupDate ? strings.t('reminders_pickup_next', strings.date(state.pickupDate)) : strings.t('reminders_pickup_none'),
           )}
         </ReminderCard>
         <ReminderCard
@@ -210,7 +213,7 @@ export function SettingsScreen({
           />
           {reminderNext(
             state.expiringBox
-              ? strings.t('reminders_expiry_next', boxName(state.expiringBox), String(state.expiringBox.expiryDate))
+              ? strings.t('reminders_expiry_next', strings.boxName(state.expiringBox), state.expiringBox.expiryDate ? strings.month(state.expiringBox.expiryDate) : '')
               : strings.t('reminders_expiry_none'),
           )}
         </ReminderCard>
@@ -257,6 +260,17 @@ export function SettingsScreen({
             if (chosen !== language) setLanguage(chosen)
           }}
           onDismiss={() => setLanguageShown(false)}
+        />
+      )}
+      {isDateFormatShown && (
+        <DateFormatDialog
+          selected={data.dateStyle}
+          today={toLocalDate(repository.now())}
+          onConfirm={chosen => {
+            setDateFormatShown(false)
+            repository.updateDateStyle(chosen)
+          }}
+          onDismiss={() => setDateFormatShown(false)}
         />
       )}
       <UpdatePrompt update={availableUpdate} onDismiss={() => setAvailableUpdate(null)} />

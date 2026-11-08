@@ -49,6 +49,7 @@ describe('LocalStorageMedicationStore', () => {
         pickupDaysAfterOrder: 5, isRunOutEnabled: true, runOutDaysBefore: 20, isPillEnabled: true,
         pillTime: '21:15', isExpiryEnabled: false, expiryDaysBefore: 30, utcOffset: '+05:30',
       },
+      dateStyle: 'LANGUAGE',
     })
       .addPrescription(draftOf('Ibuprofen "600" mg', 'Dr "Quote"', 'Pharmacy, ünï', 7, 1, 2), day)
       .addPrescription(draftOf('Test medication', 'Dr Test', 'Test Pharmacy', 30, 2, 1), day)
@@ -71,6 +72,12 @@ describe('LocalStorageMedicationStore', () => {
       delete json.reminderSettings.expiryDaysBefore
     })
     expect(store().load()).toEqual(emptyData())
+  })
+
+  test('a file saved before the date style could be chosen shows year-month-day', () => {
+    store().save(emptyData({ dateStyle: 'MONTH_DAY_YEAR' }))
+    rewrite(json => delete json.dateStyle)
+    expect(store().load().dateStyle).toBe('YEAR_MONTH_DAY')
   })
 
   test('open and expiry dates load back', () => {

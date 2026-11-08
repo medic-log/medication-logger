@@ -1,7 +1,7 @@
 // Ported from app/src/test/.../data/MedicationDataTest.kt
 import { describe, expect, test } from 'vitest'
 import { D, draftOf } from './testing'
-import { boxName, boxStatus, boxesTotal, isPrescriptionActive, pillsPerRepetition, prescriptionPillsTotal } from './models'
+import { boxStatus, boxesTotal, isPrescriptionActive, pillsPerRepetition, prescriptionPillsTotal } from './models'
 import { atTime, plusDays, plusDaysTime, plusWeeks } from './time'
 
 const day1 = '2026-01-05'
@@ -39,7 +39,7 @@ describe('MedicationData', () => {
     expect(second.boxes.map(it => it.boxNumber)).toEqual([1, 2, 3, 4, 5, 6])
     expect(second.boxes.every(it => it.prescriptionId === 1)).toBe(true)
     expect(second.boxes.at(-1)!.pillsLeft).toBe(30)
-    expect(boxName(second.boxes[3])).toBe(`${day2} #4`)
+    expect(second.boxes[3].boughtDate).toBe(day2)
   })
 
   test('buying updates dates, repetitions and status until finished', () => {

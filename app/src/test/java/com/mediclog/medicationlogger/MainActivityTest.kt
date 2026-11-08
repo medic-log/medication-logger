@@ -26,6 +26,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
+import com.mediclog.medicationlogger.data.DateStyle
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.ReminderCalculator
@@ -47,6 +48,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -135,6 +137,21 @@ class MainActivityTest {
             R.string.main_tab_refills,
         ).map { string(it) }
         assertEquals(expected, tabs)
+    }
+
+    @Test
+    fun `the date format chosen in settings is used for the dates shown`() {
+        addBox()
+        assertShown("$today #1")
+
+        openTab(R.string.main_tab_settings)
+        composeRule.onNodeWithText(string(R.string.settings_date_format)).performScrollTo().performClick()
+        tap(string(R.string.settings_date_format_day_month_year))
+        tap(string(R.string.settings_language_confirm))
+        openTab(R.string.main_tab_boxes)
+
+        assertShown("${LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))} #1")
+        assertEquals(DateStyle.DAY_MONTH_YEAR, data.dateStyle)
     }
 
     @Test

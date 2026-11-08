@@ -22,7 +22,7 @@ export function MonthSelector({
   return (
     <>
       <OutlinedButton onClick={() => setDialogOpen(true)} style={{ width: '100%' }}>
-        {month !== null ? strings.t('month_selector_value', label, month) : strings.t('month_selector_empty', label)}
+        {month !== null ? strings.t('month_selector_value', label, strings.month(month)) : strings.t('month_selector_empty', label)}
       </OutlinedButton>
       {isDialogOpen && (
         <MonthPickerDialog

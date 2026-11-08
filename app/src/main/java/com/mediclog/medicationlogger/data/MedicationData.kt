@@ -20,6 +20,7 @@ data class MedicationData(
     val misses: List<MedicationMiss> = emptyList(),
     val reminderSettings: ReminderSettings = ReminderSettings(),
     val isTutorialDone: Boolean = false,
+    val dateStyle: DateStyle = DateStyle.YEAR_MONTH_DAY,
 ) {
     /**
      * Pills in the weekly lot at [now], counted from the first refill: refills add their pills and missed doses one,

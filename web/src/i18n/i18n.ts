@@ -3,7 +3,8 @@
 import { createContext, useContext } from 'react'
 import resources from 'virtual:android-resources'
 import { WEB_STRINGS } from './webStrings'
-import { type DayOfWeek, type LocalDate, DAYS_OF_WEEK, dateOf, toEpochDay } from '../data/time'
+import type { Box, DateStyle } from '../data/models'
+import { type DayOfWeek, type LocalDate, type YearMonth, DAYS_OF_WEEK, dateOf, monthOf, toEpochDay, yearOf } from '../data/time'
 
 /** The languages the app is translated into, each named in itself. */
 export const APP_LANGUAGES = [
@@ -49,7 +50,10 @@ export function format(template: string, args: (string | number)[]): string {
 export class Strings {
   private readonly plurals: Intl.PluralRules
 
-  constructor(readonly language: AppLanguage) {
+  constructor(
+    readonly language: AppLanguage,
+    readonly dateStyle: DateStyle = 'YEAR_MONTH_DAY',
+  ) {
     this.plurals = new Intl.PluralRules(language)
   }
 
@@ -88,6 +92,40 @@ export class Strings {
     new Intl.DateTimeFormat(this.language, { month: 'short', timeZone: 'UTC' })
       .format(utcDate(dateOf(2024, month, 1)))
       .replace(/\.$/, '')
+
+  /** The date in [style], as LocalDate.displayText: "2026-11-14", "14/11/2026", "11/14/2026" or "Nov 14, 2026". */
+  date = (date: LocalDate, style: DateStyle = this.dateStyle): string => {
+    const [year, month, day] = date.split('-')
+    switch (style) {
+      case 'YEAR_MONTH_DAY':
+        return date
+      case 'DAY_MONTH_YEAR':
+        return `${day}/${month}/${year}`
+      case 'MONTH_DAY_YEAR':
+        return `${month}/${day}/${year}`
+      case 'LANGUAGE':
+        return new Intl.DateTimeFormat(this.language, { dateStyle: 'medium', timeZone: 'UTC' }).format(utcDate(date))
+    }
+  }
+
+  /** The month in the date style, as YearMonth.displayText: "2026-11", "11/2026" or "Nov 2026". */
+  month = (month: YearMonth): string => {
+    switch (this.dateStyle) {
+      case 'YEAR_MONTH_DAY':
+        return month
+      case 'DAY_MONTH_YEAR':
+      case 'MONTH_DAY_YEAR':
+        return `${month.slice(5, 7)}/${yearOf(month)}`
+      case 'LANGUAGE': {
+        const name = new Intl.DateTimeFormat(this.language, { month: 'short', timeZone: 'UTC' })
+          .format(utcDate(dateOf(2024, monthOf(month), 1)))
+        return `${name} ${yearOf(month)}`
+      }
+    }
+  }
+
+  /** The box's name, its bought date and number, as Box.displayName: "2026-11-14 #2". */
+  boxName = (box: Box): string => `${this.date(box.boughtDate)} #${box.boxNumber}`
 }
 
 const utcDate = (date: LocalDate) => new Date(toEpochDay(date) * 86_400_000)

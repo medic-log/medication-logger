@@ -56,11 +56,14 @@ class JsonFileMedicationStore(private val file: File) : MedicationStore {
 private fun MedicationData.toJson() = recordsToJson()
     .put("reminderSettings", reminderSettings.toJson())
     .put("isTutorialDone", isTutorialDone)
+    .put("dateStyle", dateStyle.name)
 
 private fun JSONObject.toMedicationData() = toRecords().copy(
     reminderSettings = getJSONObject("reminderSettings").toReminderSettings(),
     // Files saved before the tutorial existed show it once too
     isTutorialDone = optBoolean("isTutorialDone", false),
+    // Files saved before the date style could be chosen show year-month-day, as the app did then
+    dateStyle = DateStyle.entries.find { it.name == optString("dateStyle") } ?: DateStyle.YEAR_MONTH_DAY,
 )
 
 /** The prescriptions, boxes, refills and misses alone, as the file and exports hold them. */

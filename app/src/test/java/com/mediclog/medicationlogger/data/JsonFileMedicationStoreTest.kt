@@ -66,6 +66,7 @@ class JsonFileMedicationStoreTest {
             .setBoxNotes(3, "For travel, \"spare\"")
             .logMiss(MedicationMiss.Kind.MISSED, day.atTime(21, 0))
             .finishTutorial()
+            .copy(dateStyle = DateStyle.LANGUAGE)
 
         JsonFileMedicationStore(file).save(data)
 
@@ -83,6 +84,14 @@ class JsonFileMedicationStoreTest {
         file.writeText(json.toString())
 
         assertEquals(MedicationData(), JsonFileMedicationStore(file).load())
+    }
+
+    @Test
+    fun `a file saved before the date style could be chosen shows year-month-day`() {
+        JsonFileMedicationStore(file).save(MedicationData(dateStyle = DateStyle.MONTH_DAY_YEAR))
+        file.writeText(JSONObject(file.readText()).apply { remove("dateStyle") }.toString())
+
+        assertEquals(DateStyle.YEAR_MONTH_DAY, JsonFileMedicationStore(file).load().dateStyle)
     }
 
     @Test

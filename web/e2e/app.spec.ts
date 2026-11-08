@@ -11,6 +11,22 @@ test('tabs are in the order settings, prescriptions, boxes, refills', async ({ a
   expect(tabs).toEqual(['main_tab_settings', 'main_tab_prescriptions', 'main_tab_boxes', 'main_tab_refills'].map(it => string(it)))
 })
 
+test('the date format chosen in settings is used for the dates shown', async ({ app, page }) => {
+  await app.addBox()
+  const day = await today(page)
+  await expect(app.text(`${day} #1`)).toBeVisible()
+
+  await app.openTab('main_tab_settings')
+  await app.tap(string('settings_date_format'))
+  const [year, month, date] = day.split('-')
+  await page.getByRole('radio', { name: string('settings_date_format_day_month_year'), exact: true }).click()
+  await app.tap(string('settings_language_confirm'))
+  await app.openTab('main_tab_boxes')
+
+  await expect(app.text(`${date}/${month}/${year} #1`)).toBeVisible()
+  expect((await savedData(page)).dateStyle).toBe('DAY_MONTH_YEAR')
+})
+
 test('a new prescription is dated today, shows its totals and buys boxes', async ({ app, page }) => {
   const day = await today(page)
   await app.openTab('main_tab_prescriptions')

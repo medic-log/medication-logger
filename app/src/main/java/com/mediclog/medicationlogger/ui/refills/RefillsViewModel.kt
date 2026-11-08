@@ -2,6 +2,7 @@ package com.mediclog.medicationlogger.ui.refills
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.MedicationMiss
 import com.mediclog.medicationlogger.data.MedicationRepository
@@ -22,13 +23,12 @@ sealed interface RefillLogEntry {
     val date: LocalDate
 
     /**
-     * A refill, the name and number of the box it came from, and the most it could be edited up to.
+     * A refill, the box it came from, and the most it could be edited up to.
      * [leftRange] is what its pills left can be edited to while its box stays valid; null without a box.
      */
     data class RefillEntry(
         val refill: Refill,
-        val boxName: String,
-        val boxNumber: Int?,
+        val box: Box?,
         val maxAmount: Int,
         val leftRange: IntRange?,
     ) : RefillLogEntry {
@@ -84,7 +84,7 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
                 (refill.amountRemaining - it.pillsLeft).coerceAtLeast(0)..
                     refill.amountRemaining + it.pillsTotal - it.pillsLeft
             }
-            RefillLogEntry.RefillEntry(refill, box?.name.orEmpty(), box?.boxNumber, maxAmount, leftRange)
+            RefillLogEntry.RefillEntry(refill, box, maxAmount, leftRange)
         }
         val refillEntries = groupingFullWeeks(refills)
         // A dose is its day's pill, which comes before that day's refills as in lotPills, so it belongs to the last

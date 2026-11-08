@@ -3,6 +3,7 @@
 // (the same object).
 import {
   type Box,
+  type DateStyle,
   type MedicationMiss,
   type MissKind,
   type Prescription,
@@ -40,6 +41,7 @@ export interface MedicationData {
   misses: MedicationMiss[]
   reminderSettings: ReminderSettings
   isTutorialDone: boolean
+  dateStyle: DateStyle
 }
 
 export function emptyData(overrides: Partial<MedicationData> = {}): MedicationData {
@@ -50,6 +52,7 @@ export function emptyData(overrides: Partial<MedicationData> = {}): MedicationDa
     misses: [],
     reminderSettings: DEFAULT_REMINDER_SETTINGS,
     isTutorialDone: false,
+    dateStyle: 'YEAR_MONTH_DAY',
     ...overrides,
   }
 }

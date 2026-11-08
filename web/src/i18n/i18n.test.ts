@@ -16,6 +16,28 @@ describe('strings', () => {
     expect(new Strings('en').t('link_box_number', 4)).toBe('#4')
   })
 
+  test('show dates and months in each fixed style', () => {
+    const date = '2026-11-04'
+    expect(new Strings('en').date(date)).toBe('2026-11-04')
+    expect(new Strings('en', 'DAY_MONTH_YEAR').date(date)).toBe('04/11/2026')
+    expect(new Strings('en', 'MONTH_DAY_YEAR').date(date)).toBe('11/04/2026')
+    expect(new Strings('en').month('2026-11')).toBe('2026-11')
+    expect(new Strings('en', 'DAY_MONTH_YEAR').month('2026-11')).toBe('11/2026')
+    expect(new Strings('en', 'MONTH_DAY_YEAR').month('2026-11')).toBe('11/2026')
+  })
+
+  test('the language style reads as the language writes dates', () => {
+    expect(new Strings('en', 'LANGUAGE').date('2026-11-04')).toBe('Nov 4, 2026')
+    expect(new Strings('en', 'LANGUAGE').month('2026-11')).toBe('Nov 2026')
+    expect(new Strings('es', 'LANGUAGE').date('2026-11-04')).toBe('4 nov 2026')
+  })
+
+  test('a box is named by its bought date and number', () => {
+    const box = { id: 1, prescriptionId: 1, boxNumber: 2, boughtDate: '2026-11-04', pillsLeft: 30, pillsTotal: 30,
+      isExtra: false, openDate: null, expiryDate: null, notes: '' }
+    expect(new Strings('en').boxName(box)).toBe('2026-11-04 #2')
+  })
+
   test('pick the plural form of their language', () => {
     const en = new Strings('en')
     expect(en.plural('refills_pills', 1, 1)).toBe('1 pill')

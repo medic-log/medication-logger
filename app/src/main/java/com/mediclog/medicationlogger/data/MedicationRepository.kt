@@ -88,6 +88,8 @@ class MedicationRepository(
 
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
+    fun updateDateStyle(style: DateStyle) = change { it.copy(dateStyle = style) }
+
     /**
      * Moves the reminder settings to the device's offset from UTC when they're at another, after a move to another
      * time zone or a change to or from summer time, keeping each reminder at the same moment. A new zone at the same
@@ -115,7 +117,8 @@ class MedicationRepository(
     }
 
     private fun refreshShownData() {
-        mutableShownData.value = sample.value?.copy(reminderSettings = mutableData.value.reminderSettings)
+        mutableShownData.value = sample.value
+            ?.copy(reminderSettings = mutableData.value.reminderSettings, dateStyle = mutableData.value.dateStyle)
             ?: mutableData.value
     }
 

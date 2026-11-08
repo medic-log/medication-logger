@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mediclog.medicationlogger.LocalDateStyle
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.boxes.BoxesRoute
@@ -64,7 +65,7 @@ fun MainRoute(
         onStopOrDispose {}
     }
     val tutorialTargets = remember { TutorialTargets() }
-    CompositionLocalProvider(LocalTutorialTargets provides tutorialTargets) {
+    CompositionLocalProvider(LocalTutorialTargets provides tutorialTargets, LocalDateStyle provides state.dateStyle) {
         MainScreen(
             state = state,
             onSelectTab = viewModel::selectTab,

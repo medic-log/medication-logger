@@ -1,7 +1,7 @@
 import * as actions from './MedicationData'
 import type { MedicationData } from './MedicationData'
 import type { MedicationStore } from './MedicationStore'
-import type { Box, MedicationMiss, MissKind, Prescription, PrescriptionDraft, Refill, ReminderSettings } from './models'
+import type { Box, DateStyle, MedicationMiss, MissKind, Prescription, PrescriptionDraft, Refill, ReminderSettings } from './models'
 import { settingsAtOffset } from './ReminderCalculator'
 import {
   type LocalDateTime,
@@ -84,6 +84,8 @@ export class MedicationRepository {
 
   updateReminderSettings = (settings: ReminderSettings) => this.change(it => ({ ...it, reminderSettings: settings }))
 
+  updateDateStyle = (style: DateStyle) => this.change(it => ({ ...it, dateStyle: style }))
+
   /**
    * Moves the reminder settings to the device's offset from UTC when they're at another, after a move to another
    * time zone or a change to or from summer time, keeping each reminder at the same moment. A new zone at the same
@@ -112,7 +114,7 @@ export class MedicationRepository {
   private today = () => toLocalDate(this.clock())
 
   private shownDataOf(data: MedicationData): MedicationData {
-    return this.sample ? { ...this.sample, reminderSettings: data.reminderSettings } : data
+    return this.sample ? { ...this.sample, reminderSettings: data.reminderSettings, dateStyle: data.dateStyle } : data
   }
 
   private change(action: (data: MedicationData) => MedicationData) {

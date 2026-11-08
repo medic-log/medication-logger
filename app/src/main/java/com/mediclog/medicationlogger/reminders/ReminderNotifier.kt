@@ -12,6 +12,8 @@ import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
+import com.mediclog.medicationlogger.displayName
+import com.mediclog.medicationlogger.displayText
 import java.time.Clock
 import java.time.LocalDateTime
 
@@ -21,8 +23,9 @@ private const val CHANNEL_ID = "reminders"
 class ReminderNotifier(private val context: Context, private val clock: Clock) {
     private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
 
-    /** Shows the notification for [kind], replacing any earlier one of the same kind. */
+    /** Shows the notification for [kind], replacing any earlier one of the same kind; none if nothing is due. */
     fun show(kind: ReminderKind, data: MedicationData) {
+        val text = textOf(kind, data) ?: return
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
@@ -39,7 +42,7 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
         val notification = Notification.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_refill)
             .setContentTitle(context.getString(titleOf(kind)))
-            .setContentText(textOf(kind, data))
+            .setContentText(text)
             .setContentIntent(openApp)
             .setAutoCancel(true)
             .build()
@@ -54,24 +57,25 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
         ReminderKind.EXPIRY -> R.string.reminders_notification_expiry_title
     }
 
-    private fun textOf(kind: ReminderKind, data: MedicationData) = when (kind) {
+    // Null when the date the text names is missing, which isDue normally rules out
+    private fun textOf(kind: ReminderKind, data: MedicationData): String? = when (kind) {
         ReminderKind.REFILL -> context.getString(R.string.reminders_notification_refill_text)
         ReminderKind.PICKUP -> context.getString(R.string.reminders_notification_pickup_text)
         ReminderKind.PILL -> context.getString(R.string.reminders_notification_pill_text)
-        ReminderKind.RUN_OUT -> context.getString(
-            if (data.prescriptions.any { it.canBuy }) {
-                R.string.reminders_notification_run_out_repetition_text
-            } else {
-                R.string.reminders_notification_run_out_text
-            },
-            ReminderCalculator.boughtPillsRunOutDate(data, LocalDateTime.now(clock)).toString(),
-        )
-        ReminderKind.EXPIRY -> ReminderCalculator.expiringBox(data).let { box ->
+        ReminderKind.RUN_OUT -> ReminderCalculator.boughtPillsRunOutDate(data, LocalDateTime.now(clock))?.let { date ->
             context.getString(
-                R.string.reminders_notification_expiry_text,
-                box?.name.orEmpty(),
-                box?.expiryDate.toString(),
+                if (data.prescriptions.any { it.canBuy }) {
+                    R.string.reminders_notification_run_out_repetition_text
+                } else {
+                    R.string.reminders_notification_run_out_text
+                },
+                date.displayText(data.dateStyle),
             )
+        }
+        ReminderKind.EXPIRY -> ReminderCalculator.expiringBox(data)?.let { box ->
+            box.expiryDate?.let {
+                context.getString(R.string.reminders_notification_expiry_text, box.displayName(data.dateStyle), it.displayText(data.dateStyle))
+            }
         }
     }
 }

@@ -230,7 +230,7 @@ describe('refills log', () => {
     expect(state.entries[0].type).toBe('miss')
     const refills = state.entries.filter(it => it.type === 'refill')
     expect(refills.map(it => it.refill.amountRemaining)).toEqual([16, 23])
-    expect(refills[0].boxName).toBe(`${today} #1`)
+    expect(refills[0].box?.boxNumber).toBe(1)
     expect(state.lotPills).toBe(14)
   })
 

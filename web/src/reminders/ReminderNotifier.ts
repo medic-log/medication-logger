@@ -1,5 +1,5 @@
 import type { MedicationData } from '../data/MedicationData'
-import { canBuy, boxName } from '../data/models'
+import { canBuy } from '../data/models'
 import type { ReminderKind } from '../data/models'
 import { boughtPillsRunOutDate, expiringBox } from '../data/ReminderCalculator'
 import type { LocalDateTime } from '../data/time'
@@ -13,7 +13,10 @@ const TITLES: Record<ReminderKind, string> = {
   EXPIRY: 'reminders_notification_expiry_title',
 }
 
-/** The title and text of the notification for [kind], as the Android app's ReminderNotifier writes them. */
+/**
+ * The title and text of the notification for [kind], as the Android app's ReminderNotifier writes them; null when
+ * the date the text names is missing, which isDue normally rules out.
+ */
 export function reminderNotification(kind: ReminderKind, data: MedicationData, strings: Strings, now: LocalDateTime) {
   const title = strings.t(TITLES[kind])
   switch (kind) {
@@ -23,19 +26,23 @@ export function reminderNotification(kind: ReminderKind, data: MedicationData, s
       return { title, text: strings.t('reminders_notification_pickup_text') }
     case 'PILL':
       return { title, text: strings.t('reminders_notification_pill_text') }
-    case 'RUN_OUT':
+    case 'RUN_OUT': {
+      const date = boughtPillsRunOutDate(data, now)
+      if (date === null) return null
       return {
         title,
         text: strings.t(
           data.prescriptions.some(canBuy)
             ? 'reminders_notification_run_out_repetition_text'
             : 'reminders_notification_run_out_text',
-          String(boughtPillsRunOutDate(data, now)),
+          strings.date(date),
         ),
       }
+    }
     case 'EXPIRY': {
       const box = expiringBox(data)
-      return { title, text: strings.t('reminders_notification_expiry_text', box ? boxName(box) : '', String(box?.expiryDate)) }
+      if (!box?.expiryDate) return null
+      return { title, text: strings.t('reminders_notification_expiry_text', strings.boxName(box), strings.month(box.expiryDate)) }
     }
   }
 }
@@ -46,7 +53,9 @@ export function reminderNotification(kind: ReminderKind, data: MedicationData, s
  */
 export async function showReminder(kind: ReminderKind, data: MedicationData, strings: Strings, now: LocalDateTime) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return
-  const { title, text } = reminderNotification(kind, data, strings, now)
+  const notification = reminderNotification(kind, data, strings, now)
+  if (!notification) return
+  const { title, text } = notification
   const options: NotificationOptions = { body: text, tag: kind, icon: 'icon-192.png', badge: 'icon-192.png', lang: strings.language }
   const registration = await navigator.serviceWorker?.getRegistration()
   if (registration) await registration.showNotification(title, options)

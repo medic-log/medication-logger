@@ -1,7 +1,7 @@
 // The JSON the Android app's JsonFileMedicationStore writes, read and written the same way, so an export moves
 // between the two apps and the web app's saved data has the Android file's shape.
 // Like org.json's put(), a null link or date leaves its key out; a miss's time is written as null.
-import { DEFAULT_REMINDER_SETTINGS } from './models'
+import { DATE_STYLES, DEFAULT_REMINDER_SETTINGS } from './models'
 import type { Box, MedicationMiss, MissKind, Prescription, PrescriptionStatus, Refill, ReminderSettings } from './models'
 import { type MedicationData, emptyData } from './MedicationData'
 import { DAYS_OF_WEEK, type DayOfWeek, parseDate, parseOffset, parseTime, parseYearMonth } from './time'
@@ -31,6 +31,7 @@ export function dataToJson(data: MedicationData): Json {
     ...recordsToJson(data),
     reminderSettings: data.reminderSettings,
     isTutorialDone: data.isTutorialDone,
+    dateStyle: data.dateStyle,
   }
 }
 
@@ -52,6 +53,8 @@ export function jsonToData(json: unknown): MedicationData {
     reminderSettings: toReminderSettings(object(root.reminderSettings)),
     // Files saved before the tutorial existed show it once too
     isTutorialDone: optBoolean(root, 'isTutorialDone', false),
+    // Files saved before the date style could be chosen show year-month-day, as the app did then
+    dateStyle: DATE_STYLES.find(it => it === root.dateStyle) ?? 'YEAR_MONTH_DAY',
   }
 }
 

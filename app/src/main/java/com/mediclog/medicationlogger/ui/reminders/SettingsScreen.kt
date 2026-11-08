@@ -57,9 +57,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.BuildConfig
+import com.mediclog.medicationlogger.LocalDateStyle
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.LatestRelease
 import com.mediclog.medicationlogger.data.ReminderSettings
+import com.mediclog.medicationlogger.displayName
+import com.mediclog.medicationlogger.displayText
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.RecordCard
 import com.mediclog.medicationlogger.ui.components.SquircleShape
@@ -146,6 +149,18 @@ fun RemindersRoute(
     }
     var isImportConfirmShown by rememberSaveable { mutableStateOf(false) }
     var isLanguageShown by rememberSaveable { mutableStateOf(false) }
+    var isDateFormatShown by rememberSaveable { mutableStateOf(false) }
+    if (isDateFormatShown) {
+        DateFormatDialog(
+            selected = LocalDateStyle.current,
+            today = LocalDate.now(),
+            onConfirm = { style ->
+                isDateFormatShown = false
+                viewModel.updateDateStyle(style)
+            },
+            onDismiss = { isDateFormatShown = false },
+        )
+    }
     var isFeedbackShown by rememberSaveable { mutableStateOf(false) }
     if (isFeedbackShown) FeedbackDialog(onDismiss = { isFeedbackShown = false })
     var isShareShown by rememberSaveable { mutableStateOf(false) }
@@ -247,6 +262,7 @@ fun RemindersRoute(
                     }
                 }
                 SettingsAction.LANGUAGE -> isLanguageShown = true
+                SettingsAction.DATE_FORMAT -> isDateFormatShown = true
                 SettingsAction.FEEDBACK -> isFeedbackShown = true
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
@@ -296,7 +312,7 @@ fun SettingsScreen(
                 Text(
                     text = stringResource(
                         R.string.reminders_pill_next,
-                        state.nextPill.toLocalDate().toString(),
+                        state.nextPill.toLocalDate().displayText(),
                         state.nextPill.toLocalTime().toString(),
                     ),
                     style = MaterialTheme.typography.bodyMedium,
@@ -323,7 +339,7 @@ fun SettingsScreen(
                     text = stringResource(
                         R.string.reminders_refill_next,
                         state.nextRefill.dayOfWeek.displayName(),
-                        state.nextRefill.toLocalDate().toString(),
+                        state.nextRefill.toLocalDate().displayText(),
                         state.nextRefill.toLocalTime().toString(),
                     ),
                     style = MaterialTheme.typography.bodyMedium,
@@ -343,7 +359,7 @@ fun SettingsScreen(
                 onDaysChange = { onSettingsChange(settings.copy(runOutDaysBefore = it)) },
             )
             Text(
-                text = state.runOutDate?.let { stringResource(R.string.reminders_run_out_date, it.toString()) }
+                text = state.runOutDate?.let { stringResource(R.string.reminders_run_out_date, it.displayText()) }
                     ?: stringResource(R.string.reminders_run_out_none),
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -371,7 +387,7 @@ fun SettingsScreen(
                 onDaysChange = { onSettingsChange(settings.copy(pickupDaysAfterOrder = it)) },
             )
             Text(
-                text = state.pickupDate?.let { stringResource(R.string.reminders_pickup_next, it.toString()) }
+                text = state.pickupDate?.let { stringResource(R.string.reminders_pickup_next, it.displayText()) }
                     ?: stringResource(R.string.reminders_pickup_none),
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -389,7 +405,7 @@ fun SettingsScreen(
             )
             Text(
                 text = state.expiringBox?.let {
-                    stringResource(R.string.reminders_expiry_next, it.name, it.expiryDate.toString())
+                    stringResource(R.string.reminders_expiry_next, it.displayName(), it.expiryDate?.displayText().orEmpty())
                 } ?: stringResource(R.string.reminders_expiry_none),
                 style = MaterialTheme.typography.bodyMedium,
             )

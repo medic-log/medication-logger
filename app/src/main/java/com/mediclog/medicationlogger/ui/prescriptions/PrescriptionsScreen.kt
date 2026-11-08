@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Prescription
 import com.mediclog.medicationlogger.data.PrescriptionDraft
+import com.mediclog.medicationlogger.displayText
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.CardButton
 import com.mediclog.medicationlogger.ui.components.FilterSelector
@@ -209,7 +210,7 @@ private fun PrescriptionCard(
     RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
             Text(
-                text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.toString()),
+                text = stringResource(R.string.prescriptions_prescribed_date, prescription.prescribedDate.displayText()),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f),
             )
@@ -238,13 +239,13 @@ private fun PrescriptionCard(
         )
         Detail(stringResource(R.string.prescriptions_total, prescription.boxesTotal, prescription.pillsTotal))
         prescription.orderedDate?.let {
-            Detail(stringResource(R.string.prescriptions_ordered_date, it.toString()))
+            Detail(stringResource(R.string.prescriptions_ordered_date, it.displayText()))
         }
         prescription.boughtFirstDate?.let {
-            Detail(stringResource(R.string.prescriptions_bought_first, it.toString()))
+            Detail(stringResource(R.string.prescriptions_bought_first, it.displayText()))
         }
         prescription.boughtLastDate?.let {
-            Detail(stringResource(R.string.prescriptions_bought_last, it.toString()))
+            Detail(stringResource(R.string.prescriptions_bought_last, it.displayText()))
         }
         if (item.boxes.isNotEmpty()) {
             Text(

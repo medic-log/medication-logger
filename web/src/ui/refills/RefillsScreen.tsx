@@ -156,13 +156,13 @@ function RefillCard({
   return (
     <RecordCard onEdit={() => onEdit(entry.key)} attributes={attributes}>
       <div className="row center">
-        <span className="title-medium grow">{refill.date}</span>
+        <span className="title-medium grow">{strings.date(refill.date)}</span>
         {refill.isPartial && <span className="badge-partial label-medium">{strings.t('refills_partial')}</span>}
       </div>
       <div className="row center" style={{ gap: 4 }}>
         <div className="column grow">
           <span className="body-medium">{strings.plural('refills_pills', refill.amount, refill.amount)}</span>
-          {openBox && <span className="body-small">{strings.t('refills_box', entry.boxName, refill.amountRemaining)}</span>}
+          {openBox && <span className="body-small">{strings.t('refills_box', entry.box ? strings.boxName(entry.box) : '', refill.amountRemaining)}</span>}
         </div>
         <LinkIconButton
           icon="ic_prescription"
@@ -173,7 +173,7 @@ function RefillCard({
           icon="ic_box"
           description={openBox ? 'link_open_box' : 'link_box_deleted'}
           onClick={openBox}
-          label={entry.boxNumber !== null ? strings.t('link_box_number', entry.boxNumber) : undefined}
+          label={entry.box ? strings.t('link_box_number', entry.box.boxNumber) : undefined}
         />
       </div>
     </RecordCard>
@@ -194,7 +194,7 @@ function MissCard({
   const strings = useStrings()
   return (
     <RecordCard onEdit={onEdit} attributes={attributes}>
-      <span className="title-medium">{miss.date}</span>
+      <span className="title-medium">{strings.date(miss.date)}</span>
       <span className="body-medium">{strings.t(MISS_LABELS[miss.kind])}</span>
       {miss.time && <span className="body-small">{strings.t('refills_delayed_time', miss.time)}</span>}
       {isCounted && <span className="body-small">{strings.t('refills_missed_pill')}</span>}

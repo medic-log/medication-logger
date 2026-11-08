@@ -22,8 +22,6 @@ data class Box(
     /** How much of the box is used, or that it's saved as extra. */
     enum class Status { NOT_STARTED, IN_PROGRESS, FINISHED, EXTRA }
 
-    val name: String get() = "$boughtDate #$boxNumber"
-
     val status: Status
         get() = when {
             isExtra -> Status.EXTRA

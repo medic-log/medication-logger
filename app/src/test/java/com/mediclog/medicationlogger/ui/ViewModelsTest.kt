@@ -316,7 +316,7 @@ class ViewModelsTest {
         assertTrue(entries.first() is RefillLogEntry.MissEntry)
         val refills = entries.filterIsInstance<RefillLogEntry.RefillEntry>()
         assertEquals(listOf(16, 23), refills.map { it.refill.amountRemaining })
-        assertEquals("$today #1", refills.first().boxName)
+        assertEquals(1, refills.first().box?.boxNumber)
         assertEquals(14, viewModel.uiState.value.lotPills)
     }
 

@@ -162,7 +162,7 @@ function PrescriptionCard({
       attributes={isFirst ? tutorialTarget('FIRST_PRESCRIPTION') : undefined}
     >
       <div className="row">
-        <span className="title-medium grow">{strings.t('prescriptions_prescribed_date', p.prescribedDate)}</span>
+        <span className="title-medium grow">{strings.t('prescriptions_prescribed_date', strings.date(p.prescribedDate))}</span>
         <StatusBadge
           status={strings.t(STATUS_LABELS[p.status])}
           amount={strings.t('prescriptions_repetitions', p.repetitionsBought, p.repetitionsTotal)}
@@ -175,9 +175,9 @@ function PrescriptionCard({
       {detail(strings.t('prescriptions_per_box', p.pillsPerBox))}
       {detail(strings.t('prescriptions_per_repetition', p.boxesPerRepetition, pillsPerRepetition(p)))}
       {detail(strings.t('prescriptions_total', boxesTotal(p), prescriptionPillsTotal(p)))}
-      {p.orderedDate && detail(strings.t('prescriptions_ordered_date', p.orderedDate))}
-      {p.boughtFirstDate && detail(strings.t('prescriptions_bought_first', p.boughtFirstDate))}
-      {p.boughtLastDate && detail(strings.t('prescriptions_bought_last', p.boughtLastDate))}
+      {p.orderedDate && detail(strings.t('prescriptions_ordered_date', strings.date(p.orderedDate)))}
+      {p.boughtFirstDate && detail(strings.t('prescriptions_bought_first', strings.date(p.boughtFirstDate)))}
+      {p.boughtLastDate && detail(strings.t('prescriptions_bought_last', strings.date(p.boughtLastDate)))}
       {item.boxes.length > 0 && (
         <>
           <span className="label-large">{strings.t('prescriptions_linked_boxes')}</span>

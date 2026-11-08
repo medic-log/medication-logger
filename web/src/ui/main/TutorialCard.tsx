@@ -31,7 +31,10 @@ export function TutorialCard({
   // Switching redraws the app, so a tap only marks the language, previewed on this card, until Next
   const [chosenLanguage, setChosenLanguage] = useState(language)
   const appStrings = useStrings()
-  const previewStrings = useMemo(() => new Strings(chosenLanguage), [chosenLanguage])
+  const previewStrings = useMemo(
+    () => new Strings(chosenLanguage, appStrings.dateStyle),
+    [chosenLanguage, appStrings.dateStyle],
+  )
   const strings = step.step === 'LANGUAGE' ? previewStrings : appStrings
   const index = TUTORIAL_STEPS.indexOf(step)
   const hasNext = index < TUTORIAL_STEPS.length - 1

@@ -41,6 +41,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.Box
 import com.mediclog.medicationlogger.data.Refill
+import com.mediclog.medicationlogger.displayName
+import com.mediclog.medicationlogger.displayText
 import com.mediclog.medicationlogger.ui.AppViewModelProvider
 import com.mediclog.medicationlogger.ui.components.CardButton
 import com.mediclog.medicationlogger.ui.components.FilterSelector
@@ -208,16 +210,16 @@ private fun BoxCard(
     RecordCard(modifier = modifier, isHighlighted = isHighlighted, statusColors = statusColors, onEdit = onEdit) {
         Row {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(text = box.name, style = MaterialTheme.typography.titleMedium)
+                Text(text = box.displayName(), style = MaterialTheme.typography.titleMedium)
                 box.openDate?.let {
                     Text(
-                        text = stringResource(R.string.boxes_opened, it.toString()),
+                        text = stringResource(R.string.boxes_opened, it.displayText()),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
                 box.expiryDate?.let {
                     Text(
-                        text = stringResource(R.string.boxes_expires, it.toString()),
+                        text = stringResource(R.string.boxes_expires, it.displayText()),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -324,7 +326,7 @@ private fun BoxNotesField(notes: String, onNotesChange: (String) -> Unit, modifi
 @Composable
 private fun Refill.summary(): String {
     val amounts = pluralStringResource(R.plurals.refills_amount, amount, amount, amountRemaining)
-    val line = "$date: $amounts"
+    val line = "${date.displayText()}: $amounts"
     return if (isPartial) stringResource(R.string.refills_partial_suffix, line) else line
 }
 

@@ -8,11 +8,13 @@ import androidx.test.core.app.ApplicationProvider
 import com.mediclog.medicationlogger.MedicationLoggerApplication
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.AllRemindersOff
+import com.mediclog.medicationlogger.data.DateStyle
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.PrescriptionDraft
 import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
 import com.mediclog.medicationlogger.data.ReminderSettings
+import com.mediclog.medicationlogger.displayName
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -161,7 +163,7 @@ class ReminderDeliveryTest {
         val notification = shadowOf(notifications.allNotifications.single())
         assertEquals(app.getString(R.string.reminders_notification_expiry_title), notification.contentTitle)
         assertEquals(
-            app.getString(R.string.reminders_notification_expiry_text, box.name, YearMonth.now().toString()),
+            app.getString(R.string.reminders_notification_expiry_text, box.displayName(DateStyle.YEAR_MONTH_DAY), YearMonth.now().toString()),
             notification.contentText,
         )
     }

@@ -164,6 +164,9 @@
     <string name="settings_share">Compartir</string>
     <string name="settings_language">Idioma</string>
     <string name="settings_language_confirm">Confirmar</string>
+    <string name="settings_date_format">Fechas</string>
+    <string name="settings_date_format_title">Formato de fecha</string>
+    <string name="settings_date_format_language">%1$s (según el idioma)</string>
     <string name="settings_feedback">Feedback</string>
     <string name="feedback_description">Cuéntanos sobre un error, un fallo de traducción, una idea o cualquier otra cosa sobre Medication logger.</string>
     <string name="feedback_topic">Tema</string>
