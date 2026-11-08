@@ -453,6 +453,8 @@ test('every reminder starts on and can be turned off', async ({ app, page }) => 
 test('notifications are asked for once the tutorial closes, as reminders start on', async ({ page }) => {
   await page.addInitScript(() => {
     ;(window as unknown as { asked: number }).asked = 0
+    // Headless Chromium may start at 'denied', and the app only asks while it's 'default'
+    Object.defineProperty(Notification, 'permission', { get: () => 'default' })
     Notification.requestPermission = async () => {
       ;(window as unknown as { asked: number }).asked++
       return 'granted'
@@ -460,7 +462,7 @@ test('notifications are asked for once the tutorial closes, as reminders start o
   })
   await page.goto('./')
   await page.getByRole('button', { name: string('tutorial_skip') }).click()
-  expect(await page.evaluate(() => (window as unknown as { asked: number }).asked)).toBe(1)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { asked: number }).asked)).toBe(1)
 })
 
 test('refill reminder is configured with a weekday and time', async ({ app, page }) => {
