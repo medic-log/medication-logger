@@ -313,7 +313,8 @@ class ViewModelsTest {
         viewModel.logMiss(MedicationMiss.Kind.DELAYED)
 
         val entries = viewModel.uiState.value.entries
-        assertTrue(entries.first() is RefillLogEntry.MissEntry)
+        // Today's dose came before today's refills
+        assertTrue(entries.last() is RefillLogEntry.MissEntry)
         val refills = entries.filterIsInstance<RefillLogEntry.RefillEntry>()
         assertEquals(listOf(16, 23), refills.map { it.refill.amountRemaining })
         assertEquals(1, refills.first().box?.boxNumber)
@@ -371,6 +372,13 @@ class ViewModelsTest {
         assertEquals(listOf(listOf(3L, 2L), listOf(1L)), logOf(partial(1, 5), partial(2, 3), partial(3, 4)).ids())
     }
 
+    @Test
+    fun `partial refills are grouped by date once a date is edited`() {
+        val log = logOf(partial(1, 4), partial(2, 3, today.minusDays(1)), partial(3, 3))
+
+        assertEquals(listOf(listOf(3L, 1L), listOf(2L)), log.ids())
+    }
+
     private fun missed(id: Long, date: LocalDate = today) = MedicationMiss(id, date, MedicationMiss.Kind.MISSED)
 
     private fun List<RefillLogEntry>.keys() = map { entry ->
@@ -403,6 +411,13 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `a dose joins the last refill by date once a date is edited`() {
+        val log = logOf(partial(1, 7), partial(2, 7, today.minusDays(7)), misses = listOf(missed(1, today.plusDays(1))))
+
+        assertEquals(listOf(listOf("miss-1", "refill-1"), listOf("refill-2")), log.keys())
+    }
+
+    @Test
     fun `a delayed dose joins the refill before it too`() {
         val delayed = MedicationMiss(1, today.plusDays(1), MedicationMiss.Kind.DELAYED)
 
@@ -410,10 +425,17 @@ class ViewModelsTest {
     }
 
     @Test
-    fun `a dose until the first refill's day stands alone`() {
+    fun `a dose until the first refill's day stands alone, below that refill`() {
         val log = logOf(partial(1, 7), misses = listOf(missed(1, today.minusDays(1)), missed(2)))
 
-        assertEquals(listOf(listOf("miss-2"), listOf("refill-1"), listOf("miss-1")), log.keys())
+        assertEquals(listOf(listOf("refill-1"), listOf("miss-2"), listOf("miss-1")), log.keys())
+    }
+
+    @Test
+    fun `doses in a stack are newest first by date once a date is edited`() {
+        val log = logOf(partial(1, 7), misses = listOf(missed(1, today.plusDays(3)), missed(2, today.plusDays(1))))
+
+        assertEquals(listOf(listOf("miss-1", "miss-2", "refill-1")), log.keys())
     }
 
     @Test

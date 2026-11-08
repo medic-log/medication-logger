@@ -227,7 +227,8 @@ describe('refills log', () => {
     repository.refillWeekly(1)
     repository.logMiss('DELAYED')
     const state = refillsUiState(shown(), clock())
-    expect(state.entries[0].type).toBe('miss')
+    // Today's dose came before today's refills
+    expect(state.entries.at(-1)!.type).toBe('miss')
     const refills = state.entries.filter(it => it.type === 'refill')
     expect(refills.map(it => it.refill.amountRemaining)).toEqual([16, 23])
     expect(refills[0].box?.boxNumber).toBe(1)
@@ -265,6 +266,10 @@ describe('refills log', () => {
     expect(ids(logOf([partial(1, 5), partial(2, 3), partial(3, 4)]))).toEqual([[3, 2], [1]])
   })
 
+  test('partial refills are grouped by date once a date is edited', () => {
+    expect(ids(logOf([partial(1, 4), partial(2, 3, plusDays(today, -1)), partial(3, 3)]))).toEqual([[3, 1], [2]])
+  })
+
   test('a missed dose joins the refill before it, on top', () => {
     expect(keys(logOf([partial(1, 7)], [missed(1, plusDays(today, 2))]))).toEqual([['miss-1', 'refill-1']])
   })
@@ -279,14 +284,24 @@ describe('refills log', () => {
     expect(keys(log)).toEqual([['refill-2'], ['miss-2', 'miss-1', 'refill-1']])
   })
 
+  test('a dose joins the last refill by date once a date is edited', () => {
+    const log = logOf([partial(1, 7), partial(2, 7, plusDays(today, -7))], [missed(1, plusDays(today, 1))])
+    expect(keys(log)).toEqual([['miss-1', 'refill-1'], ['refill-2']])
+  })
+
   test('a delayed dose joins the refill before it too', () => {
     const delayed: MedicationMiss = { id: 1, date: plusDays(today, 1), kind: 'DELAYED', time: null }
     expect(keys(logOf([partial(1, 7)], [delayed]))).toEqual([['miss-1', 'refill-1']])
   })
 
-  test("a dose until the first refill's day stands alone", () => {
+  test("a dose until the first refill's day stands alone, below that refill", () => {
     const log = logOf([partial(1, 7)], [missed(1, plusDays(today, -1)), missed(2)])
-    expect(keys(log)).toEqual([['miss-2'], ['refill-1'], ['miss-1']])
+    expect(keys(log)).toEqual([['refill-1'], ['miss-2'], ['miss-1']])
+  })
+
+  test('doses in a stack are newest first by date once a date is edited', () => {
+    const log = logOf([partial(1, 7)], [missed(1, plusDays(today, 3)), missed(2, plusDays(today, 1))])
+    expect(keys(log)).toEqual([['miss-1', 'miss-2', 'refill-1']])
   })
 })
 

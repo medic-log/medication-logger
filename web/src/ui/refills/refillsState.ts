@@ -67,7 +67,9 @@ function missEntry(miss: MedicationMiss): MissEntry {
 /** The state of the refills tab, as RefillsViewModel works it out. */
 export function refillsUiState(data: MedicationData, now: LocalDateTime): RefillsUiState {
   const boxes = new Map(data.boxes.map(it => [it.id, it]))
-  const refills: RefillEntry[] = data.refills.map(refill => {
+  // By date, then id, as an edited date can put a refill out of id order, and grouping follows the days
+  const sorted = [...data.refills].sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
+  const refills: RefillEntry[] = sorted.map(refill => {
     const box = refill.boxId === null ? undefined : boxes.get(refill.boxId)
     return {
       type: 'refill',
@@ -83,9 +85,10 @@ export function refillsUiState(data: MedicationData, now: LocalDateTime): Refill
   })
   const refillEntries = groupingFullWeeks(refills)
   // A dose is its day's pill, which comes before that day's refills as in lotPills, so it belongs to the last
-  // refill made before its day; until there's one, it stands alone
+  // refill made before its day; until there's one, it stands alone. By date, then id, as dates can be edited.
   const dosesByRefill = new Map<number, MissEntry[]>()
-  for (const dose of data.misses.map(missEntry)) {
+  const misses = [...data.misses].sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
+  for (const dose of misses.map(missEntry)) {
     let index = -1
     refillEntries.forEach((entry, i) => {
       if (entry.date < dose.date) index = i
@@ -97,10 +100,11 @@ export function refillsUiState(data: MedicationData, now: LocalDateTime): Refill
     if (doses.length === 0) return entry
     return entry.type === 'group' ? groupEntry(entry.refills, doses) : groupEntry([entry], doses)
   })
-  const alone = [...(dosesByRefill.get(-1) ?? [])].sort((a, b) => b.miss.id - a.miss.id)
+  const alone = [...(dosesByRefill.get(-1) ?? [])].reverse()
   return {
-    // A stable sort, newest first, as Kotlin's sortedByDescending
-    entries: [...alone, ...stacked.reverse()].sort((a, b) => b.date.localeCompare(a.date)),
+    // A stable sort, newest first, as Kotlin's sortedByDescending, so on the first refill's day its doses, whose pill
+    // came first, stay below it
+    entries: [...stacked.reverse(), ...alone].sort((a, b) => b.date.localeCompare(a.date)),
     lotPills: lotPills(data, now),
   }
 }

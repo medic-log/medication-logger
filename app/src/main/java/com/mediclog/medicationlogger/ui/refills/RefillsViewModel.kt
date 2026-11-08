@@ -81,7 +81,8 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
 
     private fun toUiState(data: MedicationData): RefillsUiState {
         val boxes = data.boxes.associateBy { it.id }
-        val refills = data.refills.map { refill ->
+        // By date, then id, as an edited date can put a refill out of id order, and grouping follows the days
+        val refills = data.refills.sortedWith(compareBy({ it.date }, { it.id })).map { refill ->
             val box = boxes[refill.boxId]
             val maxAmount = refill.amount + (box?.pillsLeft ?: 0)
             val leftRange = box?.let {
@@ -92,8 +93,9 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
         }
         val refillEntries = groupingFullWeeks(refills)
         // A dose is its day's pill, which comes before that day's refills as in lotPills, so it belongs to the last
-        // refill made before its day; until there's one, it stands alone
-        val dosesByRefill = data.misses.map { RefillLogEntry.MissEntry(it) }
+        // refill made before its day; until there's one, it stands alone. By date, then id, as dates can be edited.
+        val dosesByRefill = data.misses.sortedWith(compareBy({ it.date }, { it.id }))
+            .map { RefillLogEntry.MissEntry(it) }
             .groupBy { dose -> refillEntries.indexOfLast { it.date < dose.date } }
         val stacked = refillEntries.mapIndexed { index, entry ->
             val doses = dosesByRefill[index].orEmpty().asReversed()
@@ -104,9 +106,10 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
                 else -> entry
             }
         }
-        val alone = dosesByRefill[-1].orEmpty().sortedByDescending { it.miss.id }
+        val alone = dosesByRefill[-1].orEmpty().asReversed()
         return RefillsUiState(
-            entries = (alone + stacked.asReversed()).sortedByDescending { it.date },
+            // A stable sort, so on the first refill's day its doses, whose pill came first, stay below it
+            entries = (stacked.asReversed() + alone).sortedByDescending { it.date },
             lotPills = data.lotPills(LocalDateTime.now(clock)),
         )
     }
