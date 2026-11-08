@@ -172,7 +172,6 @@
     <string name="settings_share">Share</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_confirm">Confirm</string>
-    <string name="settings_date_format">Dates</string>
     <string name="settings_date_format_year_month_day" translatable="false">yyyy-mm-dd</string>
     <string name="settings_date_format_day_month_year" translatable="false">dd/mm/yyyy</string>
     <string name="settings_date_format_month_day_year" translatable="false">mm/dd/yyyy</string>

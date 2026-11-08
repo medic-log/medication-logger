@@ -65,7 +65,7 @@ test("an Android app export imports, and a file that isn't one is refused", asyn
 
 test('the language is English until another is chosen, and stays chosen', async ({ app, page }) => {
   await app.openTab('main_tab_settings')
-  await app.tap(string('settings_language'))
+  await app.text(string('settings_language')).click()
   await page.getByRole('radio', { name: 'Nederlands' }).click()
   // The dialog previews it before it's confirmed
   await expect(page.getByRole('button', { name: 'Annuleren' })).toBeVisible()

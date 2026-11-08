@@ -5,8 +5,6 @@ export const SETTINGS_ACTIONS = {
   EXPORT: { label: 'settings_export', icon: 'ic_export' },
   IMPORT: { label: 'settings_import', icon: 'ic_import' },
   SHARE: { label: 'settings_share', icon: 'ic_share' },
-  LANGUAGE: { label: 'settings_language', icon: 'ic_translation' },
-  DATE_FORMAT: { label: 'settings_date_format', icon: 'ic_calendar' },
   FEEDBACK: { label: 'settings_feedback', icon: 'ic_feedback' },
 } as const
 
@@ -14,6 +12,6 @@ export type SettingsAction = keyof typeof SETTINGS_ACTIONS
 
 /** The buttons as laid out, row by row. */
 export const SETTINGS_ROWS: SettingsAction[][] = [
-  ['HELP', 'LANGUAGE', 'DATE_FORMAT', 'UPDATE'],
-  ['SHARE', 'IMPORT', 'EXPORT', 'FEEDBACK'],
+  ['HELP', 'UPDATE', 'SHARE'],
+  ['IMPORT', 'EXPORT', 'FEEDBACK'],
 ]

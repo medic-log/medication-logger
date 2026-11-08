@@ -3,7 +3,7 @@ import resources from 'virtual:android-resources'
 import { readExport, writeExport } from '../../data/MedicationExport'
 import { type ReminderSettings, hasAnyEnabled } from '../../data/models'
 import { dayOfWeek, toLocalDate, toLocalTime } from '../../data/time'
-import { useStrings } from '../../i18n/i18n'
+import { APP_LANGUAGES, useStrings } from '../../i18n/i18n'
 import { useNow, useRepositoryState, useServices } from '../AppServices'
 import { IconButton, OutlinedButton, TextButton } from '../components/Buttons'
 import { Dialog } from '../components/Dialog'
@@ -90,10 +90,6 @@ export function SettingsScreen({
         else setAvailableUpdate({ versionName: latest.versionName })
         return
       }
-      case 'LANGUAGE':
-        return setLanguageShown(true)
-      case 'DATE_FORMAT':
-        return setDateFormatShown(true)
       case 'FEEDBACK':
         return setFeedbackShown(true)
       case 'EXPORT':
@@ -230,6 +226,21 @@ export function SettingsScreen({
               ))}
             </div>
           ))}
+        </div>
+        <div className="settings-rows">
+          <SettingRow
+            icon="ic_translation"
+            label={strings.t('settings_language')}
+            value={APP_LANGUAGES.find(it => it.tag === language)?.nativeName ?? ''}
+            onClick={() => setLanguageShown(true)}
+          />
+          <SettingRow
+            icon="ic_calendar"
+            label={strings.t('settings_date_format_title')}
+            // Today's date in the chosen style shows the style better than its name
+            value={strings.date(toLocalDate(repository.now()))}
+            onClick={() => setDateFormatShown(true)}
+          />
         </div>
         <span className="body-small on-surface-variant version">{strings.t('settings_version', resources.versionName)}</span>
       </div>
@@ -371,5 +382,16 @@ function DaysStepper({ reminderName, days, onDaysChange }: { reminderName: strin
         <Icon name="ic_add" />
       </IconButton>
     </div>
+  )
+}
+
+/** A setting with its current value, which opens its dialog when clicked. */
+function SettingRow({ icon, label, value, onClick }: { icon: string; label: string; value: string; onClick: () => void }) {
+  return (
+    <button type="button" className="setting-row" onClick={onClick}>
+      <Icon name={icon} />
+      <span className="body-large label">{label}</span>
+      <span className="body-medium on-surface-variant">{value}</span>
+    </button>
   )
 }

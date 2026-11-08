@@ -145,7 +145,7 @@ class MainActivityTest {
         assertShown("$today #1")
 
         openTab(R.string.main_tab_settings)
-        composeRule.onNodeWithText(string(R.string.settings_date_format)).performScrollTo().performClick()
+        composeRule.onNodeWithText(string(R.string.settings_date_format_title)).performScrollTo().performClick()
         tap(string(R.string.settings_date_format_day_month_year))
         tap(string(R.string.settings_language_confirm))
         openTab(R.string.main_tab_boxes)

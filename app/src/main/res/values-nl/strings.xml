@@ -168,7 +168,6 @@
     <string name="settings_share">Delen</string>
     <string name="settings_language">Taal</string>
     <string name="settings_language_confirm">Bevestigen</string>
-    <string name="settings_date_format">Datums</string>
     <string name="settings_date_format_title">Datumnotatie</string>
     <string name="settings_date_format_language">%1$s (volgens de taal)</string>
     <string name="settings_feedback">Feedback</string>

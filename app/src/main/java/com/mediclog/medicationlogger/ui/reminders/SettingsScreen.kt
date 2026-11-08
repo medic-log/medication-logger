@@ -11,6 +11,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -41,6 +43,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -250,6 +253,9 @@ fun RemindersRoute(
                     .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName),
             )
         },
+        language = AppLanguage.current(context),
+        onLanguage = { isLanguageShown = true },
+        onDateFormat = { isDateFormatShown = true },
         onSettingsAction = {
             when (it) {
                 SettingsAction.HELP -> onHelp(scrollState.value)
@@ -261,8 +267,6 @@ fun RemindersRoute(
                         else -> availableUpdate = latest
                     }
                 }
-                SettingsAction.LANGUAGE -> isLanguageShown = true
-                SettingsAction.DATE_FORMAT -> isDateFormatShown = true
                 SettingsAction.FEEDBACK -> isFeedbackShown = true
                 SettingsAction.EXPORT -> exportLauncher.launch("medication-logger-${LocalDate.now()}.json")
                 SettingsAction.IMPORT -> isImportConfirmShown = true
@@ -273,13 +277,16 @@ fun RemindersRoute(
     )
 }
 
-/** The settings tab: the configuration of the five reminders, then the app settings, none yet. */
+/** The settings tab: the configuration of the five reminders, then the app's settings. */
 @Composable
 fun SettingsScreen(
     state: RemindersUiState,
     areNotificationsAllowed: Boolean,
     onSettingsChange: (ReminderSettings) -> Unit,
     onOpenNotificationSettings: () -> Unit,
+    language: AppLanguage,
+    onLanguage: () -> Unit,
+    onDateFormat: () -> Unit,
     onSettingsAction: (SettingsAction) -> Unit,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState(),
@@ -423,6 +430,21 @@ fun SettingsScreen(
                 }
             }
         }
+        Column {
+            SettingRow(
+                iconRes = R.drawable.ic_translation,
+                label = stringResource(R.string.settings_language),
+                value = language.nativeName,
+                onClick = onLanguage,
+            )
+            SettingRow(
+                iconRes = R.drawable.ic_calendar,
+                label = stringResource(R.string.settings_date_format_title),
+                // Today's date in the chosen style shows the style better than its name
+                value = LocalDate.now().displayText(),
+                onClick = onDateFormat,
+            )
+        }
         Text(
             text = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
             style = MaterialTheme.typography.bodySmall,
@@ -454,6 +476,39 @@ private fun SettingsActionButton(action: SettingsAction, onClick: () -> Unit, mo
                 overflow = TextOverflow.Ellipsis,
             )
         }
+    }
+}
+
+/** A setting with its current value, which opens its dialog when tapped. */
+@Composable
+private fun SettingRow(
+    @DrawableRes iconRes: Int,
+    label: String,
+    value: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(text = label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -557,6 +612,9 @@ private fun SettingsPreviewContent(state: RemindersUiState, areNotificationsAllo
                 areNotificationsAllowed = areNotificationsAllowed,
                 onSettingsChange = {},
                 onOpenNotificationSettings = {},
+                language = AppLanguage.ENGLISH,
+                onLanguage = {},
+                onDateFormat = {},
                 onSettingsAction = {},
             )
         }

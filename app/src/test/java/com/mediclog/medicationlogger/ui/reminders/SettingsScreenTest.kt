@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import com.mediclog.medicationlogger.AppLanguage
 import com.mediclog.medicationlogger.R
 import com.mediclog.medicationlogger.data.AllRemindersOff
 import com.mediclog.medicationlogger.data.ReminderSettings
@@ -36,6 +37,9 @@ class SettingsScreenTest {
                 areNotificationsAllowed = areNotificationsAllowed,
                 onSettingsChange = {},
                 onOpenNotificationSettings = onOpen,
+                language = AppLanguage.ENGLISH,
+                onLanguage = {},
+                onDateFormat = {},
                 onSettingsAction = onSettingsAction,
             )
         }

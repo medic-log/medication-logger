@@ -17,7 +17,7 @@ test('the date format chosen in settings is used for the dates shown', async ({ 
   await expect(app.text(`${day} #1`)).toBeVisible()
 
   await app.openTab('main_tab_settings')
-  await app.tap(string('settings_date_format'))
+  await app.text(string('settings_date_format_title')).click()
   const [year, month, date] = day.split('-')
   await page.getByRole('radio', { name: string('settings_date_format_day_month_year'), exact: true }).click()
   await app.tap(string('settings_language_confirm'))
