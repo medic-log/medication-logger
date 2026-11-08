@@ -4,6 +4,8 @@ on:
   push:
     branches: [master]
   pull_request:
+  # The release workflow runs it first and releases only if it passes
+  workflow_call:
 
 concurrency:
   group: ci-${{ github.ref }}
