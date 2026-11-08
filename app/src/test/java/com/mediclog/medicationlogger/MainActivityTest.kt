@@ -117,7 +117,7 @@ class MainActivityTest {
         composeRule.onNodeWithText(text).assertDoesNotExist()
     }
 
-    private fun refillBox(left: Int) = string(R.string.refills_box, "$today #1", left)
+    private fun refillBox(left: Int) = plural(R.plurals.refills_box, left, "$today #1", left)
 
     @Test
     fun `skipping the tutorial at launch goes to the top of settings`() {
@@ -171,12 +171,12 @@ class MainActivityTest {
 
         tap(string(R.string.prescriptions_order))
         assertShown(string(R.string.prescriptions_status_ordered))
-        assertShown(string(R.string.prescriptions_repetitions, 0, 2))
+        assertShown(plural(R.plurals.prescriptions_repetitions, 2, 0, 2))
         composeRule.onNodeWithText(string(R.string.prescriptions_order)).assertIsNotEnabled()
 
         buyRepetition()
         assertShown(string(R.string.prescriptions_status_in_progress))
-        assertShown(string(R.string.prescriptions_repetitions, 1, 2))
+        assertShown(plural(R.plurals.prescriptions_repetitions, 2, 1, 2))
         assertShown(string(R.string.prescriptions_bought_first, today))
         assertShown(string(R.string.prescriptions_bought_last, today))
         assertShown(string(R.string.link_box_number, 1))
@@ -186,7 +186,7 @@ class MainActivityTest {
         assertShown("$today #1")
         assertShown("$today #2")
         assertShown("$today #3")
-        composeRule.onAllNodesWithText(string(R.string.boxes_pills_left, 30, 30)).onFirst().assertIsDisplayed()
+        composeRule.onAllNodesWithText(plural(R.plurals.boxes_pills_left, 30, 30, 30)).onFirst().assertIsDisplayed()
 
         openTab(R.string.main_tab_prescriptions)
         buyRepetition()
@@ -301,7 +301,7 @@ class MainActivityTest {
         tap(pending)
         assertNotShown(pending)
         assertNotShown(plural(R.plurals.boxes_pending_notice, 3, 3))
-        assertShown(string(R.string.boxes_pills_left, 27, 30))
+        assertShown(plural(R.plurals.boxes_pills_left, 30, 27, 30))
 
         openTab(R.string.main_tab_refills)
         listOf(0, 27).forEach { assertShown(refillBox(it)) }
@@ -442,7 +442,7 @@ class MainActivityTest {
 
         assertEquals(12, data.boxes.single().pillsLeft)
         assertNotShown(string(R.string.edit_box_title))
-        assertShown(string(R.string.boxes_pills_left, 12, 30))
+        assertShown(plural(R.plurals.boxes_pills_left, 30, 12, 30))
     }
 
     @Test

@@ -142,6 +142,7 @@ fun MainScreen(
     }
 }
 
+@Suppress("ModifierParameter") // background goes on the tab bar and content, not the root
 @Composable
 private fun MainScaffold(
     state: MainUiState,

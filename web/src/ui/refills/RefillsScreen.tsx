@@ -164,7 +164,7 @@ function RefillCard({
       <div className="row center" style={{ gap: 4 }}>
         <div className="column grow">
           <span className="body-medium">{strings.plural('refills_pills', refill.amount, refill.amount)}</span>
-          {openBox && <span className="body-small">{strings.t('refills_box', entry.box ? strings.boxName(entry.box) : '', refill.amountRemaining)}</span>}
+          {openBox && <span className="body-small">{strings.plural('refills_box', refill.amountRemaining, entry.box ? strings.boxName(entry.box) : '', refill.amountRemaining)}</span>}
         </div>
         <LinkIconButton
           icon="ic_prescription"

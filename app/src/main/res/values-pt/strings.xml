@@ -62,7 +62,11 @@
     <string name="prescriptions_ordered_date">Encomendada: %1$s</string>
     <string name="prescriptions_bought_first">Primeira compra: %1$s</string>
     <string name="prescriptions_bought_last">Última compra: %1$s</string>
-    <string name="prescriptions_repetitions">%1$d/%2$d rep.</string>
+    <plurals name="prescriptions_repetitions">
+        <item quantity="one">%1$d/%2$d rep.</item>
+        <item quantity="many">%1$d/%2$d rep.</item>
+        <item quantity="other">%1$d/%2$d rep.</item>
+    </plurals>
     <string name="prescriptions_per_box">Comprimidos por caixa: %1$d</string>
     <string name="prescriptions_per_repetition">Por repetição: caixas %1$d, comprimidos %2$d</string>
     <string name="prescriptions_total">No total: caixas %1$d, comprimidos %2$d</string>
@@ -87,7 +91,11 @@
     <string name="boxes_empty_active">Nenhuma caixa ativa. Compre uma repetição em Receitas, ou escolha Todas para ver as caixas concluídas e extras.</string>
     <string name="boxes_empty_all">Ainda não há caixas. Compre uma repetição em Receitas para adicionar algumas.</string>
     <string name="boxes_empty_extra">Nenhuma caixa extra. Use Guardar como extra numa caixa para separá-la.</string>
-    <string name="boxes_pills_left">%1$d/%2$d comprimidos</string>
+    <plurals name="boxes_pills_left">
+        <item quantity="one">%1$d/%2$d comprimido</item>
+        <item quantity="many">%1$d/%2$d comprimidos</item>
+        <item quantity="other">%1$d/%2$d comprimidos</item>
+    </plurals>
     <string name="boxes_refills_title">Reposições:</string>
     <string name="boxes_opened">Aberta: %1$s</string>
     <string name="boxes_expires">Validade: %1$s</string>
@@ -120,7 +128,11 @@
     </plurals>
     <string name="refills_partial_suffix">%1$s, parcial</string>
     <string name="refills_partial">Parcial</string>
-    <string name="refills_box">Caixa %1$s (restam %2$d)</string>
+    <plurals name="refills_box">
+        <item quantity="one">Caixa %1$s (resta %2$d)</item>
+        <item quantity="many">Caixa %1$s (restam %2$d)</item>
+        <item quantity="other">Caixa %1$s (restam %2$d)</item>
+    </plurals>
     <string name="refills_missed">Dose esquecida</string>
     <string name="refills_delayed">Dose atrasada</string>
     <string name="refills_delayed_time">Tomada às %1$s</string>

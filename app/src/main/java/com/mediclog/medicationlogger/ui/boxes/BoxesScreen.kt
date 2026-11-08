@@ -226,7 +226,7 @@ private fun BoxCard(
             }
             StatusBadge(
                 status = stringResource(box.status.labelRes()),
-                amount = stringResource(R.string.boxes_pills_left, box.pillsLeft, box.pillsTotal),
+                amount = pluralStringResource(R.plurals.boxes_pills_left, box.pillsTotal, box.pillsLeft, box.pillsTotal),
                 currentAmount = box.pillsLeft,
                 colors = statusColors,
                 modifier = Modifier.padding(start = 8.dp),

@@ -46,12 +46,12 @@ test('a new prescription is dated today, shows its totals and buys boxes', async
 
   await app.tap(string('prescriptions_order'))
   await expect(app.text(string('prescriptions_status_ordered'))).toBeVisible()
-  await expect(app.page.getByText(string('prescriptions_repetitions', 0, 2))).toBeVisible()
+  await expect(app.page.getByText(plural('prescriptions_repetitions', 2, 0, 2))).toBeVisible()
   await expect(app.button(string('prescriptions_order'))).toBeDisabled()
 
   await app.buyRepetition()
   await expect(app.text(string('prescriptions_status_in_progress'))).toBeVisible()
-  await expect(app.page.getByText(string('prescriptions_repetitions', 1, 2))).toBeVisible()
+  await expect(app.page.getByText(plural('prescriptions_repetitions', 2, 1, 2))).toBeVisible()
   await expect(app.text(string('prescriptions_bought_first', day))).toBeVisible()
   await expect(app.text(string('prescriptions_bought_last', day))).toBeVisible()
   await expect(app.page.getByRole('button', { name: string('link_box_number', 1) })).toBeVisible()
@@ -59,7 +59,7 @@ test('a new prescription is dated today, shows its totals and buys boxes', async
 
   await app.openTab('main_tab_boxes')
   for (const box of [1, 2, 3]) await expect(app.text(`${day} #${box}`)).toBeVisible()
-  await expect(app.page.getByText(string('boxes_pills_left', 30, 30)).first()).toBeVisible()
+  await expect(app.page.getByText(plural('boxes_pills_left', 30, 30, 30)).first()).toBeVisible()
 
   await app.openTab('main_tab_prescriptions')
   await app.buyRepetition()
@@ -164,15 +164,15 @@ test("partial refill is highlighted while the weekly lot won't last until the ne
   await app.tap(pending)
   await expect(app.button(pending)).toHaveCount(0)
   await expect(app.text(plural('boxes_pending_notice', 3, 3))).toHaveCount(0)
-  await expect(app.page.getByText(string('boxes_pills_left', 27, 30))).toBeVisible()
+  await expect(app.page.getByText(plural('boxes_pills_left', 30, 27, 30))).toBeVisible()
 
   await app.openTab('main_tab_refills')
   const day = await today(page)
   // Each prescription numbers its own boxes
-  for (const left of [0, 27]) await expect(app.text(string('refills_box', `${day} #1`, left))).toBeVisible()
+  for (const left of [0, 27]) await expect(app.text(plural('refills_box', left, `${day} #1`, left))).toBeVisible()
   await expect(app.text(plural('refills_lot_pills', 7, 7))).toBeVisible()
   await expect(app.text(string('refills_partial'))).toHaveCount(2)
-  await app.hold(string('refills_box', `${day} #1`, 0))
+  await app.hold(plural('refills_box', 0, `${day} #1`, 0))
   await expect(app.text(string('edit_refill_title'))).toBeVisible()
 })
 
@@ -271,7 +271,7 @@ test('holding a box card edits its fields', async ({ app, page }) => {
   await app.tap(string('edit_save'))
   expect((await savedData(page)).boxes[0].pillsLeft).toBe(12)
   await expect(app.text(string('edit_box_title'))).toHaveCount(0)
-  await expect(page.getByText(string('boxes_pills_left', 12, 30))).toBeVisible()
+  await expect(page.getByText(plural('boxes_pills_left', 30, 12, 30))).toBeVisible()
 })
 
 test("a box's expiry date can be cleared when editing", async ({ app, page }) => {
@@ -323,7 +323,7 @@ test('deleting a box can keep its refills', async ({ app, page }) => {
   expect(data.refills[0]).not.toHaveProperty('boxId')
   await app.openTab('main_tab_refills')
   await expect(app.text(plural('refills_pills', 7, 7))).toBeVisible()
-  await expect(app.text(string('refills_box', `${day} #1`, 23))).toHaveCount(0)
+  await expect(app.text(plural('refills_box', 23, `${day} #1`, 23))).toHaveCount(0)
   await expect(page.getByRole('button', { name: string('link_box_deleted') })).toBeDisabled()
   await expect(page.getByRole('button', { name: string('link_open_prescription') })).toBeEnabled()
 })
@@ -371,7 +371,7 @@ test("a refill's pills left can be edited, and its box follows", async ({ app, p
   await app.addBox()
   await app.refillFirstBox()
   await app.openTab('main_tab_refills')
-  await app.hold(string('refills_box', `${day} #1`, 23))
+  await app.hold(plural('refills_box', 23, `${day} #1`, 23))
   await app.field('edit_field_refill_left_range', 0, 30).fill('20')
   await app.tap(string('edit_save'))
   const data = await savedData(page)
@@ -385,7 +385,7 @@ test("changing a refill's amount updates its pills left in the dialog", async ({
   await app.addBox()
   await app.refillFirstBox()
   await app.openTab('main_tab_refills')
-  await app.hold(string('refills_box', `${day} #1`, 23))
+  await app.hold(plural('refills_box', 23, `${day} #1`, 23))
   await app.field('edit_field_refill_amount', 30).fill('5')
   await expect(app.field('edit_field_refill_left_range', 0, 30)).toHaveValue('25')
   await app.tap(string('edit_save'))
@@ -398,7 +398,7 @@ test('holding a refill card deletes it, returning its pills', async ({ app, page
   await app.addBox()
   await app.refillFirstBox()
   await app.openTab('main_tab_refills')
-  await app.hold(string('refills_box', `${await today(page)} #1`, 23))
+  await app.hold(plural('refills_box', 23, `${await today(page)} #1`, 23))
   await app.tap(string('edit_delete'))
   await app.tap(string('edit_delete'))
   const data = await savedData(page)
@@ -426,7 +426,7 @@ test('a missed dose the day after a refill joins it as one pill less, and is sti
   await app.tap(string('edit_save'))
 
   await expect(app.text(string('refills_missed_pill'))).toBeVisible()
-  await expect(app.text(string('refills_box', `${day} #1`, 23))).toBeVisible()
+  await expect(app.text(plural('refills_box', 23, `${day} #1`, 23))).toBeVisible()
   expect((await savedData(page)).refills[0].amount).toBe(7)
 })
 

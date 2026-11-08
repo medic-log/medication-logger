@@ -158,7 +158,7 @@ function BoxCard({
         </div>
         <StatusBadge
           status={strings.t(STATUS_LABELS[status])}
-          amount={strings.t('boxes_pills_left', box.pillsLeft, box.pillsTotal)}
+          amount={strings.plural('boxes_pills_left', box.pillsTotal, box.pillsLeft, box.pillsTotal)}
           currentAmount={box.pillsLeft}
         />
       </div>

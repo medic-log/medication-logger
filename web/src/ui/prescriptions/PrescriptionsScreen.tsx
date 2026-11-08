@@ -165,7 +165,7 @@ function PrescriptionCard({
         <span className="title-medium grow">{strings.t('prescriptions_prescribed_date', strings.date(p.prescribedDate))}</span>
         <StatusBadge
           status={strings.t(STATUS_LABELS[p.status])}
-          amount={strings.t('prescriptions_repetitions', p.repetitionsBought, p.repetitionsTotal)}
+          amount={strings.plural('prescriptions_repetitions', p.repetitionsTotal, p.repetitionsBought, p.repetitionsTotal)}
           currentAmount={p.repetitionsBought}
         />
       </div>

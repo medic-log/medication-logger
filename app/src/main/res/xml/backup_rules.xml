@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older: allowBackup="false" already turns backups off; this leaves everything out too, like
+     data_extraction_rules.xml does for Android 12+ -->
+<full-backup-content>
+    <exclude domain="root" path="." />
+</full-backup-content>

@@ -62,7 +62,10 @@
     <string name="prescriptions_ordered_date">Besteld: %1$s</string>
     <string name="prescriptions_bought_first">Eerst gekocht: %1$s</string>
     <string name="prescriptions_bought_last">Laatst gekocht: %1$s</string>
-    <string name="prescriptions_repetitions">%1$d/%2$d herh.</string>
+    <plurals name="prescriptions_repetitions">
+        <item quantity="one">%1$d/%2$d herh.</item>
+        <item quantity="other">%1$d/%2$d herh.</item>
+    </plurals>
     <string name="prescriptions_per_box">Pillen per doosje: %1$d</string>
     <string name="prescriptions_per_repetition">Per herhaling: doosjes %1$d, pillen %2$d</string>
     <string name="prescriptions_total">In totaal: doosjes %1$d, pillen %2$d</string>
@@ -87,7 +90,10 @@
     <string name="boxes_empty_active">Geen actieve doosjes. Koop een herhaling in Recepten, of kies Alle om afgeronde en extra doosjes te zien.</string>
     <string name="boxes_empty_all">Nog geen doosjes. Koop een herhaling in Recepten om er toe te voegen.</string>
     <string name="boxes_empty_extra">Geen extra doosjes. Gebruik Bewaren als extra bij een doosje om het apart te zetten.</string>
-    <string name="boxes_pills_left">%1$d/%2$d pillen</string>
+    <plurals name="boxes_pills_left">
+        <item quantity="one">%1$d/%2$d pil</item>
+        <item quantity="other">%1$d/%2$d pillen</item>
+    </plurals>
     <string name="boxes_refills_title">Aanvullingen:</string>
     <string name="boxes_opened">Geopend: %1$s</string>
     <string name="boxes_expires">Houdbaar tot: %1$s</string>
@@ -117,7 +123,10 @@
     </plurals>
     <string name="refills_partial_suffix">%1$s, gedeeltelijk</string>
     <string name="refills_partial">Gedeeltelijk</string>
-    <string name="refills_box">Doosje %1$s (%2$d over)</string>
+    <plurals name="refills_box">
+        <item quantity="one">Doosje %1$s (%2$d over)</item>
+        <item quantity="other">Doosje %1$s (%2$d over)</item>
+    </plurals>
     <string name="refills_missed">Gemiste dosis</string>
     <string name="refills_delayed">Late dosis</string>
     <string name="refills_delayed_time">Ingenomen om %1$s</string>

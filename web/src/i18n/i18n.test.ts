@@ -12,7 +12,7 @@ describe('strings', () => {
 
   test('are formatted like Android', () => {
     expect(format('%1$s: %2$s', ['Expires', '2028-06'])).toBe('Expires: 2028-06')
-    expect(new Strings('en').t('boxes_pills_left', 23, 30)).toBe('23/30 pills')
+    expect(new Strings('en').t('refills_partial_suffix', '2028-06-01', 'partial')).toBe('2028-06-01, partial')
     expect(new Strings('en').t('link_box_number', 4)).toBe('#4')
   })
 
@@ -45,6 +45,9 @@ describe('strings', () => {
     expect(en.plural('refills_pills', 1, 1)).toBe('1 pill')
     expect(en.plural('refills_pills', 7, 7)).toBe('7 pills')
     expect(new Strings('es').plural('reminders_days', 1, 1)).toMatch(/^1 /)
+    expect(en.plural('boxes_pills_left', 1, 0, 1)).toBe('0/1 pill')
+    expect(en.plural('boxes_pills_left', 30, 23, 30)).toBe('23/30 pills')
+    expect(new Strings('es').plural('refills_box', 1, '#1', 1)).toBe('Caja #1 (queda 1)')
   })
 
   test('the web strings are translated in every language', () => {

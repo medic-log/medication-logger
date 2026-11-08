@@ -318,7 +318,12 @@ private fun RefillCard(
                 )
                 if (openBox != null) {
                     Text(
-                        text = stringResource(R.string.refills_box, entry.box?.displayName().orEmpty(), refill.amountRemaining),
+                        text = pluralStringResource(
+                            R.plurals.refills_box,
+                            refill.amountRemaining,
+                            entry.box?.displayName().orEmpty(),
+                            refill.amountRemaining,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
