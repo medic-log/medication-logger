@@ -277,4 +277,9 @@
         <item quantity="many">Faltam %1$d comprimidos, incluindo as repetições ainda não compradas.</item>
         <item quantity="other">Faltam %1$d comprimidos, incluindo as repetições ainda não compradas.</item>
     </plurals>
+    <string name="time_zone_changed_title">Fuso horário alterado</string>
+    <string name="time_zone_changed_text">O seu fuso horário mudou de %1$s para %2$s. Os seus lembretes continuam nos mesmos momentos de antes, por isso as horas mudaram:</string>
+    <string name="time_zone_changed_pill">Comprimido diário: %1$s</string>
+    <string name="time_zone_changed_refill">Reposição: %1$s às %2$s</string>
+    <string name="time_zone_changed_hint">Para as alterar, ajuste-as manualmente nas definições de lembretes.</string>
 </resources>

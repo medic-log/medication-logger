@@ -277,4 +277,9 @@
         <item quantity="many">Quedan %1$d pastillas, contando las repeticiones aún no compradas.</item>
         <item quantity="other">Quedan %1$d pastillas, contando las repeticiones aún no compradas.</item>
     </plurals>
+    <string name="time_zone_changed_title">Cambio de zona horaria</string>
+    <string name="time_zone_changed_text">Tu zona horaria cambió de %1$s a %2$s. Tus recordatorios siguen en los mismos momentos que antes, así que sus horas han cambiado:</string>
+    <string name="time_zone_changed_pill">Pastilla diaria: %1$s</string>
+    <string name="time_zone_changed_refill">Relleno: %1$s a las %2$s</string>
+    <string name="time_zone_changed_hint">Para cambiarlas, ajústalas manualmente en los ajustes de recordatorios.</string>
 </resources>

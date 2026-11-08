@@ -46,6 +46,21 @@ class ReminderDeliveryTest {
     }
 
     @Test
+    fun `alarms keep the offset the reminders were set at`() {
+        val settings = AllRemindersOff.copy(
+            isPillEnabled = true,
+            pillTime = LocalTime.of(7, 30),
+            utcOffset = ZoneOffset.ofHours(2),
+        )
+
+        ReminderScheduler(app, clock).reschedule(MedicationData(reminderSettings = settings))
+
+        // 07:30 at UTC+2 is 05:30 UTC, which is past at noon, so tomorrow's
+        val expected = today.plusDays(1).atTime(5, 30).toInstant(ZoneOffset.UTC).toEpochMilli()
+        assertEquals(expected, alarms.peekNextScheduledAlarm()?.triggerAtMs)
+    }
+
+    @Test
     fun `scheduler sets an alarm for the next refill`() {
         val settings = AllRemindersOff.copy(
             isRefillEnabled = true,

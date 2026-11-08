@@ -10,6 +10,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 import java.time.format.DateTimeParseException
 
 /** Stores everything as one JSON file, written atomically so a crash can't leave half a file. */
@@ -180,6 +181,7 @@ private fun ReminderSettings.toJson() = JSONObject()
     .put("pillTime", pillTime.toString())
     .put("isExpiryEnabled", isExpiryEnabled)
     .put("expiryDaysBefore", expiryDaysBefore)
+    .put("utcOffset", utcOffset?.id)
 
 private fun JSONObject.toReminderSettings() = ReminderSettings(
     isRefillEnabled = getBoolean("isRefillEnabled"),
@@ -195,6 +197,8 @@ private fun JSONObject.toReminderSettings() = ReminderSettings(
     // And files saved before the expiry reminder existed don't have these
     isExpiryEnabled = optBoolean("isExpiryEnabled", ReminderSettings().isExpiryEnabled),
     expiryDaysBefore = optInt("expiryDaysBefore", ReminderSettings().expiryDaysBefore),
+    // And files saved before the offset was kept don't have this
+    utcOffset = optString("utcOffset").takeIf { it.isNotEmpty() }?.let(ZoneOffset::of),
 )
 
 private fun <T> List<T>.toJsonArray(toJson: (T) -> JSONObject) = JSONArray().also { array ->

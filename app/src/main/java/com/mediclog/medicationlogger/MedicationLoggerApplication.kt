@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.ui.AndroidComposeUiFlags
 import androidx.compose.ui.ExperimentalComposeUiApi
+import com.mediclog.medicationlogger.data.DeviceClock
 import com.mediclog.medicationlogger.data.JsonFileMedicationStore
 import com.mediclog.medicationlogger.data.MedicationRepository
 import com.mediclog.medicationlogger.reminders.ReminderScheduler
@@ -17,7 +18,7 @@ import java.time.Clock
 
 /** Holds the objects shared across the app, and keeps reminder alarms in step with the data. */
 class MedicationLoggerApplication : Application() {
-    val clock: Clock = Clock.systemDefaultZone()
+    val clock: Clock = DeviceClock
 
     // Loaded on first use, on the main thread: it's one small file, and every screen needs it to draw
     val repository: MedicationRepository by lazy {

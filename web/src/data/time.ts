@@ -144,3 +144,37 @@ export function toEpochMillis(dateTime: LocalDateTime): number {
 
 /** Days from [from] to [to], like ChronoUnit.DAYS.between for dates. */
 export const daysBetween = (from: LocalDate, to: LocalDate): number => toEpochDay(to) - toEpochDay(from)
+
+/** The device's time zone, as an IANA name like `Europe/Amsterdam`. */
+export const deviceTimeZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone
+
+/** An offset from UTC as ZoneOffset writes it: `Z`, `+01:00` or `-05:30`. */
+export type UtcOffset = string
+
+/** The device's offset from UTC now, which changes with summer time. */
+export const deviceUtcOffset = (): UtcOffset => offsetOf(-new Date().getTimezoneOffset())
+
+/** The offset [minutes] ahead of UTC. */
+export function offsetOf(minutes: number): UtcOffset {
+  if (minutes === 0) return 'Z'
+  const abs = Math.abs(minutes)
+  return `${minutes < 0 ? '-' : '+'}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`
+}
+
+/** How many minutes [offset] is ahead of UTC. */
+export function offsetMinutes(offset: UtcOffset): number {
+  if (offset === 'Z') return 0
+  const minutes = Number(offset.slice(1, 3)) * 60 + Number(offset.slice(4, 6))
+  return offset.startsWith('-') ? -minutes : minutes
+}
+
+/** [text] as an offset, like ZoneOffset.of, or null when it isn't one. */
+export function parseOffset(text: string): UtcOffset | null {
+  if (text === 'Z') return text
+  const match = /^[+-](\d{2}):(\d{2})$/.exec(text)
+  return match && Number(match[1]) <= 18 && Number(match[2]) < 60 ? text : null
+}
+
+/** [dateTime] at [from] as the date and time it is at that moment at [to]. */
+export const changeOffset = (dateTime: LocalDateTime, from: UtcOffset, to: UtcOffset): LocalDateTime =>
+  dateTime - offsetMinutes(from) + offsetMinutes(to)

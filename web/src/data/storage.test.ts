@@ -47,7 +47,7 @@ describe('LocalStorageMedicationStore', () => {
       reminderSettings: {
         isRefillEnabled: true, refillDay: 'FRIDAY', refillTime: '07:45', isPickupEnabled: true,
         pickupDaysAfterOrder: 5, isRunOutEnabled: true, runOutDaysBefore: 20, isPillEnabled: true,
-        pillTime: '21:15', isExpiryEnabled: false, expiryDaysBefore: 30,
+        pillTime: '21:15', isExpiryEnabled: false, expiryDaysBefore: 30, utcOffset: '+05:30',
       },
     })
       .addPrescription(draftOf('Ibuprofen "600" mg', 'Dr "Quote"', 'Pharmacy, ünï', 7, 1, 2), day)
@@ -237,6 +237,55 @@ describe('MedicationRepository', () => {
     storage.isFull = true
     r.addPrescription(draft)
     expect(r.getState().isSaveFailed).toBe(true)
+  })
+
+  const at = (offset: string) => new MedicationRepository(fake, clock, () => offset)
+
+  test("settings without an offset take the device's without shifting", () => {
+    const r = at('Z')
+    expect(r.followDeviceTimeZone()).toBeNull()
+    expect(r.getState().data.reminderSettings).toEqual({ ...DEFAULT_REMINDER_SETTINGS, utcOffset: 'Z' })
+  })
+
+  test('a new time zone shifts the reminders to the same moments', () => {
+    const before = { ...DEFAULT_REMINDER_SETTINGS, refillDay: 'SUNDAY', refillTime: '20:00', pillTime: '07:30', utcOffset: '+09:00' } as const
+    fake.saved = emptyData({ reminderSettings: before })
+    const r = at('Z')
+    expect(r.followDeviceTimeZone()).toEqual(before)
+    const after = r.getState().data.reminderSettings
+    expect(after.pillTime).toBe('22:30')
+    expect(after.refillDay).toBe('SUNDAY')
+    expect(after.refillTime).toBe('11:00')
+    expect(after.utcOffset).toBe('Z')
+    expect(fake.saved).toEqual(r.getState().data)
+    expect(r.followDeviceTimeZone()).toBeNull()
+  })
+
+  test('a shift past midnight moves the refill to the day before', () => {
+    fake.saved = emptyData({
+      reminderSettings: { ...DEFAULT_REMINDER_SETTINGS, refillDay: 'MONDAY', refillTime: '02:00', utcOffset: '+05:00' },
+    })
+    const r = at('Z')
+    r.followDeviceTimeZone()
+    const after = r.getState().data.reminderSettings
+    expect(after.refillDay).toBe('SUNDAY')
+    expect(after.refillTime).toBe('21:00')
+  })
+
+  test('a new time zone at the same offset changes nothing', () => {
+    const settings = { ...DEFAULT_REMINDER_SETTINGS, utcOffset: 'Z' }
+    fake.saved = emptyData({ reminderSettings: settings })
+    const r = at('Z')
+    expect(r.followDeviceTimeZone()).toBeNull()
+    expect(r.getState().data.reminderSettings).toEqual(settings)
+  })
+
+  test('a change to summer time shifts the reminders an hour later', () => {
+    fake.saved = emptyData({ reminderSettings: { ...DEFAULT_REMINDER_SETTINGS, pillTime: '07:30', utcOffset: '+01:00' } })
+    const r = at('+02:00')
+    expect(r.followDeviceTimeZone()?.pillTime).toBe('07:30')
+    expect(r.getState().data.reminderSettings.pillTime).toBe('08:30')
+    expect(r.getState().data.reminderSettings.utcOffset).toBe('+02:00')
   })
 })
 

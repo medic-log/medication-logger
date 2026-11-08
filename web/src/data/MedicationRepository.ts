@@ -2,7 +2,16 @@ import * as actions from './MedicationData'
 import type { MedicationData } from './MedicationData'
 import type { MedicationStore } from './MedicationStore'
 import type { Box, MedicationMiss, MissKind, Prescription, PrescriptionDraft, Refill, ReminderSettings } from './models'
-import { type LocalDateTime, type LocalTime, type YearMonth, toLocalDate } from './time'
+import { settingsAtOffset } from './ReminderCalculator'
+import {
+  type LocalDateTime,
+  type LocalTime,
+  type UtcOffset,
+  type YearMonth,
+  changeOffset,
+  deviceUtcOffset,
+  toLocalDate,
+} from './time'
 
 /** What the screens read from the repository at once. */
 export interface RepositoryState {
@@ -23,6 +32,7 @@ export class MedicationRepository {
   constructor(
     private readonly store: MedicationStore,
     private readonly clock: () => LocalDateTime,
+    private readonly utcOffset: () => UtcOffset = deviceUtcOffset,
   ) {
     const data = store.load()
     this.state = { data, shownData: data, isSaveFailed: false }
@@ -36,6 +46,10 @@ export class MedicationRepository {
   }
 
   now = (): LocalDateTime => this.clock()
+
+  /** Now at the offset the reminder times are at, which they keep when the device's changes, until the app opens. */
+  reminderNow = (): LocalDateTime =>
+    changeOffset(this.clock(), this.utcOffset(), this.state.data.reminderSettings.utcOffset ?? this.utcOffset())
 
   addPrescription = (draft: PrescriptionDraft) => this.change(it => actions.addPrescription(it, draft, this.today()))
   orderRepetition = (id: number) => this.change(it => actions.orderRepetition(it, id, this.today()))
@@ -69,6 +83,23 @@ export class MedicationRepository {
     }))
 
   updateReminderSettings = (settings: ReminderSettings) => this.change(it => ({ ...it, reminderSettings: settings }))
+
+  /**
+   * Moves the reminder settings to the device's offset from UTC when they're at another, after a move to another
+   * time zone or a change to or from summer time, keeping each reminder at the same moment. A new zone at the same
+   * offset changes nothing. Returns the settings from before when that shifted an enabled pill or refill reminder,
+   * or null.
+   */
+  followDeviceTimeZone = (): ReminderSettings | null => {
+    const before = this.state.data.reminderSettings
+    const after = settingsAtOffset(before, this.utcOffset(), this.reminderNow())
+    if (JSON.stringify(after) === JSON.stringify(before)) return null
+    this.change(it => ({ ...it, reminderSettings: after }))
+    const isPillShifted = after.isPillEnabled && after.pillTime !== before.pillTime
+    const isRefillShifted =
+      after.isRefillEnabled && (after.refillDay !== before.refillDay || after.refillTime !== before.refillTime)
+    return isPillShifted || isRefillShifted ? before : null
+  }
 
   finishTutorial = () => this.change(actions.finishTutorial)
 

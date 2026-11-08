@@ -273,4 +273,9 @@
         <item quantity="one">%1$d pill to go, including repetitions not bought yet.</item>
         <item quantity="other">%1$d pills to go, including repetitions not bought yet.</item>
     </plurals>
+    <string name="time_zone_changed_title">Time zone changed</string>
+    <string name="time_zone_changed_text">Your time zone changed from %1$s to %2$s. Your reminders stay at the same moments as before, so their times have shifted:</string>
+    <string name="time_zone_changed_pill">Daily pill: %1$s</string>
+    <string name="time_zone_changed_refill">Refill: %1$s at %2$s</string>
+    <string name="time_zone_changed_hint">To change them, set them manually in the reminder settings.</string>
 </resources>

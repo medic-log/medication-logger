@@ -270,4 +270,9 @@
         <item quantity="one">Nog %1$d pil te gaan, inclusief herhalingen die nog niet gekocht zijn.</item>
         <item quantity="other">Nog %1$d pillen te gaan, inclusief herhalingen die nog niet gekocht zijn.</item>
     </plurals>
+    <string name="time_zone_changed_title">Tijdzone gewijzigd</string>
+    <string name="time_zone_changed_text">Je tijdzone is gewijzigd van %1$s naar %2$s. Je herinneringen blijven op dezelfde momenten als voorheen, dus hun tijden zijn verschoven:</string>
+    <string name="time_zone_changed_pill">Dagelijkse pil: %1$s</string>
+    <string name="time_zone_changed_refill">Aanvullen: %1$s om %2$s</string>
+    <string name="time_zone_changed_hint">Wil je ze wijzigen, stel ze dan handmatig in bij de herinneringsinstellingen.</string>
 </resources>

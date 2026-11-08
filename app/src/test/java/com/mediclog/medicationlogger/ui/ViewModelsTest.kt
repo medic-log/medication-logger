@@ -68,6 +68,26 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `a time zone change that shifts the reminders is shown before the update until dismissed`() {
+        val settings = ReminderSettings(utcOffset = ZoneOffset.ofHours(1))
+        store.saved = MedicationData(reminderSettings = settings).finishTutorial()
+        repository = MedicationRepository(store, clock, CoroutineScope(Dispatchers.Main))
+        val release = LatestRelease(99, "9.9.9", "https://example.org/app.apk", "00")
+        val viewModel = MainViewModel(repository, clock, draft) { release }
+
+        viewModel.followDeviceTimeZone()
+
+        val change = viewModel.uiState.value.timeZoneChange
+        assertEquals(ZoneOffset.ofHours(1), change?.from)
+        assertEquals(ZoneOffset.UTC, change?.zone)
+        assertEquals(LocalTime.of(7, 0), change?.settings?.pillTime)
+        assertNull(viewModel.uiState.value.availableUpdate)
+        viewModel.dismissTimeZoneChange()
+        assertNull(viewModel.uiState.value.timeZoneChange)
+        assertEquals(release, viewModel.uiState.value.availableUpdate)
+    }
+
+    @Test
     fun `app opens on boxes, and links open the record's tab`() {
         val viewModel = MainViewModel(repository, clock, draft)
         assertEquals(AppTab.BOXES, viewModel.uiState.value.selectedTab)

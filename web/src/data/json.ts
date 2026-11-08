@@ -4,7 +4,7 @@
 import { DEFAULT_REMINDER_SETTINGS } from './models'
 import type { Box, MedicationMiss, MissKind, Prescription, PrescriptionStatus, Refill, ReminderSettings } from './models'
 import { type MedicationData, emptyData } from './MedicationData'
-import { DAYS_OF_WEEK, type DayOfWeek, parseDate, parseTime, parseYearMonth } from './time'
+import { DAYS_OF_WEEK, type DayOfWeek, parseDate, parseOffset, parseTime, parseYearMonth } from './time'
 
 /** Thrown when the JSON isn't the app's, like org.json's JSONException or a DateTimeParseException. */
 export class DataFormatError extends Error {}
@@ -150,6 +150,8 @@ function toReminderSettings(o: Json): ReminderSettings {
     // And files saved before the expiry reminder existed don't have these
     isExpiryEnabled: optBoolean(o, 'isExpiryEnabled', defaults.isExpiryEnabled),
     expiryDaysBefore: 'expiryDaysBefore' in o ? int(o, 'expiryDaysBefore') : defaults.expiryDaysBefore,
+    // And data saved before the offset was kept doesn't have this
+    utcOffset: parseOffset(optString(o, 'utcOffset', '')),
   }
 }
 

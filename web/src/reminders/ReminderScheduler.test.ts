@@ -60,6 +60,20 @@ describe('ReminderScheduler', () => {
     expect(shown).toEqual(['PICKUP', 'PICKUP'])
   })
 
+  test('reminders keep the offset they were set at', () => {
+    const data = emptyData({ reminderSettings: { ...settings, pillTime: '07:30', utcOffset: '+02:00' } })
+    const repository = new MedicationRepository({ load: () => data, save: () => {} }, () => now, () => 'Z')
+    const s = new ReminderScheduler(repository, kind => shown.push(kind), new MemoryStorage() as unknown as Storage)
+    s.start()
+    // 07:30 at UTC+02:00 is 05:30 UTC
+    now = atTime(today, '05:29')
+    s.check()
+    expect(shown).toEqual([])
+    now = atTime(today, '05:30')
+    s.check()
+    expect(shown).toEqual(['PILL'])
+  })
+
   test('changing the data moves the trigger', () => {
     const { repository, scheduler: s } = scheduler()
     s.start()

@@ -13,6 +13,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
+import java.time.ZoneOffset
 
 @RunWith(RobolectricTestRunner::class)
 class JsonFileMedicationStoreTest {
@@ -42,6 +43,7 @@ class JsonFileMedicationStoreTest {
                 pillTime = LocalTime.of(21, 15),
                 isExpiryEnabled = false,
                 expiryDaysBefore = 30,
+                utcOffset = ZoneOffset.ofHoursMinutes(5, 30),
             ),
         )
             .addPrescription(PrescriptionDraft("Ibuprofen \"600\" mg", "Dr \"Quote\"", "Pharmacy, ünï", 7, 1, 2), day)

@@ -88,6 +88,24 @@ class MedicationRepository(
 
     fun updateReminderSettings(settings: ReminderSettings) = change { it.copy(reminderSettings = settings) }
 
+    /**
+     * Moves the reminder settings to the device's offset from UTC when they're at another, after a move to another
+     * time zone or a change to or from summer time, keeping each reminder at the same moment. A new zone at the same
+     * offset changes nothing. Returns the settings from before when that shifted an enabled pill or refill reminder,
+     * or null.
+     */
+    fun followDeviceTimeZone(): ReminderSettings? {
+        val before = data.value.reminderSettings
+        val now = clock.instant()
+        val after = before.atOffset(clock.zone.rules.getOffset(now), now)
+        if (after == before) return null
+        change { it.copy(reminderSettings = after) }
+        val isPillShifted = after.isPillEnabled && after.pillTime != before.pillTime
+        val isRefillShifted = after.isRefillEnabled &&
+            (after.refillDay != before.refillDay || after.refillTime != before.refillTime)
+        return before.takeIf { isPillShifted || isRefillShifted }
+    }
+
     fun finishTutorial() = change { it.finishTutorial() }
 
     /** Shows [sample] on the screens instead of the saved data, which stays as it is, or the saved data again. */

@@ -66,6 +66,14 @@ export function App({ repository, updates }: { repository: MedicationRepository;
     }
   }, [])
 
+  // Moves the reminder times into a new time zone at start and whenever the app comes back to the front
+  useEffect(() => {
+    viewModel.followDeviceTimeZone()
+    const onVisible = () => document.visibilityState === 'visible' && viewModel.followDeviceTimeZone()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [viewModel])
+
   // Checks for a newer version at each start, offered once the tutorial is out of the way; not in development
   useEffect(() => {
     if (import.meta.env.DEV) return

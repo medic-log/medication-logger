@@ -1,6 +1,6 @@
 // The records, as in the Android app's data/ (Prescription, Box, Refill, MedicationMiss, ReminderSettings), with
 // their computed properties as functions. Field names and enum values are the ones its JSON uses.
-import type { DayOfWeek, LocalDate, LocalTime, YearMonth } from './time'
+import type { DayOfWeek, LocalDate, LocalTime, UtcOffset, YearMonth } from './time'
 
 /** Where the prescription is in its life, from nothing bought to everything bought. */
 export type PrescriptionStatus = 'NOT_STARTED' | 'ORDERED' | 'IN_PROGRESS' | 'FINISHED'
@@ -111,6 +111,11 @@ export interface ReminderSettings {
   pillTime: LocalTime
   isExpiryEnabled: boolean
   expiryDaysBefore: number
+  /**
+   * The device's offset from UTC when the times were set, null only in data saved before it was kept; reminders then
+   * follow the device's.
+   */
+  utcOffset: UtcOffset | null
 }
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
@@ -125,6 +130,7 @@ export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   pillTime: '08:00',
   isExpiryEnabled: true,
   expiryDaysBefore: 60,
+  utcOffset: null,
 }
 
 export const hasAnyEnabled = (s: ReminderSettings) =>

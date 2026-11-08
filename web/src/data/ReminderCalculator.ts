@@ -12,7 +12,11 @@ import {
   plusDays,
   plusDaysTime,
   plusWeeksTime,
+  type UtcOffset,
+  changeOffset,
+  dayOfWeek,
   toLocalDate,
+  toLocalTime,
 } from './time'
 
 // Pickup, run-out and expiry reminders have only a number of days, so they arrive at a fixed time
@@ -60,6 +64,24 @@ export function nextRefill(settings: ReminderSettings, now: LocalDateTime): Loca
 export function nextPill(settings: ReminderSettings, now: LocalDateTime): LocalDateTime {
   const candidate = atTime(toLocalDate(now), settings.pillTime)
   return candidate > now ? candidate : plusDaysTime(candidate, 1)
+}
+
+/**
+ * [settings] at [offset], with the pill and refill reminders moved to the moments they had at their offset, as of
+ * [now] there: ReminderSettings.atOffset. Without an offset the times stay as they are.
+ */
+export function settingsAtOffset(settings: ReminderSettings, offset: UtcOffset, now: LocalDateTime): ReminderSettings {
+  const from = settings.utcOffset
+  if (from === null) return { ...settings, utcOffset: offset }
+  const refill = changeOffset(nextRefill(settings, now), from, offset)
+  const pill = changeOffset(nextPill(settings, now), from, offset)
+  return {
+    ...settings,
+    refillDay: dayOfWeek(toLocalDate(refill)),
+    refillTime: toLocalTime(refill),
+    pillTime: toLocalTime(pill),
+    utcOffset: offset,
+  }
 }
 
 /** The first day a pickup reminder is due, or null when nothing is ordered. */

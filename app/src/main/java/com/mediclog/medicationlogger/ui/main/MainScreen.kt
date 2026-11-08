@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mediclog.medicationlogger.R
@@ -58,6 +59,10 @@ fun MainRoute(
     viewModel: MainViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    LifecycleStartEffect(viewModel) {
+        viewModel.followDeviceTimeZone()
+        onStopOrDispose {}
+    }
     val tutorialTargets = remember { TutorialTargets() }
     CompositionLocalProvider(LocalTutorialTargets provides tutorialTargets) {
         MainScreen(
@@ -89,6 +94,7 @@ fun MainRoute(
                 }
             },
         ) { tab -> TabContent(tab, state, viewModel) }
+        state.timeZoneChange?.let { TimeZoneChangeDialog(it, onDismiss = viewModel::dismissTimeZoneChange) }
         UpdatePrompt(state.availableUpdate, onDismiss = viewModel::dismissUpdate)
     }
 }

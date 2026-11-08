@@ -40,14 +40,14 @@ export class ReminderScheduler {
   /** Replaces the triggers to match the data. */
   reschedule() {
     const { data } = this.repository.getState()
-    const now = this.repository.now()
+    const now = this.repository.reminderNow()
     REMINDER_KINDS.forEach(kind => this.triggers.set(kind, nextTrigger(kind, data, now)))
   }
 
   /** Shows the reminders whose time has come, if still due, as data may have changed since they were set. */
   check() {
     const { data } = this.repository.getState()
-    const now = this.repository.now()
+    const now = this.repository.reminderNow()
     for (const kind of REMINDER_KINDS) {
       const trigger = this.triggers.get(kind)
       if (trigger != null && trigger <= now && isDue(kind, data, now)) this.notify(kind, now)
@@ -58,7 +58,7 @@ export class ReminderScheduler {
 
   private catchUp() {
     const { data } = this.repository.getState()
-    const now = this.repository.now()
+    const now = this.repository.reminderNow()
     const today = toLocalDate(now)
     if (now < atTime(today, DAILY_REMINDER_TIME)) return
     const shown = this.shownDays()

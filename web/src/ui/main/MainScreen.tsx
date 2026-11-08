@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon'
 import type { ListFilter } from '../components/ListFilter'
 import { tutorialTarget } from '../components/TutorialTarget'
 import { UpdatePrompt } from '../components/UpdatePrompt'
+import { TimeZoneChangeDialog } from './TimeZoneChangeDialog'
 import { PrescriptionsScreen } from '../prescriptions/PrescriptionsScreen'
 import { RefillsScreen } from '../refills/RefillsScreen'
 import { SettingsScreen } from '../reminders/SettingsScreen'
@@ -104,6 +105,9 @@ export function MainScreen({
           // The tab bar already holds the tab
           tab={step.target && step.target !== 'TAB_BAR' ? tabTarget(step.tab) : null}
         />
+      )}
+      {state.timeZoneChange && (
+        <TimeZoneChangeDialog change={state.timeZoneChange} onDismiss={viewModel.dismissTimeZoneChange} />
       )}
       <UpdatePrompt update={state.availableUpdate} onDismiss={viewModel.dismissUpdate} />
       {isInstallShown && <InstallDialog onDismiss={onInstallDismiss} />}

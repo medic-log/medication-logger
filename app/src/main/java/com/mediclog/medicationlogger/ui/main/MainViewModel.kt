@@ -14,10 +14,16 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+
+/** The reminder times moved from the [from] offset to the device's, in [zone], as they are now in [settings]. */
+data class TimeZoneChange(val from: ZoneOffset, val zone: ZoneId, val settings: ReminderSettings)
 
 /**
  * What the app's frame shows: the current tab, the record a link pointed to, where Settings opens scrolled to,
- * any save problem, the tutorial step on screen, if any, with the settings it asks for, and a newer version to offer.
+ * any save problem, the tutorial step on screen, if any, with the settings it asks for, a time zone change that
+ * shifted the reminders, and a newer version to offer.
  */
 data class MainUiState(
     val selectedTab: AppTab = AppTab.BOXES,
@@ -27,13 +33,14 @@ data class MainUiState(
     val isSaveFailed: Boolean = false,
     val tutorialStep: TutorialStep? = null,
     val reminderSettings: ReminderSettings = ReminderSettings(),
+    val timeZoneChange: TimeZoneChange? = null,
     val availableUpdate: LatestRelease? = null,
 )
 
 /**
  * Tracks the selected tab, follows links between records, and leads the tutorial, which opens until it's done.
  * The tutorial shows sample records made from [sampleDraft] in place of the saved data. At startup it asks
- * [findUpdate] for a newer version, to offer once the tutorial is out of the way.
+ * [findUpdate] for a newer version, to offer once the tutorial and any time zone change are out of the way.
  */
 class MainViewModel(
     private val repository: MedicationRepository,
@@ -42,6 +49,7 @@ class MainViewModel(
     private val findUpdate: suspend () -> LatestRelease? = { null },
 ) : ViewModel() {
     private val availableUpdate = MutableStateFlow<LatestRelease?>(null)
+    private val timeZoneChange = MutableStateFlow<TimeZoneChange?>(null)
     private val tutorialStep = MutableStateFlow(
         TutorialStep.entries.first().takeUnless { repository.data.value.isTutorialDone },
     )
@@ -53,13 +61,14 @@ class MainViewModel(
         repository.isSaveFailed,
         tutorialStep,
         repository.data,
-        availableUpdate,
-    ) { state, isSaveFailed, step, data, update ->
+        combine(timeZoneChange, availableUpdate, ::Pair),
+    ) { state, isSaveFailed, step, data, (zoneChange, update) ->
         state.copy(
             isSaveFailed = isSaveFailed,
             tutorialStep = step,
             reminderSettings = data.reminderSettings,
-            availableUpdate = update.takeIf { step == null },
+            timeZoneChange = zoneChange,
+            availableUpdate = update.takeIf { step == null && zoneChange == null },
         )
     }.stateIn(
         viewModelScope,
@@ -113,6 +122,21 @@ class MainViewModel(
         navigation.value = MainUiState(selectedTab = AppTab.SETTINGS, settingsScroll = returnScroll)
         repository.showSample(null)
         repository.finishTutorial()
+    }
+
+    /**
+     * Moves the reminder times to the device's offset from UTC if it changed since they were set, keeping their moments,
+     * and tells about it when that shifted them. Runs whenever the app comes to the front.
+     */
+    fun followDeviceTimeZone() {
+        repository.followDeviceTimeZone()?.let { before ->
+            val from = before.utcOffset ?: return
+            timeZoneChange.value = TimeZoneChange(from, clock.zone, repository.data.value.reminderSettings)
+        }
+    }
+
+    fun dismissTimeZoneChange() {
+        timeZoneChange.value = null
     }
 
     /** Stops offering the update until the next start. */

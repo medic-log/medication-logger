@@ -611,7 +611,7 @@ class MainActivityTest {
     @Test
     fun `every reminder starts on and can be turned off`() {
         openTab(R.string.main_tab_settings)
-        assertEquals(ReminderSettings(), data.reminderSettings)
+        assertEquals(ReminderSettings(), data.reminderSettings.copy(utcOffset = null))
 
         repeat(5) { composeRule.onAllNodes(isToggleable())[it].performClick() }
 
@@ -634,11 +634,11 @@ class MainActivityTest {
         assertEquals(DayOfWeek.MONDAY, data.reminderSettings.refillDay)
 
         tap(string(R.string.reminders_choose_time, "20:00"))
-        // Stays in the evening, as the input is 12-hour here
+        // 24-hour, like the times shown, so there's no AM or PM left over from the time before
         composeRule.onAllNodes(hasSetTextAction())[0].performTextReplacement("07")
         tap(string(R.string.reminders_time_confirm))
-        assertEquals(LocalTime.of(19, 0), data.reminderSettings.refillTime)
-        assertShown(string(R.string.reminders_choose_time, "19:00"))
+        assertEquals(LocalTime.of(7, 0), data.reminderSettings.refillTime)
+        assertShown(string(R.string.reminders_choose_time, "07:00"))
     }
 
     @Test

@@ -50,6 +50,23 @@ describe('MainViewModel', () => {
     expect(viewModel.getState().availableUpdate).toBeNull()
   })
 
+  test('a time zone change that shifts the reminders is shown before the update until dismissed', () => {
+    store.saved = emptyData({
+      reminderSettings: { ...DEFAULT_REMINDER_SETTINGS, utcOffset: '+01:00' },
+      isTutorialDone: true,
+    })
+    repository = new MedicationRepository(store, clock, () => 'Z')
+    const viewModel = mainViewModel()
+    viewModel.offerUpdate({ versionName: '9.9.9' })
+    viewModel.followDeviceTimeZone()
+    expect(viewModel.getState().timeZoneChange?.from).toBe('+01:00')
+    expect(viewModel.getState().timeZoneChange?.settings.pillTime).toBe('07:00')
+    expect(viewModel.getState().availableUpdate).toBeNull()
+    viewModel.dismissTimeZoneChange()
+    expect(viewModel.getState().timeZoneChange).toBeNull()
+    expect(viewModel.getState().availableUpdate).toEqual({ versionName: '9.9.9' })
+  })
+
   test("app opens on boxes, and links open the record's tab", () => {
     const viewModel = mainViewModel()
     expect(viewModel.getState().selectedTab).toBe('BOXES')
