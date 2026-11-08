@@ -320,6 +320,11 @@ class ViewModelsTest {
         assertEquals(14, viewModel.uiState.value.lotPills)
     }
 
+    @Test
+    fun `refills log takes the time for delays from the app's clock`() {
+        assertEquals(LocalTime.of(12, 0), RefillsViewModel(repository, clock).currentTime())
+    }
+
     private fun partial(id: Long, amount: Int, date: LocalDate = today) =
         Refill(id, 1, 1, date, amount, 0, isPartial = true)
 

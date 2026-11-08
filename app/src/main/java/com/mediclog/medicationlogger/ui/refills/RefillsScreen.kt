@@ -74,6 +74,7 @@ fun RefillsRoute(
     RefillsScreen(
         state = state,
         onLogMiss = viewModel::logMiss,
+        currentTime = viewModel::currentTime,
         onEditRefill = viewModel::editRefill,
         onDeleteRefill = viewModel::deleteRefill,
         onEditMiss = viewModel::editMiss,
@@ -89,6 +90,7 @@ fun RefillsRoute(
 fun RefillsScreen(
     state: RefillsUiState,
     onLogMiss: (MedicationMiss.Kind, LocalTime?) -> Unit,
+    currentTime: () -> LocalTime,
     onEditRefill: (Refill) -> Unit,
     onDeleteRefill: (Long) -> Unit,
     onEditMiss: (MedicationMiss) -> Unit,
@@ -162,7 +164,7 @@ fun RefillsScreen(
     }
     if (isPickingDelayTime) {
         TimePickerDialog(
-            time = LocalTime.now().withSecond(0).withNano(0),
+            time = currentTime(),
             title = stringResource(R.string.refills_delayed_time_dialog_title),
             onConfirm = {
                 onLogMiss(MedicationMiss.Kind.DELAYED, it)
@@ -189,6 +191,7 @@ fun RefillsScreen(
         )
         is RefillLogEntry.MissEntry -> EditMissDialog(
             miss = entry.miss,
+            defaultTime = currentTime(),
             onSave = { updated ->
                 onEditMiss(updated)
                 editingKey = null
@@ -397,6 +400,7 @@ private fun RefillsPreviewContent(state: RefillsUiState) {
             RefillsScreen(
                 state = state,
                 onLogMiss = { _, _ -> },
+                currentTime = { LocalTime.of(12, 0) },
                 onEditRefill = {},
                 onDeleteRefill = {},
                 onEditMiss = {},

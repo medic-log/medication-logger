@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { MedicationMiss, MissKind } from '../../data/models'
 import { isMissed } from '../../data/models'
-import { localDateTimeOf, toLocalTime } from '../../data/time'
+import { toLocalTime } from '../../data/time'
 import { useStrings } from '../../i18n/i18n'
 import { useNow, useRepositoryState, useServices } from '../AppServices'
 import { OutlinedButton } from '../components/Buttons'
@@ -26,7 +26,8 @@ export function RefillsScreen({
 }) {
   const strings = useStrings()
   const { repository } = useServices()
-  const state = refillsUiState(useRepositoryState().shownData, useNow())
+  const now = useNow()
+  const state = refillsUiState(useRepositoryState().shownData, now)
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [isPickingDelayTime, setPickingDelayTime] = useState(false)
   const lotMessage = strings.plural('refills_lot_pills', state.lotPills, state.lotPills)
@@ -57,7 +58,7 @@ export function RefillsScreen({
       </div>
       {isPickingDelayTime && (
         <TimePickerDialog
-          time={toLocalTime(localDateTimeOf(new Date()))}
+          time={toLocalTime(now)}
           title={strings.t('refills_delayed_time_dialog_title')}
           onConfirm={time => {
             repository.logMiss('DELAYED', time)
@@ -84,6 +85,7 @@ export function RefillsScreen({
       )}
       {editing?.type === 'miss' && (
         <EditMissDialog
+          defaultTime={toLocalTime(now)}
           miss={editing.miss}
           onSave={updated => {
             repository.editMiss(updated)

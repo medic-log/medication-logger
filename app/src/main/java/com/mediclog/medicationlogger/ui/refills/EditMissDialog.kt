@@ -23,10 +23,11 @@ import com.mediclog.medicationlogger.ui.theme.MedicationLoggerTheme
 import java.time.LocalDate
 import java.time.LocalTime
 
-/** Edits a missed or delayed dose by hand, or deletes it. */
+/** Edits a missed or delayed dose by hand, or deletes it; [defaultTime] is the delay's time if it has none yet. */
 @Composable
 fun EditMissDialog(
     miss: MedicationMiss,
+    defaultTime: LocalTime,
     onSave: (MedicationMiss) -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -34,7 +35,7 @@ fun EditMissDialog(
 ) {
     var date by rememberSaveable { mutableStateOf(miss.date.toString()) }
     var kind by rememberSaveable { mutableStateOf(miss.kind) }
-    var time by rememberSaveable { mutableStateOf(miss.time ?: LocalTime.now().withSecond(0).withNano(0)) }
+    var time by rememberSaveable { mutableStateOf(miss.time ?: defaultTime) }
     val parsedDate = date.dateOrNull()
 
     RecordEditDialog(
@@ -82,6 +83,7 @@ private fun EditMissDialogPreview() {
     MedicationLoggerTheme {
         EditMissDialog(
             miss = MedicationMiss(1, LocalDate.of(2026, 11, 2), MedicationMiss.Kind.MISSED),
+            defaultTime = LocalTime.of(12, 0),
             onSave = {},
             onDelete = {},
             onDismiss = {},

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { MedicationMiss, MissKind } from '../../data/models'
-import { type LocalTime, localDateTimeOf, toLocalTime } from '../../data/time'
+import type { LocalTime } from '../../data/time'
 import { useStrings } from '../../i18n/i18n'
 import { dateOrNull } from '../components/fieldParsing'
 import { RecordEditDialog } from '../components/RecordEditDialog'
@@ -8,14 +8,16 @@ import { SegmentedButtons } from '../components/SegmentedButtons'
 import { TextField } from '../components/TextField'
 import { TimeSelector } from '../components/TimeSelector'
 
-/** Edits a missed or delayed dose by hand, or deletes it. */
+/** Edits a missed or delayed dose by hand, or deletes it; [defaultTime] is the delay's time if it has none yet. */
 export function EditMissDialog({
   miss,
+  defaultTime,
   onSave,
   onDelete,
   onDismiss,
 }: {
   miss: MedicationMiss
+  defaultTime: LocalTime
   onSave: (updated: MedicationMiss) => void
   onDelete: () => void
   onDismiss: () => void
@@ -23,7 +25,7 @@ export function EditMissDialog({
   const strings = useStrings()
   const [date, setDate] = useState(miss.date)
   const [kind, setKind] = useState<MissKind>(miss.kind)
-  const [time, setTime] = useState<LocalTime>(miss.time ?? toLocalTime(localDateTimeOf(new Date())))
+  const [time, setTime] = useState<LocalTime>(miss.time ?? defaultTime)
   const parsedDate = dateOrNull(date)
   return (
     <RecordEditDialog

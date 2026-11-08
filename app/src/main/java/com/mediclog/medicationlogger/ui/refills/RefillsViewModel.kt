@@ -16,6 +16,7 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 /** One line of the medication log. */
 sealed interface RefillLogEntry {
@@ -66,6 +67,9 @@ class RefillsViewModel(private val repository: MedicationRepository, private val
         .stateIn(viewModelScope, SharingStarted.Eagerly, toUiState(repository.shownData.value))
 
     fun logMiss(kind: MedicationMiss.Kind, time: LocalTime? = null) = repository.logMiss(kind, time)
+
+    /** The time now, to the minute, that new and edited delays start from. */
+    fun currentTime(): LocalTime = LocalTime.now(clock).truncatedTo(ChronoUnit.MINUTES)
 
     fun editRefill(updated: Refill) = repository.editRefill(updated)
 
