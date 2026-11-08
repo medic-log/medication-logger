@@ -8,13 +8,13 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.time.Clock
+import java.time.DateTimeException
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 /** Stores everything as one JSON file, written atomically so a crash can't leave half a file. */
 class JsonFileMedicationStore(
@@ -33,7 +33,8 @@ class JsonFileMedicationStore(
             setAsideUnreadableFile()
         } catch (_: JSONException) {
             setAsideUnreadableFile()
-        } catch (_: DateTimeParseException) {
+        } catch (_: DateTimeException) {
+            // Also a DateTimeParseException, and what ZoneOffset.of throws for a bad offset
             setAsideUnreadableFile()
         } catch (_: IllegalArgumentException) {
             setAsideUnreadableFile()

@@ -15,8 +15,9 @@ class ReminderReceiver : BroadcastReceiver() {
         val data = app.repository.data.value
         if (intent.action == ACTION_REMINDER) {
             val kind = ReminderKind.entries.find { it.name == intent.getStringExtra(EXTRA_KIND) }
-            if (kind != null && ReminderCalculator.isDue(kind, data, LocalDateTime.now(app.clock.withZone(ReminderScheduler.reminderZone(data, app.clock))))) {
-                ReminderNotifier(app, app.clock).show(kind, data)
+            val now = LocalDateTime.now(app.clock.withZone(ReminderScheduler.reminderZone(data, app.clock)))
+            if (kind != null && ReminderCalculator.isDue(kind, data, now)) {
+                ReminderNotifier(app).show(kind, data, now)
             }
         }
         app.reminderScheduler.reschedule(data)

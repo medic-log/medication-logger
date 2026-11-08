@@ -14,18 +14,20 @@ import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
 import com.mediclog.medicationlogger.displayName
 import com.mediclog.medicationlogger.displayText
-import java.time.Clock
 import java.time.LocalDateTime
 
 private const val CHANNEL_ID = "reminders"
 
 /** Posts reminder notifications. Android drops them silently when notifications aren't allowed. */
-class ReminderNotifier(private val context: Context, private val clock: Clock) {
+class ReminderNotifier(private val context: Context) {
     private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
 
-    /** Shows the notification for [kind], replacing any earlier one of the same kind; none if nothing is due. */
-    fun show(kind: ReminderKind, data: MedicationData) {
-        val text = textOf(kind, data) ?: return
+    /**
+     * Shows the notification for [kind], replacing any earlier one of the same kind; none if nothing is due.
+     * [now] is at the reminders' offset, as when [ReminderCalculator.isDue] decided it was due.
+     */
+    fun show(kind: ReminderKind, data: MedicationData, now: LocalDateTime) {
+        val text = textOf(kind, data, now) ?: return
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_ID,
@@ -58,11 +60,11 @@ class ReminderNotifier(private val context: Context, private val clock: Clock) {
     }
 
     // Null when the date the text names is missing, which isDue normally rules out
-    private fun textOf(kind: ReminderKind, data: MedicationData): String? = when (kind) {
+    private fun textOf(kind: ReminderKind, data: MedicationData, now: LocalDateTime): String? = when (kind) {
         ReminderKind.REFILL -> context.getString(R.string.reminders_notification_refill_text)
         ReminderKind.PICKUP -> context.getString(R.string.reminders_notification_pickup_text)
         ReminderKind.PILL -> context.getString(R.string.reminders_notification_pill_text)
-        ReminderKind.RUN_OUT -> ReminderCalculator.boughtPillsRunOutDate(data, LocalDateTime.now(clock))?.let { date ->
+        ReminderKind.RUN_OUT -> ReminderCalculator.boughtPillsRunOutDate(data, now)?.let { date ->
             context.getString(
                 if (data.prescriptions.any { it.canBuy }) {
                     R.string.reminders_notification_run_out_repetition_text

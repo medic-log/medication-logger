@@ -173,6 +173,18 @@ class JsonFileMedicationStoreTest {
     }
 
     @Test
+    fun `a file with an invalid offset is kept aside`() {
+        JsonFileMedicationStore(file).save(MedicationData())
+        val json = JSONObject(file.readText())
+        json.getJSONObject("reminderSettings").put("utcOffset", "abc")
+        file.writeText(json.toString())
+
+        assertEquals(MedicationData(), JsonFileMedicationStore(file, clockAt("2026-11-08T13:05:25Z")).load())
+
+        assertTrue(File(file.path + ".unreadable-20261108T130525Z").exists())
+    }
+
+    @Test
     fun `a second unreadable file doesn't replace the first`() {
         file.writeText("first")
         JsonFileMedicationStore(file, clockAt("2026-11-08T13:05:25Z")).load()
