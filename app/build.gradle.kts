@@ -15,8 +15,8 @@ android {
         applicationId = "com.mediclog.medicationlogger"
         minSdk = 28
         targetSdk = 37
-        versionCode = 12
-        versionName = "2.0.2"
+        versionCode = 13
+        versionName = "2.0.3"
         // The public download site, with latest.json and the APK; empty hides Update and Share
         buildConfigField("String", "SITE_URL", "\"https://medic-log.github.io/medication-logger/\"")
         // The Cloudflare Worker that turns feedback into issues
