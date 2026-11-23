@@ -1,10 +1,13 @@
 package com.mediclog.medicationlogger.reminders
 
 import android.app.AlarmManager
+import android.app.AlarmManager.AlarmClockInfo
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.content.getSystemService
+import com.mediclog.medicationlogger.MainActivity
 import com.mediclog.medicationlogger.data.MedicationData
 import com.mediclog.medicationlogger.data.ReminderCalculator
 import com.mediclog.medicationlogger.data.ReminderKind
@@ -26,9 +29,15 @@ class ReminderScheduler(private val context: Context, private val clock: Clock) 
             if (trigger == null) {
                 alarmManager.cancel(intent)
             } else {
-                // Inexact: exact alarms need a special permission, and a reminder a few minutes late is fine
                 val triggerMillis = trigger.atZone(zone).toInstant().toEpochMilli()
-                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMillis, intent)
+                // Inexact ones can come hours late; they're the fallback if exact ones were revoked (Android 12)
+                val canBeExact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()
+                when {
+                    !canBeExact -> alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMillis, intent)
+                    // Never deferred, at the cost of the status bar's alarm icon
+                    kind.isTimed -> alarmManager.setAlarmClock(AlarmClockInfo(triggerMillis, openApp()), intent)
+                    else -> alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerMillis, intent)
+                }
             }
         }
     }
@@ -37,6 +46,15 @@ class ReminderScheduler(private val context: Context, private val clock: Clock) 
         /** The offset the reminder times are at, which they keep when the device's changes, until the app opens. */
         fun reminderZone(data: MedicationData, clock: Clock): ZoneId = data.reminderSettings.utcOffset ?: clock.zone
     }
+
+    private val ReminderKind.isTimed get() = this == ReminderKind.PILL || this == ReminderKind.REFILL
+
+    private fun openApp() = PendingIntent.getActivity(
+        context,
+        0,
+        Intent(context, MainActivity::class.java),
+        PendingIntent.FLAG_IMMUTABLE,
+    )
 
     private fun pendingIntent(kind: ReminderKind): PendingIntent {
         val intent = Intent(context, ReminderReceiver::class.java)

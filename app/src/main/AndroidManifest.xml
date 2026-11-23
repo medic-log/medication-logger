@@ -6,6 +6,11 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Exact reminders: USE_EXACT_ALARM on Android 13+, SCHEDULE_EXACT_ALARM on 12 -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
 
     <application
         android:name=".MedicationLoggerApplication"
@@ -26,12 +31,13 @@
             </intent-filter>
         </activity>
 
-        <!-- Alarms don't survive a reboot, so they're set again after one -->
+        <!-- Sets the alarms again after a reboot, or when exact ones are allowed again -->
         <receiver
             android:name=".reminders.ReminderReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
 

@@ -22,6 +22,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowAlarmManager
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -74,6 +75,46 @@ class ReminderDeliveryTest {
 
         val expected = today.plusDays(2).atTime(8, 30).toInstant(ZoneOffset.UTC).toEpochMilli()
         assertEquals(expected, alarms.peekNextScheduledAlarm()?.triggerAtMs)
+    }
+
+    @Test
+    fun `pill and refill alarms are alarm clocks, which Doze never defers`() {
+        // Granted on a device by USE_EXACT_ALARM in the manifest, which Robolectric doesn't read
+        ShadowAlarmManager.setCanScheduleExactAlarms(true)
+        val settings = AllRemindersOff.copy(isPillEnabled = true, isRefillEnabled = true)
+
+        ReminderScheduler(app, clock).reschedule(MedicationData(reminderSettings = settings))
+
+        val scheduled = alarms.scheduledAlarms
+        assertEquals(2, scheduled.size)
+        scheduled.forEach { assertEquals(it.triggerAtMs, it.alarmClockInfo?.triggerTime) }
+    }
+
+    @Test
+    fun `daily reminders are exact alarms that stay out of the next alarm`() {
+        ShadowAlarmManager.setCanScheduleExactAlarms(true)
+        app.repository.addPrescription(PrescriptionDraft("Test medication", "Dr Test", "Test Pharmacy", 7, 1, 1))
+        app.repository.buyRepetition(app.repository.data.value.prescriptions.single().id, listOf(YearMonth.now()))
+        val data = app.repository.data.value.copy(reminderSettings = AllRemindersOff.copy(isExpiryEnabled = true))
+
+        ReminderScheduler(app, Clock.systemDefaultZone()).reschedule(data)
+
+        val alarm = alarms.scheduledAlarms.single()
+        assertNull(alarm.alarmClockInfo)
+        assertEquals(ShadowAlarmManager.WINDOW_EXACT, alarm.windowLengthMs)
+        assertTrue(alarm.isAllowWhileIdle)
+    }
+
+    @Test
+    fun `alarms are still set when exact ones aren't allowed`() {
+        ShadowAlarmManager.setCanScheduleExactAlarms(false)
+        val settings = AllRemindersOff.copy(isPillEnabled = true)
+
+        ReminderScheduler(app, clock).reschedule(MedicationData(reminderSettings = settings))
+
+        val alarm = alarms.scheduledAlarms.single()
+        assertTrue(alarm.windowLengthMs != ShadowAlarmManager.WINDOW_EXACT)
+        assertTrue(alarm.isAllowWhileIdle)
     }
 
     @Test
